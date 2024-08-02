@@ -12,12 +12,13 @@ namespace G;
 public static class Core
 {
   #region  Customizable section
+
   // Resolution
   public static int TargetScreenWidth { get; } = 1440;
   public static int TargetScreenHeight { get; } = 768;
   public static int ScreenWidth { get; } = 480;
   public static int ScreenHeight { get; } = 256;
-
+  public static int PPU { get; } = 16;
 
   #endregion  Customizable section
 
