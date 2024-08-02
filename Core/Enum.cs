@@ -3,13 +3,6 @@ namespace G;
 
 #region Customizable section
 // The order is the priority of the container
-public enum ContainerDef
-{
-  Scene = 1,
-  World = 2,
-  UI = 3,
-}
-
 
 public enum FontSize
 {

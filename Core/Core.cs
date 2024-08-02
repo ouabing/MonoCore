@@ -14,11 +14,11 @@ public static class Core
   #region  Customizable section
 
   // Resolution
-  public static int TargetScreenWidth { get; } = 1440;
-  public static int TargetScreenHeight { get; } = 768;
-  public static int ScreenWidth { get; } = 480;
-  public static int ScreenHeight { get; } = 256;
-  public static int PPU { get; } = 16;
+  public static int TargetScreenWidth { get; } = Def.TargetScreenWidth;
+  public static int TargetScreenHeight { get; } = Def.TargetScreenHeight;
+  public static int ScreenWidth { get; } = Def.ScreenWidth;
+  public static int ScreenHeight { get; } = Def.ScreenHeight;
+  public static int PPU { get; } = Def.PPU;
 
   #endregion  Customizable section
 
@@ -26,9 +26,8 @@ public static class Core
 
   // Physics & Simulations
   // By default there is only one world called Main
-  public static Dictionary<string, PhysicsWorld> PhysicsWorlds { get; } = [];
+  public static Dictionary<Def.PhysicsWorld, PhysicsWorld> PhysicsWorlds { get; } = [];
   // Quick accessor for the default physics world
-  public static PhysicsWorld PhysicsWorld => GetPhysicsWorld("Earth");
   public static WindSim Wind { get; } = new WindSim();
 
   public static bool DebugComponent { get; }
@@ -87,9 +86,12 @@ public static class Core
     };
     TextureManager = new TextureManager(contentManager);
     EffectManager = new EffectManager(contentManager);
-    CreatePhysicsWorld("Earth");
+    foreach (Def.PhysicsWorld world in Enum.GetValues(typeof(Def.PhysicsWorld)))
+    {
+      CreatePhysicsWorld(world);
+    }
 
-    foreach (ContainerDef name in Enum.GetValues(typeof(ContainerDef)))
+    foreach (Def.Container name in Enum.GetValues(typeof(Def.Container)))
     {
       CreateContainer(name);
     }
@@ -104,11 +106,12 @@ public static class Core
     GraphicsManager.PreferredBackBufferHeight = TargetScreenHeight;
     GraphicsManager.ApplyChanges();
 
-    #region Define custom layers
-    LayerManager.CreateLayer("Terrain", 0, false);
-    LayerManager.CreateLayer("WorldObject", 1, false);
-    LayerManager.CreateLayer("DevUI", 10000, true);
-    #endregion Define custom layers
+    foreach (Def.Layer layer in Enum.GetValues(typeof(Def.Layer)))
+    {
+      LayerManager.CreateLayer(layer);
+      var isCameraFixed = Def.LayerConfig.TryGetValue(layer, out var config) && config.TryGetValue("IsCameraFixed", out var isFixed) && (bool)isFixed;
+      LayerManager.CreateLayer(layer, isCameraFixed);
+    }
   }
 
   public static void LoadContent(ContentManager content)
@@ -167,7 +170,7 @@ public static class Core
     LayerManager.Draw(gameTime);
   }
 
-  private static void CreateContainer(ContainerDef Name)
+  private static void CreateContainer(Def.Container Name)
   {
     if (Containers.Exists(c => c.Name == Name))
     {
@@ -177,14 +180,14 @@ public static class Core
     Containers.Sort((a, b) => b.Priority.CompareTo(a.Priority));
   }
 
-  public static void AddToContainer(ContainerDef Name, Component component)
+  public static void AddToContainer(Def.Container Name, Component component)
   {
     var container = Containers.Find(c => c.Name == Name) ?? throw new ArgumentException($"Container {Name} not found.");
 
     container.Add(component);
   }
 
-  public static void RemoveFromContainer(ContainerDef Name, Component component)
+  public static void RemoveFromContainer(Def.Container Name, Component component)
   {
     var container = Containers.Find(c => c.Name == Name) ?? throw new ArgumentException($"Container {Name} not found.");
 
@@ -201,21 +204,21 @@ public static class Core
     Shakables.Add(shakable);
   }
 
-  public static PhysicsWorld GetPhysicsWorld(string name)
+  public static PhysicsWorld GetPhysicsWorld(Def.PhysicsWorld world)
   {
-    if (!PhysicsWorlds.TryGetValue(name, out PhysicsWorld? value))
+    if (!PhysicsWorlds.TryGetValue(world, out PhysicsWorld? value))
     {
-      throw new KeyNotFoundException($"Physics world {name} not found.");
+      throw new KeyNotFoundException($"Physics world {world} not found.");
     }
     return value;
   }
 
-  public static void CreatePhysicsWorld(string name)
+  public static void CreatePhysicsWorld(Def.PhysicsWorld world)
   {
-    if (PhysicsWorlds.ContainsKey(name))
+    if (PhysicsWorlds.ContainsKey(world))
     {
-      throw new ArgumentException($"Physics world {name} already exists.");
+      throw new ArgumentException($"Physics world {world} already exists.");
     }
-    PhysicsWorlds[name] = new PhysicsWorld();
+    PhysicsWorlds[world] = new PhysicsWorld();
   }
 }

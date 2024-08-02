@@ -8,14 +8,14 @@ namespace G;
 
 public class Layer
 {
-  public string Name { get; }
+  public Def.Layer Name { get; }
   public int Z { get; }
   public Color BackgroundColor { get; set; } = Color.Transparent;
   private bool IsCameraFixed { get; }
   public List<Canvas> Canvases { get; private set; } = [];
   private readonly Dictionary<int, List<Component>> componentsByZ = [];
 
-  public Layer(string name, int z, bool isCameraFixed)
+  public Layer(Def.Layer name, int z, bool isCameraFixed)
   {
     Name = name;
     Z = z;

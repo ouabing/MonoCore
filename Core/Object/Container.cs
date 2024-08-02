@@ -3,9 +3,9 @@ using Microsoft.Xna.Framework;
 
 namespace G;
 
-public class Container(ContainerDef Name, int priority)
+public class Container(Def.Container Name, int priority)
 {
-  public ContainerDef Name { get; } = Name;
+  public Def.Container Name { get; } = Name;
   public int Priority { get; } = priority;
   private readonly List<Component> components = [];
 

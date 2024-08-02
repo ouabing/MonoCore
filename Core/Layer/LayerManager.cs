@@ -14,18 +14,18 @@ namespace G;
 public class LayerManager(Color backgroundColor)
 {
   public Color BackgroundColor { get; private set; } = backgroundColor;
-  public Dictionary<string, Layer> Layers { get; private set; } = [];
+  public Dictionary<Def.Layer, Layer> Layers { get; private set; } = [];
 
-  public void CreateLayer(string name, int z, bool isCameraFixed = false)
+  public void CreateLayer(Def.Layer layer, bool isCameraFixed = false)
   {
-    Layers[name] = new Layer(name, z, isCameraFixed);
+    Layers[layer] = new Layer(layer, (int)layer, isCameraFixed);
   }
 
-  public void Add(string layerName, Component component, int? overrideZ = null)
+  public void Add(Def.Layer toLayer, Component component, int? overrideZ = null)
   {
-    if (!Layers.TryGetValue(layerName, out Layer? layer))
+    if (!Layers.TryGetValue(toLayer, out Layer? layer))
     {
-      throw new KeyNotFoundException($"Layer {layerName} not found.");
+      throw new KeyNotFoundException($"Layer {toLayer} not found.");
     }
 
     layer.Add(component, overrideZ);
