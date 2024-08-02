@@ -34,9 +34,9 @@ public class Def
 
   public enum Layer
   {
-    Background = 0,
-    Universe = 1,
-    DevUI = 10000,
+    DevUI = 0,
+    Universe = 10,
+    Background = 100,
   }
 
   public static readonly Dictionary<Layer, Dictionary<string, object>> LayerConfig = new()

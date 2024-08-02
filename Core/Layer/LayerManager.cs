@@ -33,7 +33,7 @@ public class LayerManager(Color backgroundColor)
 
   public void Draw(GameTime gameTime)
   {
-    var layers = Layers.Values.OrderBy(layer => layer.Z);
+    var layers = Layers.Values.OrderBy(layer => layer.Z).Reverse();
 
     foreach (var layer in layers)
     {
