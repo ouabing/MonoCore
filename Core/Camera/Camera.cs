@@ -5,6 +5,7 @@ namespace G;
 public class Camera : IShakable
 {
   public Vector2 Position { get; private set; }
+  public Vector2 PositionOffset => Position - new Vector2(Core.ScreenWidth / 2, Core.ScreenHeight / 2);
   public float Zoom { get; set; } = 1;
   public Vector2 Velocity { get; private set; } = new(0);
   public RectangleF Bounds { get; set; }
@@ -71,7 +72,7 @@ public class Camera : IShakable
     }
   }
 
-  public void Follow(Sprite target, GameTime gameTime)
+  public void Follow(Component target, GameTime gameTime)
   {
     Position = Vector2.Round(target.Center);
   }
