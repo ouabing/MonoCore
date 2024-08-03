@@ -1,6 +1,6 @@
 # MonoCore
 
-Simple engine code based on MonoGame for rapid game idea prototyping (for myself)
+A simple game engine based on [MonoGame](https://monogame.net/)
 
 ### Dependencies
 
