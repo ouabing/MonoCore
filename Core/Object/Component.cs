@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended;
@@ -9,7 +8,7 @@ namespace G;
 
 public enum OriginType { TopLeft, Center }
 
-public abstract class Component : IBox, IShakable, IDisposable
+public abstract class Component : IBox, IShakable
 {
   public Vector2 Position { get; set; }
   public Vector2 PreviousPosition { get; set; }
@@ -28,7 +27,6 @@ public abstract class Component : IBox, IShakable, IDisposable
   public abstract int Z { get; }
 
   public Texture2D? Texture { get; protected set; }
-  public BasicEffect? BasicFX { get; protected set; }
 
   public Vector2 Origin
   {
@@ -87,21 +85,6 @@ public abstract class Component : IBox, IShakable, IDisposable
 
   public virtual void LoadContent()
   {
-    if (EnableDrawPrimitives)
-    {
-      BasicFX = new BasicEffect(Core.GraphicsManager!.GraphicsDevice)
-      {
-        Projection = Matrix.CreateOrthographicOffCenter(0, Core.ScreenWidth, Core.ScreenHeight, 0, 0, 1),
-        View = Matrix.Identity,
-        World = Matrix.Identity,
-        VertexColorEnabled = true
-      };
-      if (Texture != null)
-      {
-        BasicFX.Texture = Texture;
-        BasicFX.TextureEnabled = true;
-      }
-    }
   }
 
   public virtual void PreUpdate(GameTime gameTime)
@@ -146,11 +129,5 @@ public abstract class Component : IBox, IShakable, IDisposable
   public virtual void Die()
   {
     IsDead = true;
-  }
-
-  public virtual void Dispose()
-  {
-    BasicFX?.Dispose();
-    GC.SuppressFinalize(this);
   }
 }

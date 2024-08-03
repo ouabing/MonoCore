@@ -75,18 +75,17 @@ public class Layer
           // Draw primitives should be executed outside sprite batch
           if (component.EnableDrawPrimitives)
           {
+            var matrix = Matrix.CreateOrthographicOffCenter(0, Core.ScreenWidth, Core.ScreenHeight, 0, 0, 1);
+            var view = IsCameraFixed ? Matrix.Identity : Core.Camera.GetMatrix();
             // Each time a SpriteBatch is ended, the RasterizerState will be reset
             // For 2D game, we don't need to cull any face
             Core.GraphicsDevice.RasterizerState = RasterizerState.CullNone;
-            if (!IsCameraFixed)
-            {
-              component.BasicFX!.View = Core.Camera.GetMatrix();
-            }
-            foreach (var pass in component.BasicFX!.CurrentTechnique.Passes)
-            {
-              pass.Apply();
-              component.DrawPrimitives(gameTime);
-            }
+            Core.Pb!.Begin(
+              ref matrix,
+              ref view
+            );
+            component.DrawPrimitives(gameTime);
+            Core.Pb.End();
           }
 
           // DrawPrimitives and Draw will both be executed

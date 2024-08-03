@@ -14,11 +14,16 @@ Simple engine code based on MonoGame for rapid game idea prototyping (for myself
 public class Def
 {
   #region Core Config
-  public static int TargetScreenWidth { get; } = 1440;
-  public static int TargetScreenHeight { get; } = 768;
-  public static int ScreenWidth { get; } = 480;
-  public static int ScreenHeight { get; } = 256;
-  public static int PPU { get; } = 16;
+  public static class Screen
+  {
+    public static readonly ITheme Theme = new ApolloTheme();
+    public static Color BackgroundColor => Palette.Black;
+    public static int TargetScreenWidth { get; } = 1440;
+    public static int TargetScreenHeight { get; } = 768;
+    public static int ScreenWidth { get; } = 480;
+    public static int ScreenHeight { get; } = 256;
+    public static int PPU { get; } = 16;
+  }
 
   public enum Container
   {

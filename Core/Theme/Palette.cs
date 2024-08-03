@@ -7,30 +7,76 @@ namespace G;
 
 public class Palette
 {
-  public static readonly Color Black = FromArgb("#000000");
-  public static readonly Color White = FromArgb("#D2EAD6");
-  public static readonly Color Red = Color.Red;
+  public static ITheme Theme { get; set; } = new ApolloTheme();
+  public static Color Black => Theme.Black;
+  public static Color White => Theme.White;
+  public static List<Color> Blue => Theme.Blue;
+  public static List<Color> Green => Theme.Green;
+  public static List<Color> Yellow => Theme.Yellow;
+  public static List<Color> Red => Theme.Red;
+  public static List<Color> Grey => Theme.Grey;
+  public static List<Color> Purple => Theme.Purple;
 
   public static Color GetColor(string name)
   {
-    switch (name)
+    if (name == "Black")
     {
-      case "Black":
-        return Black;
-      case "White":
-        return White;
-      default:
-        throw new KeyNotFoundException($"Color {name} not found.");
+      return Black;
     }
+    else if (name == "White")
+    {
+      return White;
+    }
+    else if (name.StartsWith("Blue"))
+    {
+      var index = int.Parse(name[4..]);
+      return Blue[index];
+    }
+    else if (name.StartsWith("Green"))
+    {
+      var index = int.Parse(name[5..]);
+      return Green[index];
+    }
+    else if (name.StartsWith("Yellow"))
+    {
+      var index = int.Parse(name[6..]);
+      return Yellow[index];
+    }
+    else if (name.StartsWith("Red"))
+    {
+      var index = int.Parse(name[3..]);
+      return Red[index];
+    }
+    else if (name.StartsWith("Grey"))
+    {
+      var index = int.Parse(name[4..]);
+      return Grey[index];
+    }
+    else if (name.StartsWith("Purple"))
+    {
+      var index = int.Parse(name[6..]);
+      return Purple[index];
+    }
+    throw new ArgumentException($"Color {name} not found");
   }
 
 
-  static void SetTheme(string theme)
+  public static void SetTheme(ITheme theme)
   {
-    // TODO
+    Theme = theme;
   }
 
-  static Color FromArgb(ReadOnlySpan<char> colorAsHex)
+  public static List<Color> FromRgbas(List<string> colors)
+  {
+    var result = new List<Color>();
+    foreach (var color in colors)
+    {
+      result.Add(FromRgba(color));
+    }
+    return result;
+  }
+
+  public static Color FromRgba(ReadOnlySpan<char> colorAsHex)
   {
     int red = 0;
     int green = 0;
@@ -92,7 +138,7 @@ public class Palette
     return FromRgba(red / 255f, green / 255f, blue / 255f, alpha / 255f);
   }
 
-  private static Color FromRgba(float r, float g, float b, float a)
+  public static Color FromRgba(float r, float g, float b, float a)
   {
     return new Color(r, g, b, a);
   }

@@ -6,6 +6,7 @@ using FontStashSharp.RichText;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+using MonoGame.Extended.VectorDraw;
 
 namespace G;
 
@@ -14,11 +15,11 @@ public static class Core
   #region  Customizable section
 
   // Resolution
-  public static int TargetScreenWidth { get; } = Def.Resolution.TargetScreenWidth;
-  public static int TargetScreenHeight { get; } = Def.Resolution.TargetScreenHeight;
-  public static int ScreenWidth { get; } = Def.Resolution.ScreenWidth;
-  public static int ScreenHeight { get; } = Def.Resolution.ScreenHeight;
-  public static int PPU { get; } = Def.Resolution.PPU;
+  public static int TargetScreenWidth { get; } = Def.Screen.TargetScreenWidth;
+  public static int TargetScreenHeight { get; } = Def.Screen.TargetScreenHeight;
+  public static int ScreenWidth { get; } = Def.Screen.ScreenWidth;
+  public static int ScreenHeight { get; } = Def.Screen.ScreenHeight;
+  public static int PPU { get; } = Def.Screen.PPU;
 
   #endregion  Customizable section
 
@@ -32,7 +33,7 @@ public static class Core
 
   public static bool DebugComponent { get; }
   public static Camera Camera { get; } = new Camera();
-  public static LayerManager LayerManager { get; } = new LayerManager(Palette.Black);
+  public static LayerManager LayerManager { get; } = new LayerManager(Def.Screen.BackgroundColor);
   public static Timer Timer { get; } = new Timer();
   public static InputManager I { get; } = new InputManager();
   public static TaskSystem T { get; } = new TaskSystem();
@@ -42,8 +43,10 @@ public static class Core
   public static TextureManager TextureManager { get; private set; }
   public static EffectManager EffectManager { get; private set; }
   public static ContentManager ContentManager { get; private set; }
+  public static SpriteBatch Sb { get; private set; }
+  public static PrimitiveBatch Pb { get; private set; }
+  public static PrimitiveDrawing Pd { get; private set; }
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
-  public static SpriteBatch? Sb { get; private set; }
   public static GRandom Random { get; } = new GRandom();
 
   private static FontSystem? fontSystem;
@@ -95,7 +98,7 @@ public static class Core
     {
       CreateContainer(name);
     }
-
+    Palette.SetTheme(Def.Screen.Theme);
   }
 
   public static void InitializeGraphics()
@@ -114,11 +117,13 @@ public static class Core
     }
   }
 
-  public static void LoadContent(ContentManager content)
+  public static void LoadContent()
   {
     fontSystem = new FontSystem();
     fontSystem.AddFont(File.ReadAllBytes(@"Content/Font/zpix.ttf"));
-    Sb = CreateSpriteBatch();
+    Sb = new SpriteBatch(GraphicsManager!.GraphicsDevice);
+    Pb = new PrimitiveBatch(GraphicsManager!.GraphicsDevice);
+    Pd = new PrimitiveDrawing(Pb);
     Camera.LoadContent();
     AddShakable(Camera);
 
@@ -126,11 +131,6 @@ public static class Core
     {
       FontCache[fontSize] = fontSystem.GetFont((int)fontSize);
     }
-  }
-
-  public static SpriteBatch CreateSpriteBatch()
-  {
-    return new SpriteBatch(GraphicsManager!.GraphicsDevice);
   }
 
   // Return true if the game is blocked
