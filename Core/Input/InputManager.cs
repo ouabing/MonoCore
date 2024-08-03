@@ -132,12 +132,28 @@ public class InputManager
   {
     get
     {
-      var cp = Mouse.GetState().Position;
       var scale = Core.GraphicsDevice.Viewport.Width / Core.ScreenWidth;
-      return new Vector2(cp.X / scale, cp.Y / scale);
+      return CursorPosition / scale;
     }
   }
 #pragma warning restore CA1822 // Mark members as static
+
+  public Vector2 PreviousCursorPosition
+  {
+    get
+    {
+      return lastMouse.Position.ToVector2();
+    }
+  }
+
+  public Vector2 PreviousCursorPositionInWorld
+  {
+    get
+    {
+      var scale = Core.GraphicsDevice.Viewport.Width / Core.ScreenWidth;
+      return PreviousCursorPosition / scale;
+    }
+  }
 
   public bool IsCursorValid()
   {
