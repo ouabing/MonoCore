@@ -5,18 +5,20 @@ namespace G;
 public class Camera : IShakable
 {
   private Vector2 _position;
+#pragma warning disable CA1822 // Mark members as static
   public Vector2 InitialPosition => new(Core.ScreenWidth * 0.5f, Core.ScreenHeight * 0.5f);
+#pragma warning restore CA1822 // Mark members as static
   public Vector2 Position
   {
     get => _position;
     private set
     {
-      LastPosition = _position;
+      PreviousPosition = _position;
       _position = value;
     }
   }
 
-  public Vector2 LastPosition { get; private set; }
+  public Vector2 PreviousPosition { get; private set; }
   public float Zoom { get; set; } = 1;
   public Vector2 Velocity { get; private set; } = new(0);
   public RectangleF Bounds { get; set; }
@@ -37,6 +39,11 @@ public class Camera : IShakable
   public Vector2 ScreenToWorld(Vector2 screenPosition)
   {
     return Position + screenPosition - InitialPosition;
+  }
+
+  public Vector2 PreviousScreenToWorld(Vector2 screenPosition)
+  {
+    return PreviousPosition + screenPosition - InitialPosition;
   }
 
   public void Reset()

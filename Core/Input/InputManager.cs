@@ -14,7 +14,7 @@ public class InputManager
   public bool LeftDown { get; set; }
   private readonly Dictionary<Def.Input.Action, bool> Activated = [];
 
-  private MouseState lastMouse;
+  private MouseState previousMouse;
 
 #pragma warning disable CA1822 // Mark members as static
   public void LoadContent()
@@ -52,11 +52,11 @@ public class InputManager
         }
       }
     }
-    lastMouse = Mouse.GetState();
+    previousMouse = Mouse.GetState();
   }
   public bool Hover(Rectangle r)
   {
-    return r.Contains(new Vector2(lastMouse.X, lastMouse.Y));
+    return r.Contains(new Vector2(previousMouse.X, previousMouse.Y));
   }
 
   private bool IsKeyPressed(string key)
@@ -88,17 +88,21 @@ public class InputManager
       case "Down":
         return Keyboard.GetState().IsKeyDown(Keys.Down);
       case "MouseLeftPressed":
-        return lastMouse.LeftButton != ButtonState.Pressed && mouse.LeftButton == ButtonState.Pressed;
+        return previousMouse.LeftButton != ButtonState.Pressed && mouse.LeftButton == ButtonState.Pressed;
       case "MouseLeftDown":
         return mouse.LeftButton == ButtonState.Pressed;
+      case "MouseLeftUp":
+        return mouse.LeftButton == ButtonState.Released;
       case "MouseLeftReleased":
-        return lastMouse.LeftButton == ButtonState.Pressed && mouse.LeftButton != ButtonState.Pressed;
+        return previousMouse.LeftButton == ButtonState.Pressed && mouse.LeftButton != ButtonState.Pressed;
       case "MouseRightPressed":
-        return lastMouse.LeftButton != ButtonState.Pressed && mouse.RightButton == ButtonState.Pressed;
+        return previousMouse.LeftButton != ButtonState.Pressed && mouse.RightButton == ButtonState.Pressed;
       case "MouseRightDown":
         return mouse.RightButton == ButtonState.Pressed;
+      case "MouseRightUp":
+        return mouse.RightButton == ButtonState.Released;
       case "MouseRightReleased":
-        return lastMouse.RightButton == ButtonState.Pressed && mouse.RightButton != ButtonState.Pressed;
+        return previousMouse.RightButton == ButtonState.Pressed && mouse.RightButton != ButtonState.Pressed;
       case "StickLeftX-":
         return gamepad.ThumbSticks.Left.X < 0.5f;
       case "StickLeftX+":
@@ -120,44 +124,44 @@ public class InputManager
   }
 
 #pragma warning disable CA1822 // Mark members as static
-  public Vector2 CursorPosition
-  {
-    get
-    {
-      return Mouse.GetState().Position.ToVector2();
-    }
-  }
-
-  public Vector2 CursorPositionInWorld
+  public Vector2 CursorScreenPosition
   {
     get
     {
       var scale = Core.GraphicsDevice.Viewport.Width / Core.ScreenWidth;
-      return CursorPosition / scale;
+      return Mouse.GetState().Position.ToVector2() / scale;
+    }
+  }
+
+  public Vector2 CursorWorldPosition
+  {
+    get
+    {
+      return Core.Camera.ScreenToWorld(CursorScreenPosition);
     }
   }
 #pragma warning restore CA1822 // Mark members as static
 
-  public Vector2 PreviousCursorPosition
-  {
-    get
-    {
-      return lastMouse.Position.ToVector2();
-    }
-  }
-
-  public Vector2 PreviousCursorPositionInWorld
+  public Vector2 PreviousCursorScreenPosition
   {
     get
     {
       var scale = Core.GraphicsDevice.Viewport.Width / Core.ScreenWidth;
-      return PreviousCursorPosition / scale;
+      return previousMouse.Position.ToVector2() / scale;
+    }
+  }
+
+  public Vector2 PreviousCursorWorldPosition
+  {
+    get
+    {
+      return Core.Camera.PreviousScreenToWorld(PreviousCursorScreenPosition);
     }
   }
 
   public bool IsCursorValid()
   {
-    var cp = CursorPosition;
+    var cp = CursorScreenPosition;
     if (cp.X < 0 || cp.X > Core.ScreenWidth || cp.Y < 0 || cp.Y > Core.ScreenHeight)
     {
       return false;
@@ -171,7 +175,7 @@ public class InputManager
     {
       return false;
     }
-    return rect.Contains(CursorPosition);
+    return rect.Contains(CursorScreenPosition);
   }
 
   public bool IsCursorIn(Rectangle rect)
