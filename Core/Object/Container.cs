@@ -24,11 +24,18 @@ public class Container(Def.Container Name, int priority)
   {
     foreach (var component in components)
     {
-      component.PreUpdate(gameTime);
       component.Update(gameTime);
+    }
+    ClearDead();
+  }
+
+  public void PostUpdate(GameTime gameTime)
+  {
+
+    foreach (var component in components)
+    {
       component.PostUpdate(gameTime);
     }
-
     ClearDead();
   }
 

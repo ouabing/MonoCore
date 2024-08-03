@@ -13,7 +13,7 @@ public interface IBox
 
   // Relative to the Position.
   public abstract RectangleF Box { get; }
-  public RectangleF BoxAbs => new(Box.X + Position.X, Box.Y + Position.Y, Box.Width, Box.Height);
+  public RectangleF BoxAbs => new(Box.Position.X + Position.X, Box.Position.Y + Position.Y, Box.Width, Box.Height);
 
   public abstract void UpdatePhysics(GameTime gameTime);
 

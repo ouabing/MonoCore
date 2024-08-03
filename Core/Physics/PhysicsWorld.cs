@@ -11,6 +11,7 @@ public class PhysicsWorld
 {
   private readonly List<IBox> boxes = [];
   public List<Collision> Collisions { get; private set; } = [];
+  public Dictionary<IBox, List<Collision>> IndexedCollisions { get; private set; } = [];
 
   public void Add(IBox box)
   {
@@ -40,11 +41,19 @@ public class PhysicsWorld
         CheckCollision(boxes[i], boxes[j]);
       }
     }
+    ClearDead();
   }
 
   public void PostUpdate(GameTime gameTime)
   {
-    Collisions = [];
+    Collisions.Clear();
+    IndexedCollisions.Clear();
+    ClearDead();
+  }
+
+  public List<Collision> GetCollisions(IBox box)
+  {
+    return IndexedCollisions[box] ?? [];
   }
 
   private void CheckCollision(IBox a, IBox b)
@@ -55,8 +64,31 @@ public class PhysicsWorld
     }
 
     var collision = new Collision(a, b);
-    Collisions.Add(collision);
+    SaveCollision(collision);
     a.OnCollision(collision, b);
     b.OnCollision(collision, a);
+  }
+
+  private void SaveCollision(Collision collision)
+  {
+    Collisions.Add(collision);
+    if (!IndexedCollisions.TryGetValue(collision.A, out List<Collision>? valueA))
+    {
+      valueA = [];
+      IndexedCollisions[collision.A] = valueA;
+    }
+    valueA!.Add(collision);
+
+    if (!IndexedCollisions.TryGetValue(collision.B, out List<Collision>? valueB))
+    {
+      valueB = [];
+      IndexedCollisions[collision.B] = valueB;
+    }
+    valueB!.Add(collision);
+  }
+
+  private void ClearDead()
+  {
+    boxes.RemoveAll(c => c.IsDead);
   }
 }

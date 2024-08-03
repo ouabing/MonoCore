@@ -166,6 +166,18 @@ public static class Core
     return false;
   }
 
+  public static void PostUpdate(GameTime gameTime)
+  {
+    foreach (var c in Containers)
+    {
+      c.PostUpdate(gameTime);
+    }
+    foreach (var physicsWorld in PhysicsWorlds.Values)
+    {
+      physicsWorld.PostUpdate(gameTime);
+    }
+  }
+
   public static void Draw(GameTime gameTime)
   {
     Layer.Draw(gameTime);

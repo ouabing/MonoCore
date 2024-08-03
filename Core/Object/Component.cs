@@ -87,10 +87,6 @@ public abstract class Component : IBox, IShakable
   {
   }
 
-  public virtual void PreUpdate(GameTime gameTime)
-  {
-  }
-
   public abstract void Update(GameTime gameTime);
   public virtual void PostUpdate(GameTime gameTime)
   {
