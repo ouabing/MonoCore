@@ -65,7 +65,7 @@ public class Layer
     foreach (var canvas in Canvases)
     {
       canvas.Begin();
-      var orderedByZ = componentsByZ.OrderBy(x => x.Key).ToList();
+      var orderedByZ = componentsByZ.OrderBy(x => -x.Key).ToList();
       // Note the order of components in the same Z level is not guaranteed
       foreach (var components in orderedByZ)
       {
