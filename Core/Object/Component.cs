@@ -14,7 +14,7 @@ public abstract class Component : IBox, IShakable
   public Vector2 PreviousPosition { get; set; }
   public Vector2 Velocity { get; set; }
   public Vector2 Size { get; set; }
-  public RectangleF Box { get; set; }
+  public virtual RectangleF Box { get; set; }
   public float Rotation { get; set; }
   public float Scale { get; set; } = 1f;
   public Shaker? Shaker { get; set; }

@@ -6,13 +6,13 @@ namespace G;
 public interface IBox
 {
   public bool IsDead { get; set; }
-  public abstract Vector2 Position { get; set; }
+  public abstract Vector2 Position { get; }
   public abstract Vector2 Origin { get; }
-  public abstract Vector2 PreviousPosition { get; set; }
-  public abstract Vector2 Velocity { get; set; }
+  public abstract Vector2 PreviousPosition { get; }
+  public abstract Vector2 Velocity { get; }
 
   // Relative to the Position.
-  public abstract RectangleF Box { get; set; }
+  public abstract RectangleF Box { get; }
   public RectangleF BoxAbs => new(Box.X + Position.X, Box.Y + Position.Y, Box.Width, Box.Height);
 
   public abstract void UpdatePhysics(GameTime gameTime);

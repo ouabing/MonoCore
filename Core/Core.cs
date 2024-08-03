@@ -205,6 +205,11 @@ public static class Core
     Shakables.Add(shakable);
   }
 
+  public static void AddToPhysicsWorld(Def.PhysicsWorld world, IBox box)
+  {
+    GetPhysicsWorld(world).Add(box);
+  }
+
   public static PhysicsWorld GetPhysicsWorld(Def.PhysicsWorld world)
   {
     if (!PhysicsWorlds.TryGetValue(world, out PhysicsWorld? value))
