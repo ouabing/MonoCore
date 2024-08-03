@@ -114,8 +114,14 @@ public class Layer
       }
       canvas.End();
     }
+  }
 
-    componentsByZ.Clear();
+  public void ClearDead()
+  {
+    foreach (var components in componentsByZ.Values)
+    {
+      components.RemoveAll(c => c.IsDead);
+    }
   }
 
   public void ApplyFX(string canvasName, Effect? fx)

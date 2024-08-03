@@ -25,11 +25,13 @@ public class InputManager
     return r.Contains(new Vector2(ms.X, ms.Y));
   }
 
-  public Point CursorPosition
+  public Vector2 CursorPosition
   {
     get
     {
-      return Mouse.GetState().Position;
+      var cp = Mouse.GetState().Position;
+      var scale = Core.GraphicsDevice.Viewport.Width / Core.ScreenWidth;
+      return new Vector2(cp.X / scale, cp.Y / scale);
     }
   }
 

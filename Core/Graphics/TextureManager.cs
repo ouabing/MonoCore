@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
@@ -32,29 +31,6 @@ public class TextureManager(ContentManager contentManager)
     var borderedSprite = CreateBorderedTexture(LoadTexture(path));
     BorderedTextureCache[path] = borderedSprite;
     return borderedSprite;
-  }
-
-  private Texture2D GenerateShadowTexture(int width, int height)
-  {
-    var colors = new Color[width * height];
-    for (var x = 0; x < width; x++)
-    {
-      for (var y = 0; y < height; y++)
-      {
-        var index = x + y * width;
-        if (((int)Math.Ceiling((float)x / Def.Art.ShadowSize) + ((int)Math.Ceiling((float)y / Def.Art.ShadowSize))) % 2 == 0)
-        {
-          colors[index] = Palette.Black;
-        }
-        else
-        {
-          colors[index] = Palette.White;
-        }
-      }
-    }
-    Texture2D texture = new(Core.GraphicsManager!.GraphicsDevice, width, height);
-    texture.SetData(colors);
-    return texture;
   }
 
   private static Texture2D CreateBorderedTexture(Texture2D texture)

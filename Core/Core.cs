@@ -14,11 +14,11 @@ public static class Core
   #region  Customizable section
 
   // Resolution
-  public static int TargetScreenWidth { get; } = Def.TargetScreenWidth;
-  public static int TargetScreenHeight { get; } = Def.TargetScreenHeight;
-  public static int ScreenWidth { get; } = Def.ScreenWidth;
-  public static int ScreenHeight { get; } = Def.ScreenHeight;
-  public static int PPU { get; } = Def.PPU;
+  public static int TargetScreenWidth { get; } = Def.Resolution.TargetScreenWidth;
+  public static int TargetScreenHeight { get; } = Def.Resolution.TargetScreenHeight;
+  public static int ScreenWidth { get; } = Def.Resolution.ScreenWidth;
+  public static int ScreenHeight { get; } = Def.Resolution.ScreenHeight;
+  public static int PPU { get; } = Def.Resolution.PPU;
 
   #endregion  Customizable section
 

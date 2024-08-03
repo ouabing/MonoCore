@@ -172,6 +172,11 @@ public abstract class Component : IBox, IShakable, IDisposable
     Position += Velocity * (float)gameTime.ElapsedGameTime.TotalSeconds;
   }
 
+  public virtual void Die()
+  {
+    IsDead = true;
+  }
+
   public virtual void Dispose()
   {
     BasicFX?.Dispose();

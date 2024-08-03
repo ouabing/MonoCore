@@ -51,6 +51,7 @@ public class LayerManager(Color backgroundColor)
         Core.Sb.Draw(canvas.RenderTarget, new Rectangle(0, 0, Core.TargetScreenWidth, Core.TargetScreenHeight), Color.White);
         Core.Sb.End();
       }
+      layer.ClearDead();
     }
 
   }

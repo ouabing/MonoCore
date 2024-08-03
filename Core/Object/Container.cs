@@ -29,10 +29,10 @@ public class Container(Def.Container Name, int priority)
       component.PostUpdate(gameTime);
     }
 
-    Clear();
+    ClearDead();
   }
 
-  public void Clear()
+  public void ClearDead()
   {
     components.RemoveAll(c => c.IsDead);
   }

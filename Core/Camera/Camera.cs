@@ -4,8 +4,18 @@ namespace G;
 
 public class Camera : IShakable
 {
-  public Vector2 Position { get; private set; }
-  public Vector2 PositionOffset => Position - new Vector2(Core.ScreenWidth / 2, Core.ScreenHeight / 2);
+  private Vector2 _position;
+  public Vector2 Position
+  {
+    get => _position;
+    private set
+    {
+      LastPosition = _position;
+      _position = value;
+    }
+  }
+
+  public Vector2 LastPosition { get; private set; }
   public float Zoom { get; set; } = 1;
   public Vector2 Velocity { get; private set; } = new(0);
   public RectangleF Bounds { get; set; }
@@ -23,9 +33,14 @@ public class Camera : IShakable
     Position = position;
   }
 
+  public Vector2 ScreenToWorld(Vector2 screenPosition)
+  {
+    return Position + screenPosition - new Vector2(Core.ScreenWidth * 0.5f, Core.ScreenHeight * 0.5f);
+  }
+
   public void Reset()
   {
-    Position = new Vector2(Core.ScreenWidth / 2, Core.ScreenHeight / 2);
+    Position = Vector2.Zero;
     Bounds = new RectangleF(Position.X, Position.Y, 0, 0);
   }
 

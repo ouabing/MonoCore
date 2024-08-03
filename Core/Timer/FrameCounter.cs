@@ -1,52 +1,39 @@
 
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.Xna.Framework;
-using MonoGame.Extended;
 
 namespace G;
 
 public class FrameCounter : Component
 {
-  public long TotalFrames { get; private set; }
-  public float TotalSeconds { get; private set; }
-  public float AverageFramesPerSecond { get; private set; }
-  public float CurrentFramesPerSecond { get; private set; }
+  private double frames;
+  private double updates;
+  private double elapsed;
+  private double last;
+  private double now;
+  private readonly double msgFrequency = 1.0f;
+  private string msg = "";
 
   public override int Z => 0;
 
-  public const int MaximumSamples = 100;
-
-  private readonly Queue<float> sampleBuffer = new();
-
   public override void Update(GameTime gameTime)
   {
-    var deltaTime = gameTime.GetElapsedSeconds();
-    CurrentFramesPerSecond = 1.0f / deltaTime;
-
-    sampleBuffer.Enqueue(CurrentFramesPerSecond);
-
-    if (sampleBuffer.Count > MaximumSamples)
+    now = gameTime.TotalGameTime.TotalSeconds;
+    elapsed = now - last;
+    if (elapsed > msgFrequency)
     {
-      sampleBuffer.Dequeue();
-      AverageFramesPerSecond = sampleBuffer.Average(i => i);
+      msg = $"Fps: {frames / elapsed}";
+      elapsed = 0;
+      frames = 0;
+      updates = 0;
+      last = now;
     }
-    else
-    {
-      AverageFramesPerSecond = CurrentFramesPerSecond;
-    }
-
-    TotalFrames++;
-    TotalSeconds += deltaTime;
+    updates++;
   }
 
   public override void Draw(GameTime gameTime)
   {
-    var font = Core.Font(FontSize.Medium);
-    font.DrawText(Core.Sb, $"FPS: {AverageFramesPerSecond}", new Vector2(10, 10), Color.White);
-  }
-
-  public override void LoadContent()
-  {
+    var font = Core.Font(FontSize.Small);
+    font.DrawText(Core.Sb, msg, new Vector2(10, 10), Palette.White);
+    frames++;
   }
 }
