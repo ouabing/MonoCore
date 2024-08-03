@@ -9,6 +9,7 @@ public class Palette
 {
   public static readonly Color Black = FromArgb("#000000");
   public static readonly Color White = FromArgb("#D2EAD6");
+  public static readonly Color Red = Color.Red;
 
   public static Color GetColor(string name)
   {

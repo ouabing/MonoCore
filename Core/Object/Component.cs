@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended;
@@ -28,7 +29,6 @@ public abstract class Component : IBox, IShakable, IDisposable
 
   public Texture2D? Texture { get; protected set; }
   public BasicEffect? BasicFX { get; protected set; }
-  protected VertexPositionTexture[] Vertices { get; private set; } = [];
 
   public Vector2 Origin
   {
@@ -93,23 +93,19 @@ public abstract class Component : IBox, IShakable, IDisposable
       {
         Projection = Matrix.CreateOrthographicOffCenter(0, Core.ScreenWidth, Core.ScreenHeight, 0, 0, 1),
         View = Matrix.Identity,
-        World = Matrix.Identity
+        World = Matrix.Identity,
+        VertexColorEnabled = true
       };
       if (Texture != null)
       {
         BasicFX.Texture = Texture;
         BasicFX.TextureEnabled = true;
       }
-      Vertices = new VertexPositionTexture[4];
     }
   }
 
   public virtual void PreUpdate(GameTime gameTime)
   {
-    if (EnableDrawPrimitives)
-    {
-      UpdateVertices(gameTime);
-    }
   }
 
   public abstract void Update(GameTime gameTime);
@@ -117,33 +113,8 @@ public abstract class Component : IBox, IShakable, IDisposable
   {
   }
 
-  protected virtual void UpdateVertices(GameTime gameTime)
-  {
-    Vertices[0].Position = new Vector3(BottomLeft, 0);
-    Vertices[1].Position = new Vector3(TopLeft, 0);
-    Vertices[2].Position = new Vector3(BottomRight, 0);
-    Vertices[3].Position = new Vector3(TopRight, 0);
-
-    if (Texture != null)
-    {
-      Vertices[0].TextureCoordinate = new Vector2(0, 1);
-      Vertices[1].TextureCoordinate = new Vector2(0, 0);
-      Vertices[2].TextureCoordinate = new Vector2(1, 1);
-      Vertices[3].TextureCoordinate = new Vector2(1, 0);
-    }
-  }
-
   public virtual void DrawPrimitives(GameTime gameTime)
   {
-    if (EnableDrawPrimitives)
-    {
-      Core.GraphicsDevice.DrawUserPrimitives(
-          PrimitiveType.TriangleStrip,
-          Vertices,
-          0,
-          2
-      );
-    }
   }
 
   public virtual void Draw(GameTime gameTime)
