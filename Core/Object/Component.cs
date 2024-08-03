@@ -24,7 +24,7 @@ public abstract class Component : IBox, IShakable
 
   // Set this to true if you want to draw primitives
   public bool EnableDrawPrimitives { get; protected set; }
-  public abstract int Z { get; }
+  public int Z { get; set; }
 
   public Texture2D? Texture { get; protected set; }
 

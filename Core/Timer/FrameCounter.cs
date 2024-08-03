@@ -13,8 +13,6 @@ public class FrameCounter : Component
   private readonly double msgFrequency = 1.0f;
   private string msg = "";
 
-  public override int Z => 0;
-
   public override void Update(GameTime gameTime)
   {
     now = gameTime.TotalGameTime.TotalSeconds;

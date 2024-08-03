@@ -40,8 +40,8 @@ public class LayerManager(Color backgroundColor)
       layer.Draw(gameTime);
     }
 
-    Core.GraphicsManager!.GraphicsDevice.SetRenderTarget(null);
-    Core.GraphicsManager!.GraphicsDevice.Clear(BackgroundColor);
+    Core.Graphics!.GraphicsDevice.SetRenderTarget(null);
+    Core.Graphics!.GraphicsDevice.Clear(BackgroundColor);
 
     foreach (var layer in layers)
     {

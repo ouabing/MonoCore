@@ -34,8 +34,6 @@ public class EffectChar(string c, List<CharEffectArg> args) : Component
   public int Line { get; set; }
   public List<CharEffectArg> Effects { get; } = args;
 
-  public override int Z => 0;
-
   public override void Draw(GameTime gameTime)
   {
   }

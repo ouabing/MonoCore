@@ -1,5 +1,6 @@
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace G;
@@ -72,6 +73,16 @@ public class GRandom(int seed = 0)
       accChances += chance;
     }
     throw new InvalidOperationException("Chances not added to 1");
+  }
+
+  public T NextPick<T>(T[] values)
+  {
+    return values[Next(values.Length)];
+  }
+
+  public T NextPick<T>(List<T> values)
+  {
+    return values[Next(values.Count)];
   }
 
   public static int GenerateSeed()

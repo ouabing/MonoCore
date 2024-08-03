@@ -18,11 +18,11 @@ public class Def
   {
     public static readonly ITheme Theme = new ApolloTheme();
     public static Color BackgroundColor => Palette.Black;
-    public static int TargetScreenWidth { get; } = 1440;
-    public static int TargetScreenHeight { get; } = 768;
-    public static int ScreenWidth { get; } = 480;
-    public static int ScreenHeight { get; } = 256;
-    public static int PPU { get; } = 16;
+    public static readonly int TargetScreenWidth = 1440;
+    public static readonly int TargetScreenHeight = 768;
+    public static readonly int ScreenWidth = 480;
+    public static readonly int ScreenHeight = 256;
+    public static readonly int PPU = 16;
   }
 
   public enum Container

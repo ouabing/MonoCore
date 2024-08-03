@@ -15,7 +15,7 @@ public class Canvas(
   public int Width { get; } = width;
   public int Height { get; } = height;
   public Color BackgroundColor { get; } = backgroundColor;
-  public RenderTarget2D RenderTarget { get; } = new RenderTarget2D(Core.GraphicsManager!.GraphicsDevice, width, height);
+  public RenderTarget2D RenderTarget { get; } = new RenderTarget2D(Core.Graphics!.GraphicsDevice, width, height);
   public Effect? FX { get; private set; }
 
   public void ApplyFX(Effect? fx)
@@ -25,14 +25,14 @@ public class Canvas(
 
   public void Begin()
   {
-    Core.GraphicsManager!.GraphicsDevice.SetRenderTarget(RenderTarget);
-    Core.GraphicsManager.GraphicsDevice.Clear(BackgroundColor);
+    Core.Graphics!.GraphicsDevice.SetRenderTarget(RenderTarget);
+    Core.Graphics.GraphicsDevice.Clear(BackgroundColor);
   }
 
 #pragma warning disable CA1822 // Mark members as static
   public void End()
   {
-    Core.GraphicsManager!.GraphicsDevice.SetRenderTarget(null);
+    Core.Graphics!.GraphicsDevice.SetRenderTarget(null);
   }
 #pragma warning restore CA1822 // Mark members as static
 

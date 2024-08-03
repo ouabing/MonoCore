@@ -82,7 +82,7 @@ public class TextureManager(ContentManager contentManager)
       resultColors[index] = Palette.White;
     }
 
-    Texture2D newTexture = new(Core.GraphicsManager!.GraphicsDevice, width, height);
+    Texture2D newTexture = new(Core.Graphics!.GraphicsDevice, width, height);
     newTexture.SetData(resultColors);
     return newTexture;
   }

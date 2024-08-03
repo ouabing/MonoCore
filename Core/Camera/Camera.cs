@@ -5,6 +5,7 @@ namespace G;
 public class Camera : IShakable
 {
   private Vector2 _position;
+  public Vector2 InitialPosition => new(Core.ScreenWidth * 0.5f, Core.ScreenHeight * 0.5f);
   public Vector2 Position
   {
     get => _position;
@@ -35,12 +36,12 @@ public class Camera : IShakable
 
   public Vector2 ScreenToWorld(Vector2 screenPosition)
   {
-    return Position + screenPosition - new Vector2(Core.ScreenWidth * 0.5f, Core.ScreenHeight * 0.5f);
+    return Position + screenPosition - InitialPosition;
   }
 
   public void Reset()
   {
-    Position = Vector2.Zero;
+    Position = InitialPosition;
     Bounds = new RectangleF(Position.X, Position.Y, 0, 0);
   }
 
