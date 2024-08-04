@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using MonoGame.Extended;
@@ -12,6 +13,7 @@ public class InputManager
   public bool LeftClicked { get; set; }
   public bool RightClicked { get; set; }
   public bool LeftDown { get; set; }
+  public List<Def.Input.World> WorldQueue { get; } = new();
   private readonly Dictionary<Def.Input.Action, bool> Activated = [];
 
   private MouseState previousMouse;
@@ -31,9 +33,60 @@ public class InputManager
   }
 #pragma warning restore CA1822 // Mark members as static
 
-  public bool IsActive(Def.Input.Action action)
+  /*
+   * Push and allow a defined world to receive input events
+   */
+  public void PushWorld(Def.Input.World world)
   {
+    WorldQueue.Add(world);
+  }
+
+  public void PopWorld()
+  {
+    if (WorldQueue.Count > 0)
+    {
+      WorldQueue.RemoveAt(WorldQueue.Count - 1);
+    }
+  }
+
+  public bool IsActive(Def.Input.Action action, Def.Input.World world)
+  {
+    if (WorldQueue.Count == 0)
+    {
+      throw new InvalidOperationException("No input world is active");
+    }
+    if (world != WorldQueue.Last())
+    {
+      return false;
+    }
     return Activated.ContainsKey(action);
+  }
+
+  /*
+   * Consume an action to avoid propagating the same input to any other listeners
+   * Useful for scenarios like, a UI button is on top of a game object,
+   * when the button is clicked, the game object should not receive the click event
+   */
+  public bool Consume(Def.Input.Action action, Def.Input.World world)
+  {
+    if (!IsActive(action, world))
+    {
+      return false;
+    }
+    var toRemoveAction = new List<Def.Input.Action>();
+    var keys = Def.Input.Bindings[action];
+    foreach (var activatedAction in Activated.Keys)
+    {
+      if (Def.Input.Bindings[activatedAction].Intersect(keys).Any())
+      {
+        toRemoveAction.Add(activatedAction);
+      }
+    }
+    foreach (var a in toRemoveAction)
+    {
+      Activated.Remove(a);
+    }
+    return true;
   }
 
   public void Update(GameTime gameTime)
@@ -54,6 +107,7 @@ public class InputManager
     }
     previousMouse = Mouse.GetState();
   }
+
   public bool Hover(Rectangle r)
   {
     return r.Contains(new Vector2(previousMouse.X, previousMouse.Y));

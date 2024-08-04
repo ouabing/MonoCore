@@ -14,6 +14,8 @@ A simple game engine based on [MonoGame](https://monogame.net/)
 public class Def
 {
   #region Core Config
+
+  // Screen related
   public static class Screen
   {
     public static readonly ITheme Theme = new ApolloTheme();
@@ -25,6 +27,7 @@ public class Def
     public static readonly int PPU = 16;
   }
 
+  // Container for update component group
   public enum Container
   {
     Scene = 1,
@@ -32,11 +35,13 @@ public class Def
     UI = 3,
   }
 
+  // PhysicsWorld for collision detection and other physics simulation stuff
   public enum PhysicsWorld
   {
     Main = 1
   }
 
+  // Layer for draws components
   public enum Layer
   {
     DevUI = 0,
@@ -51,6 +56,33 @@ public class Def
       { "IsCameraFixed", true }
     }
   };
+
+  // Input related
+  public static class Input
+  {
+
+    // Define input action for binding, which may be a specific operation
+    public enum Action
+    {
+      CursorPressed = 1,
+      Left = 2,
+    }
+
+    // Define the input separation layers
+    // It's useful if you have multiple layer like Battleground and Menu
+    // You can switch the input world to avoid trigger actions in both worlds
+    public enum World
+    {
+      Battleground = 1,
+      Menu = 2,
+    }
+
+    public static readonly Dictionary<Action, List<string>> Bindings = new()
+    {
+      { Action.CursorPressed, ["MouseLeftPressed"] },
+      { Action.Left, ["Left", "StickLeftX-"] },
+    };
+  }
   #endregion Core Config
 }
 ```
