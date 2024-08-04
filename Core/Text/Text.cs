@@ -38,7 +38,19 @@ public class Text
   private readonly TextAlignment Alignment;
   private readonly List<EffectChar> Chars = [];
   private readonly float HeightMultiplier;
-  public Text(string rawText, SpriteFontBase font, float width, float height = 0, TextAlignment alignment = TextAlignment.Left, TextEffects? textEffects = null, float heightMultiplier = 1f)
+  private readonly int ShadowWidth;
+  private readonly Color? ShadowColor;
+  public Text(
+    string rawText,
+    SpriteFontBase font,
+    float width,
+    float height = 0,
+    int shadowWidth = 0,
+    Color? shadowColor = null,
+    TextAlignment alignment = TextAlignment.Left,
+    TextEffects? textEffects = null,
+    float heightMultiplier = 1f
+  )
   {
     RawText = rawText;
     Font = font;
@@ -46,6 +58,8 @@ public class Text
     Width = width;
     Height = height;
     HeightMultiplier = heightMultiplier;
+    ShadowWidth = shadowWidth;
+    ShadowColor = shadowColor ?? Palette.Black;
     if (textEffects == null)
     {
       TextEffects = DefaultTextEffects;
@@ -351,6 +365,19 @@ public class Text
   {
     foreach (var c in Chars)
     {
+      var pos = Position + c.Position + (c.Shaker?.Amount ?? Vector2.Zero) - MeasuredSize / 2f;
+      if (ShadowWidth > 0)
+      {
+        for (int i = 1; i <= ShadowWidth; i++)
+        {
+          Font.DrawText(
+            Core.Sb,
+            c.C,
+            pos + new Vector2(i),
+            ShadowColor ?? Color.Black
+          );
+        }
+      }
       Font.DrawText(
         Core.Sb,
         c.C,
