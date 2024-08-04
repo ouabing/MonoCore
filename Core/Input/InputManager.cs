@@ -13,7 +13,7 @@ public class InputManager
   public bool LeftClicked { get; set; }
   public bool RightClicked { get; set; }
   public bool LeftDown { get; set; }
-  public List<Def.Input.World> WorldQueue { get; } = new();
+  public List<Def.Input.World> WorldQueue { get; } = [];
   private readonly Dictionary<Def.Input.Action, bool> Activated = [];
 
   private MouseState previousMouse;
@@ -38,6 +38,8 @@ public class InputManager
    */
   public void PushWorld(Def.Input.World world)
   {
+    // Clear the activated actions to avoid remaining input event consuming from the previous world
+    Activated.Clear();
     WorldQueue.Add(world);
   }
 
@@ -45,7 +47,12 @@ public class InputManager
   {
     if (WorldQueue.Count > 0)
     {
+      // Clear the activated actions to avoid remaining input event consuming from the previous world
       WorldQueue.RemoveAt(WorldQueue.Count - 1);
+    }
+    else
+    {
+      throw new InvalidOperationException("No input world is active");
     }
   }
 
