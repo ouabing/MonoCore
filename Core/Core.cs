@@ -163,6 +163,8 @@ public static class Core
       c.Update(gameTime);
     }
 
+    PostUpdate(gameTime);
+
     return false;
   }
 
