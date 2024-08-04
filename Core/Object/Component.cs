@@ -16,7 +16,7 @@ public abstract class Component : IBox, IShakable
   public Vector2 Size { get; set; }
   public virtual RectangleF Box { get; set; }
   public float Rotation { get; set; }
-  public float Scale { get; set; } = 1f;
+  public Vector2 Scale { get; set; } = Vector2.One;
   public Shaker? Shaker { get; set; }
   public bool IsDead { get; set; }
   public OriginType OriginType { get; set; } = OriginType.Center;
