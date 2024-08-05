@@ -30,7 +30,7 @@ public class FrameCounter : Component
 
   public override void Draw(GameTime gameTime)
   {
-    var font = Core.Font(FontSize.Small);
+    var font = Core.Font.Get(10);
     font.DrawText(Core.Sb, msg, new Vector2(10, 10), Palette.White);
     frames++;
   }

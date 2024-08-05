@@ -1,8 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
-using FontStashSharp;
-using FontStashSharp.RichText;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -36,6 +33,7 @@ public static class Core
   public static LayerManager Layer { get; } = new LayerManager(Def.Screen.BackgroundColor);
   public static Timer Timer { get; } = new Timer();
   public static InputManager Input { get; } = new InputManager();
+  public static FontManager Font { get; } = new FontManager();
   public static TaskSystem Task { get; } = new TaskSystem();
   public static GraphicsDeviceManager? Graphics { get; private set; }
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
@@ -49,35 +47,9 @@ public static class Core
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
   public static GRandom Random { get; } = new GRandom();
 
-  private static FontSystem? fontSystem;
-  private static Dictionary<FontSize, SpriteFontBase> FontCache { get; } = [];
   private static List<IShakable> Shakables { get; } = [];
   private static List<Container> Containers { get; } = [];
 
-  public static SpriteFontBase Font(FontSize size = FontSize.Medium)
-  {
-    return FontCache[size];
-  }
-
-  public static RichTextLayout RichText(SpriteFontBase font, string text, int width, int height)
-  {
-    return new RichTextLayout()
-    {
-      Font = font,
-      Text = text,
-      Width = width,
-      Height = height
-    };
-  }
-  public static RichTextLayout RichText(SpriteFontBase font, string text, int width)
-  {
-    return new RichTextLayout()
-    {
-      Font = font,
-      Text = text,
-      Width = width,
-    };
-  }
   public static void Init(ContentManager contentManager, Game gameRoot)
   {
     Content = contentManager;
@@ -120,18 +92,12 @@ public static class Core
   public static void LoadContent()
   {
     Input.LoadContent();
-    fontSystem = new FontSystem();
-    fontSystem.AddFont(File.ReadAllBytes(@"Content/Font/zpix.ttf"));
+    Font.LoadContent();
     Sb = new SpriteBatch(Graphics!.GraphicsDevice);
     Pb = new PrimitiveBatch(Graphics!.GraphicsDevice);
     Pd = new PrimitiveDrawing(Pb);
     Camera.LoadContent();
     AddShakable(Camera);
-
-    foreach (FontSize fontSize in Enum.GetValues(typeof(FontSize)))
-    {
-      FontCache[fontSize] = fontSystem.GetFont((int)fontSize);
-    }
   }
 
   // Return true if the game is blocked

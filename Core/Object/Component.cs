@@ -14,6 +14,7 @@ public abstract class Component : IBox, IShakable
   public Vector2 PreviousPosition { get; set; }
   public Vector2 Velocity { get; set; }
   public Vector2 Size { get; set; }
+  public int FontSize { get; set; }
   public virtual RectangleF Box { get; set; }
   public float Rotation { get; set; }
   public Vector2 Scale { get; set; } = Vector2.One;
@@ -107,7 +108,7 @@ public abstract class Component : IBox, IShakable
 #pragma warning restore CA1859 // Use concrete types when possible for improved performance
         box.DrawBox(gameTime);
       }
-      var font = Core.Font(FontSize.Mini);
+      var font = Core.Font.Get(10);
       font.DrawText(Core.Sb, $"({(int)Position.X},{(int)Position.Y})", TopLeft, Palette.White);
     }
   }
