@@ -7,7 +7,6 @@ namespace G;
 
 public class FontManager : IDisposable
 {
-  private string currentFont = "";
   private readonly Dictionary<string, FontSystem> fontSystems = [];
   private Dictionary<string, SpriteFontBase> FontCache { get; } = [];
 
@@ -15,8 +14,32 @@ public class FontManager : IDisposable
   {
     foreach (var (name, path) in Def.Fonts)
     {
-      fontSystems[name] = new FontSystem();
-      fontSystems[name].AddFont(File.ReadAllBytes(path));
+      var settings = new FontSystemSettings
+      {
+        // Disable anti-aliasing
+        GlyphRenderer = (input, output, options) =>
+        {
+          var size = options.Size.X * options.Size.Y;
+
+          for (var i = 0; i < size; i++)
+          {
+            var c = input[i];
+            var ci = i * 4;
+
+            if (c == 0)
+            {
+              output[ci] = output[ci + 1] = output[ci + 2] = output[ci + 3] = 0;
+            }
+            else
+            {
+              output[ci] = output[ci + 1] = output[ci + 2] = output[ci + 3] = 255;
+            }
+          }
+        }
+      };
+      var system = new FontSystem(settings);
+      fontSystems[name] = system;
+      system.AddFont(File.ReadAllBytes(path));
     }
   }
 
