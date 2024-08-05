@@ -30,7 +30,7 @@ public class EffectChar(string c, List<CharEffectArg> args) : Component
 {
   public int Index { get; set; }
   public string C { get; set; } = c;
-  public Color Color { get; set; }
+  public Color? Color { get; set; }
   public int Line { get; set; }
   public List<CharEffectArg> Effects { get; } = args;
 

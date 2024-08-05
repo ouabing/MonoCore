@@ -361,11 +361,16 @@ public class Text
     }
   }
 
-  public void Draw(GameTime gameTime, Vector2 Position)
+  public void Draw(GameTime gameTime, Vector2 Position, OriginType originType = OriginType.Center)
   {
     foreach (var c in Chars)
     {
       var pos = Position + c.Position + (c.Shaker?.Amount ?? Vector2.Zero) - MeasuredSize / 2f;
+
+      if (originType == OriginType.TopLeft)
+      {
+        pos += new Vector2(MeasuredSize.X / 2f, MeasuredSize.Y / 2f);
+      }
       if (ShadowWidth > 0)
       {
         for (int i = 1; i <= ShadowWidth; i++)
@@ -374,15 +379,15 @@ public class Text
             Core.Sb,
             c.C,
             pos + new Vector2(i),
-            ShadowColor ?? Color.Black
+            ShadowColor ?? Palette.Black
           );
         }
       }
       Font.DrawText(
         Core.Sb,
         c.C,
-        Position + c.Position + (c.Shaker?.Amount ?? Vector2.Zero) - MeasuredSize / 2f,
-        c.Color
+        pos,
+        c.Color ?? Palette.White
       );
     }
   }
