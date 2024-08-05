@@ -57,6 +57,13 @@ public class Def
     }
   };
 
+
+  // Fonts, the first font will be the default font
+  public static readonly List<(string, string)> Fonts = [
+    ("fusion8", "Content/Fonts/fusion8.ttf"),
+    ("fusion10", "Content/Fonts/fusion10.ttf")
+  ];
+
   // Input related
   public static class Input
   {

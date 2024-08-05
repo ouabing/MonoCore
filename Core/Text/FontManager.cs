@@ -7,36 +7,46 @@ namespace G;
 
 public class FontManager : IDisposable
 {
-  private readonly FontSystem fontSystem = new();
-  private Dictionary<int, SpriteFontBase> FontCache { get; } = [];
+  private string currentFont = "";
+  private readonly Dictionary<string, FontSystem> fontSystems = [];
+  private Dictionary<string, SpriteFontBase> FontCache { get; } = [];
 
   public void LoadContent()
   {
-    foreach (var font in Def.Fonts)
+    foreach (var (name, path) in Def.Fonts)
     {
-      AddFont(font);
+      fontSystems[name] = new FontSystem();
+      fontSystems[name].AddFont(File.ReadAllBytes(path));
     }
   }
 
-  public void AddFont(string path)
+  public SpriteFontBase Get(string font, int size)
   {
-
-    fontSystem.AddFont(File.ReadAllBytes(path));
+    var key = $"{font}-{size}";
+    if (!FontCache.TryGetValue(key, out SpriteFontBase? f))
+    {
+      if (!fontSystems.TryGetValue(font, out FontSystem? fontSystem))
+      {
+        throw new ArgumentException($"Font {font} not found.");
+      }
+      f = fontSystem.GetFont(size);
+      FontCache[key] = f;
+    }
+    return f;
   }
 
   public SpriteFontBase Get(int size)
   {
-    if (!FontCache.TryGetValue(size, out SpriteFontBase? font))
-    {
-      font = fontSystem.GetFont(size);
-      FontCache[size] = font;
-    }
-    return font;
+    var font = Def.Fonts[0].Item1;
+    return Get(font, size);
   }
 
   public void Dispose()
   {
-    fontSystem.Dispose();
+    foreach (var system in fontSystems.Values)
+    {
+      system.Dispose();
+    }
     GC.SuppressFinalize(this);
   }
 }
