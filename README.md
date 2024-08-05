@@ -35,7 +35,7 @@ public class Def
     UI = 3,
   }
 
-  // PhysicsWorld for collision detection and other physics simulation stuff
+  // PhysicsWorld for collision detection and other physics simulations
   public enum PhysicsWorld
   {
     Main = 1
@@ -69,8 +69,8 @@ public class Def
     }
 
     // Define the input separation layers
-    // It's useful if you have multiple layer like Battleground and Menu
-    // You can switch the input world to avoid trigger actions in both worlds
+    // It's useful if you have multiple layers like Battleground and Menu
+    // You can switch the input world to avoid triggering actions in both worlds
     public enum World
     {
       Battleground = 1,
