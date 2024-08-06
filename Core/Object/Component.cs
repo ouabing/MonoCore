@@ -11,6 +11,9 @@ public enum OriginType { TopLeft, Center }
 public abstract class Component : IBox, IShakable
 {
   public Vector2 Position { get; set; }
+  // The offset is use to draw the object at a different position than the actual position.
+  // Will not affect the collision box.
+  public Vector2 Offset { get; set; }
   public Vector2 PreviousPosition { get; set; }
   public Vector2 Velocity { get; set; }
   public Vector2 Size { get; set; }
