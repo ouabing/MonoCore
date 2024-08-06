@@ -6,10 +6,10 @@ using MonoGame.Extended.Tweening;
 
 namespace G;
 public class TweenTask<TTarget, TMember>(
+  string id,
   TTarget target,
   Expression<Func<TTarget, TMember>> expression,
   TMember toValue,
-  string id,
   bool autoReverse = false,
   bool repeatForever = false,
   int repeat = 0,
@@ -55,6 +55,11 @@ public class TweenTask<TTarget, TMember>(
              })
              .OnEnd((tween) =>
              {
+               // Let the tweener finish repeatings
+               if (tween.IsAlive)
+               {
+                 return;
+               }
                ElapsedTime = Attack + Decay;
                IsAlmostCompleted = true;
                if (Release == 0)
