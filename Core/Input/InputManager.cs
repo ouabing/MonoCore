@@ -149,7 +149,7 @@ public class InputManager
       case "Down":
         return Keyboard.GetState().IsKeyDown(Keys.Down);
       case "MouseLeftPressed":
-        return previousMouse.LeftButton != ButtonState.Pressed && mouse.LeftButton == ButtonState.Pressed;
+        return previousMouse.LeftButton == ButtonState.Pressed && mouse.LeftButton == ButtonState.Released;
       case "MouseLeftDown":
         return mouse.LeftButton == ButtonState.Pressed;
       case "MouseLeftUp":
@@ -157,7 +157,7 @@ public class InputManager
       case "MouseLeftReleased":
         return previousMouse.LeftButton == ButtonState.Pressed && mouse.LeftButton != ButtonState.Pressed;
       case "MouseRightPressed":
-        return previousMouse.LeftButton != ButtonState.Pressed && mouse.RightButton == ButtonState.Pressed;
+        return previousMouse.RightButton == ButtonState.Pressed && mouse.RightButton == ButtonState.Released;
       case "MouseRightDown":
         return mouse.RightButton == ButtonState.Pressed;
       case "MouseRightUp":
