@@ -4,8 +4,7 @@ A simple game engine based on [MonoGame](https://monogame.net/)
 
 ### Dependencies
 
-- Mono.Extended
-- Mono.Extended.Tweening
+- Mono.Extended>=4.0.0
 - FontStashSharp.MonoGame
 
 ### Game Specific Configs
