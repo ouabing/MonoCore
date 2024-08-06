@@ -13,7 +13,7 @@ public class Layer
   public Color BackgroundColor { get; set; } = Color.Transparent;
   private bool IsCameraFixed { get; }
   public List<Canvas> Canvases { get; private set; } = [];
-  private readonly Dictionary<int, List<Component>> componentsByZ = [];
+  private readonly List<Component> components = [];
 
   public Layer(Def.Layer name, int z, bool isCameraFixed)
   {
@@ -42,16 +42,13 @@ public class Layer
     Canvases.RemoveAt(index);
   }
 
-  public void Add(Component component, int? overrideZ = null)
+  public void Add(Component component)
   {
-    var z = overrideZ ?? component.Z;
-    if (!componentsByZ.TryGetValue(z, out List<Component>? value))
+    if (components.FindIndex(x => x == component) != -1)
     {
-      value = [];
-      componentsByZ[z] = value;
+      throw new ArgumentException($"Component {component} already exists.");
     }
-
-    value.Add(component);
+    components.Add(component);
   }
 
   public void Draw(GameTime gameTime)
@@ -65,51 +62,48 @@ public class Layer
     foreach (var canvas in Canvases)
     {
       canvas.Begin();
-      var orderedByZ = componentsByZ.OrderBy(x => -x.Key).ToList();
+      var orderedByZ = components.OrderBy(x => -x.Z).ToList();
+      List<Component> inBatch = [];
       // Note the order of components in the same Z level is not guaranteed
-      foreach (var components in orderedByZ)
+      foreach (var component in orderedByZ)
       {
-        List<Component> inBatch = [];
-        foreach (var component in components.Value)
+        // Draw primitives should be executed outside sprite batch
+        if (component.EnableDrawPrimitives)
         {
-          // Draw primitives should be executed outside sprite batch
-          if (component.EnableDrawPrimitives)
-          {
-            var matrix = Matrix.CreateOrthographicOffCenter(0, Core.ScreenWidth, Core.ScreenHeight, 0, 0, 1);
-            var view = IsCameraFixed ? Matrix.Identity : Core.Camera.GetMatrix();
-            // Each time a SpriteBatch is ended, the RasterizerState will be reset
-            // For 2D game, we don't need to cull any face
-            Core.GraphicsDevice.RasterizerState = RasterizerState.CullNone;
-            Core.Pb!.Begin(
-              ref matrix,
-              ref view
-            );
-            component.DrawPrimitives(gameTime);
-            Core.Pb.End();
-          }
-
-          // DrawPrimitives and Draw will both be executed
-          if (component.CurrentFX == null)
-          {
-            inBatch.Add(component);
-          }
-          else
-          {
-            // Component.CurrentEffect will override the canvas's default effect
-            Core.Sb!.Begin(samplerState: SamplerState.PointClamp, effect: component.CurrentFX, transformMatrix: transformMatrix);
-            component.Draw(gameTime);
-            Core.Sb.End();
-          }
+          var matrix = Matrix.CreateOrthographicOffCenter(0, Core.ScreenWidth, Core.ScreenHeight, 0, 0, 1);
+          var view = IsCameraFixed ? Matrix.Identity : Core.Camera.GetMatrix();
+          // Each time a SpriteBatch is ended, the RasterizerState will be reset
+          // For 2D game, we don't need to cull any face
+          Core.GraphicsDevice.RasterizerState = RasterizerState.CullNone;
+          Core.Pb!.Begin(
+            ref matrix,
+            ref view
+          );
+          component.DrawPrimitives(gameTime);
+          Core.Pb.End();
         }
-        if (inBatch.Count != 0)
+
+        // DrawPrimitives and Draw will both be executed
+        if (component.CurrentFX == null)
         {
-          Core.Sb!.Begin(samplerState: SamplerState.PointClamp, transformMatrix: transformMatrix, effect: canvas.FX);
-          foreach (var component in inBatch)
-          {
-            component.Draw(gameTime);
-          }
+          inBatch.Add(component);
+        }
+        else
+        {
+          // Component.CurrentEffect will override the canvas's default effect
+          Core.Sb!.Begin(samplerState: SamplerState.PointClamp, effect: component.CurrentFX, transformMatrix: transformMatrix);
+          component.Draw(gameTime);
           Core.Sb.End();
         }
+      }
+      if (inBatch.Count != 0)
+      {
+        Core.Sb!.Begin(samplerState: SamplerState.PointClamp, transformMatrix: transformMatrix, effect: canvas.FX);
+        foreach (var component in inBatch)
+        {
+          component.Draw(gameTime);
+        }
+        Core.Sb.End();
       }
       canvas.End();
     }
@@ -117,10 +111,7 @@ public class Layer
 
   public void ClearDead()
   {
-    foreach (var components in componentsByZ.Values)
-    {
-      components.RemoveAll(c => c.IsDead);
-    }
+    components.RemoveAll(c => c.IsDead);
   }
 
   public void ApplyFX(string canvasName, Effect? fx)

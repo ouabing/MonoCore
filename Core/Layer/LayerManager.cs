@@ -32,14 +32,14 @@ public class LayerManager(Color backgroundColor)
     Layers[layer] = new Layer(layer, (int)layer, isCameraFixed);
   }
 
-  public void Add(Def.Layer toLayer, Component component, int? overrideZ = null)
+  public void Add(Def.Layer toLayer, Component component)
   {
     if (!Layers.TryGetValue(toLayer, out Layer? layer))
     {
       throw new KeyNotFoundException($"Layer {toLayer} not found.");
     }
 
-    layer.Add(component, overrideZ);
+    layer.Add(component);
   }
 
   public void Draw(GameTime gameTime)
