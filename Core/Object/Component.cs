@@ -29,6 +29,8 @@ public abstract class Component : IBox, IShakable
 
   public Texture2D? Texture { get; protected set; }
 
+  private bool contentLoaded;
+
   public Vector2 Origin
   {
     get
@@ -86,6 +88,11 @@ public abstract class Component : IBox, IShakable
 
   public virtual void LoadContent()
   {
+    if (contentLoaded)
+    {
+      throw new InvalidOperationException("Content already loaded");
+    }
+    contentLoaded = true;
   }
 
   public abstract void Update(GameTime gameTime);

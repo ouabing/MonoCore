@@ -22,10 +22,8 @@ public static class Core
 
   public static Vector2 ScreenCenter => new(ScreenWidth / 2, ScreenHeight / 2);
 
-  // Physics & Simulations
-  // By default there is only one world called Main
-  public static Dictionary<Def.PhysicsWorld, PhysicsWorld> PhysicsWorlds { get; } = [];
-  // Quick accessor for the default physics world
+  public static ContainerManager Container { get; } = new();
+  public static PhysicsManager Physics { get; } = new();
   public static WindSim Wind { get; } = new WindSim();
 
   public static bool DebugComponent { get; }
@@ -48,7 +46,8 @@ public static class Core
   public static GRandom Random { get; } = new GRandom();
 
   private static List<IShakable> Shakables { get; } = [];
-  private static List<Container> Containers { get; } = [];
+  private static bool contentLoaded;
+  private static bool graphicsInitialized;
 
   public static void Init(ContentManager contentManager, Game gameRoot)
   {
@@ -61,36 +60,32 @@ public static class Core
     };
     Texture = new TextureManager(contentManager);
     Effect = new EffectManager(contentManager);
-    foreach (Def.PhysicsWorld world in Enum.GetValues(typeof(Def.PhysicsWorld)))
-    {
-      CreatePhysicsWorld(world);
-    }
-
-    foreach (Def.Container name in Enum.GetValues(typeof(Def.Container)))
-    {
-      CreateContainer(name);
-    }
     Palette.SetTheme(Def.Screen.Theme);
   }
 
   public static void InitializeGraphics()
   {
+    if (graphicsInitialized)
+    {
+      throw new InvalidOperationException("Graphics already initialized");
+    }
+    graphicsInitialized = true;
+
     Graphics!.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
     Graphics!.IsFullScreen = false;
     Graphics.PreferredBackBufferWidth = TargetScreenWidth;
     Graphics.PreferredBackBufferHeight = TargetScreenHeight;
     Graphics.ApplyChanges();
-
-    foreach (Def.Layer layer in Enum.GetValues(typeof(Def.Layer)))
-    {
-      Layer.CreateLayer(layer);
-      var isCameraFixed = Def.LayerConfig.TryGetValue(layer, out var config) && config.TryGetValue("IsCameraFixed", out var isFixed) && (bool)isFixed;
-      Layer.CreateLayer(layer, isCameraFixed);
-    }
+    Layer.Initialize();
   }
 
   public static void LoadContent()
   {
+    if (contentLoaded)
+    {
+      throw new InvalidOperationException("Content already loaded");
+    }
+    contentLoaded = true;
     Input.LoadContent();
     Font.LoadContent();
     Sb = new SpriteBatch(Graphics!.GraphicsDevice);
@@ -104,11 +99,7 @@ public static class Core
   public static bool Update(GameTime gameTime)
   {
     Input.Update(gameTime);
-    foreach (var physicsWorld in PhysicsWorlds.Values)
-    {
-      physicsWorld.Update(gameTime);
-    }
-
+    Physics.Update(gameTime);
     Timer.Update(gameTime);
 
     Wind.Update(gameTime);
@@ -124,10 +115,7 @@ public static class Core
       return true;
     }
 
-    foreach (var c in Containers)
-    {
-      c.Update(gameTime);
-    }
+    Container.Update(gameTime);
 
     PostUpdate(gameTime);
 
@@ -136,43 +124,13 @@ public static class Core
 
   public static void PostUpdate(GameTime gameTime)
   {
-    foreach (var c in Containers)
-    {
-      c.PostUpdate(gameTime);
-    }
-    foreach (var physicsWorld in PhysicsWorlds.Values)
-    {
-      physicsWorld.PostUpdate(gameTime);
-    }
+    Container.PostUpdate(gameTime);
+    Physics.PostUpdate(gameTime);
   }
 
   public static void Draw(GameTime gameTime)
   {
     Layer.Draw(gameTime);
-  }
-
-  private static void CreateContainer(Def.Container Name)
-  {
-    if (Containers.Exists(c => c.Name == Name))
-    {
-      throw new ArgumentException($"Container {Name} already exists.");
-    }
-    Containers.Add(new Container(Name, (int)Name));
-    Containers.Sort((a, b) => b.Priority.CompareTo(a.Priority));
-  }
-
-  public static void AddToContainer(Def.Container Name, Component component)
-  {
-    var container = Containers.Find(c => c.Name == Name) ?? throw new ArgumentException($"Container {Name} not found.");
-
-    container.Add(component);
-  }
-
-  public static void RemoveFromContainer(Def.Container Name, Component component)
-  {
-    var container = Containers.Find(c => c.Name == Name) ?? throw new ArgumentException($"Container {Name} not found.");
-
-    container.Remove(component);
   }
 
   public static void AddShakable(IShakable shakable)
@@ -183,28 +141,5 @@ public static class Core
       return;
     }
     Shakables.Add(shakable);
-  }
-
-  public static void AddToPhysicsWorld(Def.PhysicsWorld world, IBox box)
-  {
-    GetPhysicsWorld(world).Add(box);
-  }
-
-  public static PhysicsWorld GetPhysicsWorld(Def.PhysicsWorld world)
-  {
-    if (!PhysicsWorlds.TryGetValue(world, out PhysicsWorld? value))
-    {
-      throw new KeyNotFoundException($"Physics world {world} not found.");
-    }
-    return value;
-  }
-
-  public static void CreatePhysicsWorld(Def.PhysicsWorld world)
-  {
-    if (PhysicsWorlds.ContainsKey(world))
-    {
-      throw new ArgumentException($"Physics world {world} already exists.");
-    }
-    PhysicsWorlds[world] = new PhysicsWorld();
   }
 }

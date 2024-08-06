@@ -10,14 +10,14 @@ public class DuplicateBoxException(string message) : System.Exception(message)
 public class PhysicsWorld
 {
   private readonly List<IBox> boxes = [];
-  public List<Collision> Collisions { get; private set; } = [];
-  public Dictionary<IBox, List<Collision>> IndexedCollisions { get; private set; } = [];
+  private List<Collision> Collisions { get; } = [];
+  private Dictionary<IBox, List<Collision>> IndexedCollisions { get; } = [];
 
   public void Add(IBox box)
   {
     if (boxes.Contains(box))
     {
-      throw new DuplicateBoxException("Box already exists in the world.");
+      throw new DuplicateBoxException($"Box {box} already exists in the world.");
     }
     boxes.Add(box);
   }

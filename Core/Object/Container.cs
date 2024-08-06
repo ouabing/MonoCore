@@ -7,22 +7,22 @@ public class Container(Def.Container Name, int priority)
 {
   public Def.Container Name { get; } = Name;
   public int Priority { get; } = priority;
-  private readonly List<Component> components = [];
+  private List<Component> Components { get; } = [];
 
   public void Add(Component component)
   {
     component.LoadContent();
-    components.Add(component);
+    Components.Add(component);
   }
 
   public void Remove(Component component)
   {
-    components.Remove(component);
+    Components.Remove(component);
   }
 
   public void Update(GameTime gameTime)
   {
-    foreach (var component in components)
+    foreach (var component in Components)
     {
       component.Update(gameTime);
     }
@@ -32,7 +32,7 @@ public class Container(Def.Container Name, int priority)
   public void PostUpdate(GameTime gameTime)
   {
 
-    foreach (var component in components)
+    foreach (var component in Components)
     {
       component.PostUpdate(gameTime);
     }
@@ -41,6 +41,6 @@ public class Container(Def.Container Name, int priority)
 
   public void ClearDead()
   {
-    components.RemoveAll(c => c.IsDead);
+    Components.RemoveAll(c => c.IsDead);
   }
 }

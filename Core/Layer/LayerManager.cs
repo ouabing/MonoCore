@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
@@ -15,6 +16,16 @@ public class LayerManager(Color backgroundColor)
 {
   public Color BackgroundColor { get; private set; } = backgroundColor;
   public Dictionary<Def.Layer, Layer> Layers { get; private set; } = [];
+
+  public void Initialize()
+  {
+    foreach (Def.Layer layer in Enum.GetValues(typeof(Def.Layer)))
+    {
+      CreateLayer(layer);
+      var isCameraFixed = Def.LayerConfig.TryGetValue(layer, out var config) && config.TryGetValue("IsCameraFixed", out var isFixed) && (bool)isFixed;
+      CreateLayer(layer, isCameraFixed);
+    }
+  }
 
   public void CreateLayer(Def.Layer layer, bool isCameraFixed = false)
   {

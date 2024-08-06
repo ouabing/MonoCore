@@ -19,7 +19,7 @@ public class FrameCounter : Component
     elapsed = now - last;
     if (elapsed > msgFrequency)
     {
-      msg = $"Fps: {frames / elapsed}";
+      msg = $"FPS: {frames / elapsed}";
       elapsed = 0;
       frames = 0;
       updates = 0;
@@ -30,7 +30,7 @@ public class FrameCounter : Component
 
   public override void Draw(GameTime gameTime)
   {
-    var font = Core.Font.Get(10);
+    var font = Core.Font.Get(12);
     font.DrawText(Core.Sb, msg, new Vector2(10, 10), Palette.White);
     frames++;
   }
