@@ -22,7 +22,7 @@ public abstract class Component : IBox
   public float Rotation { get; set; }
   public Vector2 Scale { get; set; } = Vector2.One;
   public bool IsDead { get; set; }
-  public bool IsVisible { get; set; } = true;
+  public float Opacity { get; set; } = 1f;
   public OriginType OriginType { get; set; } = OriginType.Center;
   public Effect? CurrentFX { get; protected set; }
 
