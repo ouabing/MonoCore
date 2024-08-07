@@ -49,4 +49,14 @@ public class Spring(float targetAmount = 0, float stiffness = 100, float damping
 
     TargetAmount = amount;
   }
+
+  public void Stop()
+  {
+    Amount = TargetAmount;
+  }
+
+  public bool IsActivated()
+  {
+    return Amount != TargetAmount;
+  }
 }

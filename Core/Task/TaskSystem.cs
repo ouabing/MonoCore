@@ -126,8 +126,9 @@ public class TaskSystem
 
   private static bool UpdateBlockingTasks(GameTime gameTime, List<Task> tasks)
   {
-    foreach (var task in tasks)
+    for (int i = 0; i < tasks.Count; i++)
     {
+      var task = tasks[i];
       if (task.IsBlocking)
       {
         task.Update(gameTime);
@@ -139,8 +140,10 @@ public class TaskSystem
 
   private static void UpdateNoneBlockingTasks(GameTime gameTime, List<Task> tasks, bool blocked)
   {
-    foreach (var task in tasks)
+    // Any task added in the loop will be updated in the next frame
+    for (int i = 0; i < tasks.Count; i++)
     {
+      var task = tasks[i];
       if (task.IsBlocking)
       {
         continue;
@@ -151,10 +154,5 @@ public class TaskSystem
       }
       task.Update(gameTime);
     }
-  }
-
-  private static void RemoveCompletedTasks(List<Task> tasks)
-  {
-    tasks.RemoveAll(task => task.IsCompleted);
   }
 }

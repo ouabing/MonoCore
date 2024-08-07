@@ -2,33 +2,30 @@ using Microsoft.Xna.Framework;
 using MonoGame.Extended;
 namespace G;
 
-public class Camera : IShakable
+public class Camera : Component
 {
   private Vector2 _position;
 #pragma warning disable CA1822 // Mark members as static
   public Vector2 InitialPosition => new(Core.ScreenWidth * 0.5f, Core.ScreenHeight * 0.5f);
 #pragma warning restore CA1822 // Mark members as static
-  public Vector2 Position
+  public override Vector2 Position
   {
     get => _position;
-    private set
+    set
     {
       PreviousPosition = _position;
       _position = value;
     }
   }
 
-  public Vector2 PreviousPosition { get; private set; }
   public float Zoom { get; set; } = 1;
-  public Vector2 Velocity { get; private set; } = new(0);
   public RectangleF Bounds { get; set; }
-  public float Rotation { get; set; }
-  public Shaker? Shaker { get; set; }
 
-  public void LoadContent()
+  public override void LoadContent()
   {
+    base.LoadContent();
     Reset();
-    Core.AddShakable(this);
+    EnableShake = true;
   }
 
   public void SetPosition(Vector2 position)
@@ -80,7 +77,7 @@ public class Camera : IShakable
            Matrix.CreateTranslation(new Vector3(Core.ScreenWidth * 0.5f, Core.ScreenHeight * 0.5f, 0f));
   }
 
-  public void Update(GameTime gameTime)
+  public override void Update(GameTime gameTime)
   {
     Position += Velocity * gameTime.GetElapsedSeconds();
     // Position = Vector2.Clamp(Position, new Vector2(Bounds.Left, Bounds.Top), new Vector2(Bounds.Right, Bounds.Bottom));

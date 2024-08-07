@@ -13,7 +13,7 @@ public class TextEffects
     {
       if (text.IsFirstFrame)
       {
-        Core.AddShakable(c);
+        Core.Animation.AddShakable(c);
         c.Shaker!.Shake(arg.Intensity, arg.Duration, arg.Frequency);
       }
     };

@@ -11,7 +11,7 @@ public enum TaskPriority
 }
 
 public class Task(string id, object actor, Func<GameTime, bool>? update = null, Action? before = null, Action? after = null
-, bool isBlockable = true, bool isBlocking = false, TaskPriority priority = 0, float attack = 0, float decay = 0, float release = 0, bool isUnique = false, bool overwrite = false, bool enableDebug = true)
+, bool isBlockable = true, bool isBlocking = false, TaskPriority priority = 0, float attack = 0, float decay = 0, float release = 0, bool isUnique = false, bool overwrite = false, bool enableDebug = false)
 {
   public string ID { get; } = id;
   public object Actor { get; } = actor;

@@ -67,6 +67,10 @@ public class Layer
       // Note the order of components in the same Z level is not guaranteed
       foreach (var component in orderedByZ)
       {
+        if (!component.IsVisible)
+        {
+          continue;
+        }
         // Draw primitives should be executed outside sprite batch
         if (component.EnableDrawPrimitives)
         {

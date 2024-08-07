@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -44,8 +43,8 @@ public static class Core
   public static PrimitiveDrawing Pd { get; private set; }
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
   public static GRandom Random { get; } = new GRandom();
+  public static AnimationManager Animation { get; } = new();
 
-  private static List<IShakable> Shakables { get; } = [];
   private static bool contentLoaded;
   private static bool graphicsInitialized;
 
@@ -92,7 +91,6 @@ public static class Core
     Pb = new PrimitiveBatch(Graphics!.GraphicsDevice);
     Pd = new PrimitiveDrawing(Pb);
     Camera.LoadContent();
-    AddShakable(Camera);
   }
 
   // Return true if the game is blocked
@@ -103,10 +101,7 @@ public static class Core
     Timer.Update(gameTime);
 
     Wind.Update(gameTime);
-    foreach (var shakable in Shakables)
-    {
-      shakable.Shaker!.Update(gameTime);
-    }
+    Animation.Update(gameTime);
 
     Camera.Update(gameTime);
 
@@ -131,15 +126,5 @@ public static class Core
   public static void Draw(GameTime gameTime)
   {
     Layer.Draw(gameTime);
-  }
-
-  public static void AddShakable(IShakable shakable)
-  {
-    shakable.CreateShaker();
-    if (Shakables.Contains(shakable))
-    {
-      return;
-    }
-    Shakables.Add(shakable);
   }
 }
