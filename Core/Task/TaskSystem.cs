@@ -107,7 +107,7 @@ public class TaskSystem
     float release = 0,
     bool isUnique = false,
     bool overwrite = false,
-    bool enableDebug = false)
+    bool enableDebug = true)
   {
     AddTask(new Task(
       id,
@@ -142,7 +142,7 @@ public class TaskSystem
     TaskPriority priority = TaskPriority.Normal,
     float attack = 0, float decay = 0, float release = 0,
     bool isUnique = false, bool overwrite = false,
-    bool enableDebug = false
+    bool enableDebug = true
   ) where TTarget : class where TMember : struct
   {
     AddTask(new TweenTask<TTarget, TMember>(

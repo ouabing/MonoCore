@@ -55,6 +55,7 @@ public class Task(
 
     if (!IsInitInvoked)
     {
+      Debug.WriteLine($"[{Core.Timer.Time}] Task:init: " + ID);
       Init?.Invoke();
       IsInitInvoked = true;
     }
@@ -69,7 +70,7 @@ public class Task(
       IsStarted = true;
       if (EnableDebug)
       {
-        Debug.WriteLine("Task:start: " + ID);
+        Debug.WriteLine($"[{Core.Timer.Time}] Task:start: " + ID);
       }
     }
     if (!IsAlmostCompleted)
@@ -98,7 +99,7 @@ public class Task(
       OnComplete?.Invoke();
       if (EnableDebug)
       {
-        Debug.WriteLine("Task:complete: " + ID);
+        Debug.WriteLine($"[{Core.Timer.Time}] Task:complete: " + ID);
       }
     }
   }

@@ -20,7 +20,7 @@ public class TweenTask<TTarget, TMember>(
   TaskPriority priority = TaskPriority.Normal,
   float attack = 0, float decay = 0, float release = 0,
   bool isUnique = false, bool overwrite = false,
-  bool enableDebug = false) :
+  bool enableDebug = true) :
   Task(id, target, update, before, after, isBlockable, isBlocking, priority, attack, decay, release, isUnique, overwrite, enableDebug), IDisposable where TTarget : class where TMember : struct
 {
 
@@ -34,11 +34,13 @@ public class TweenTask<TTarget, TMember>(
   private Func<float, float>? EasingFunction = easingFunction;
   private Tweener tweener = new();
   private bool IsTweenerStarted { get; set; }
+  private float? finishedAt;
   public override void Update(GameTime gameTime)
   {
     Debug.Assert(!IsCompleted, "TweenTask:Error:Task is already completed");
     if (!IsInitInvoked)
     {
+      Debug.WriteLine($"[{Core.Timer.Time}] Task:init: " + ID);
       Init?.Invoke();
       IsInitInvoked = true;
     }
@@ -47,10 +49,14 @@ public class TweenTask<TTarget, TMember>(
       var tween = tweener.TweenTo(Target, Expression, ToValue, Decay, Attack)
              .OnBegin((tween) =>
              {
+               if (IsStarted)
+               {
+                 return;
+               }
                IsStarted = true;
                if (EnableDebug)
                {
-                 Debug.WriteLine("TweenTask:start: " + ID + " " + ToValue);
+                 Debug.WriteLine($"[{Core.Timer.Time}] TweenTask:start: {ID}");
                }
              })
              .OnEnd((tween) =>
@@ -60,7 +66,7 @@ public class TweenTask<TTarget, TMember>(
                {
                  return;
                }
-               ElapsedTime = Attack + Decay;
+               finishedAt = (float)Core.Timer.Time;
                IsAlmostCompleted = true;
                if (Release == 0)
                {
@@ -68,7 +74,7 @@ public class TweenTask<TTarget, TMember>(
                  OnComplete?.Invoke();
                  if (EnableDebug)
                  {
-                   Debug.WriteLine("TweenTask:complete: " + ID + " " + ToValue);
+                   Debug.WriteLine($"[{Core.Timer.Time}] TweenTask:complete: {ID}");
                  }
                }
              });
@@ -105,15 +111,13 @@ public class TweenTask<TTarget, TMember>(
       tweener.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
     }
 
-    ElapsedTime += gameTime.ElapsedGameTime.TotalSeconds;
-
-    if (IsAlmostCompleted && Release != 0 && ElapsedTime >= Attack + Math.Min(Decay, ExcutionTime) + Release)
+    if (IsAlmostCompleted && Release != 0 && Core.Timer.Time >= finishedAt + Release)
     {
       IsCompleted = true;
       OnComplete?.Invoke();
       if (EnableDebug)
       {
-        Debug.WriteLine("Task:complete: " + ID);
+        Debug.WriteLine($"[{Core.Timer.Time}] Task:complete: {ID}");
       }
     }
   }
