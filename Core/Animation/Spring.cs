@@ -3,7 +3,7 @@ using MonoGame.Extended;
 
 namespace G;
 
-public class Spring(float targetAmount = 0, float stiffness = 100, float damping = 10)
+public class Spring(float targetAmount = 0, float stiffness = 200, float damping = 2)
 {
   // Spring amount
   public float Amount { get; private set; } = targetAmount;

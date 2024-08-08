@@ -68,8 +68,8 @@ public class HitFX
   public void Add(
     string name,
     float springTargetAmount = 0,
-    float springStiffness = 100,
-    float springDamping = 10,
+    float springStiffness = 200,
+    float springDamping = 2,
     float flashDuration = 0.15f
   )
   {
