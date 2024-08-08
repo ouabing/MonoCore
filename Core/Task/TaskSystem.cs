@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using Microsoft.Xna.Framework;
 
 namespace G;
@@ -89,6 +91,83 @@ public class TaskSystem
         highTasks.Add(task);
         break;
     }
+  }
+
+  public void Run(
+    string id,
+    object actor,
+    Func<GameTime, bool>? update = null,
+    Action? before = null,
+    Action? after = null,
+    bool isBlockable = true,
+    bool isBlocking = false,
+    TaskPriority priority = 0,
+    float attack = 0,
+    float decay = 0,
+    float release = 0,
+    bool isUnique = false,
+    bool overwrite = false,
+    bool enableDebug = false)
+  {
+    AddTask(new Task(
+      id,
+      actor,
+      update,
+      before,
+      after,
+      isBlockable,
+      isBlocking,
+      priority,
+      attack,
+      decay,
+      release,
+      isUnique,
+      overwrite,
+      enableDebug
+    ));
+  }
+
+  public void Tween<TTarget, TMember>(
+    string id,
+    TTarget target,
+    Expression<Func<TTarget, TMember>> expression,
+    TMember toValue,
+    bool autoReverse = false,
+    bool repeatForever = false,
+    int repeat = 0,
+    float repeatDelay = 0,
+    Func<float, float>? easingFunction = null,
+    Func<GameTime, bool>? update = null, Action? before = null, Action? after = null,
+    bool isBlockable = true, bool isBlocking = false,
+    TaskPriority priority = TaskPriority.Normal,
+    float attack = 0, float decay = 0, float release = 0,
+    bool isUnique = false, bool overwrite = false,
+    bool enableDebug = false
+  ) where TTarget : class where TMember : struct
+  {
+    AddTask(new TweenTask<TTarget, TMember>(
+      id,
+      target,
+      expression,
+      toValue,
+      autoReverse,
+      repeatForever,
+      repeat,
+      repeatDelay,
+      easingFunction,
+      update,
+      before,
+      after,
+      isBlockable,
+      isBlocking,
+      priority,
+      attack,
+      decay,
+      release,
+      isUnique,
+      overwrite,
+      enableDebug
+    ));
   }
 
   public void Delay(float seconds)
