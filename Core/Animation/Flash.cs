@@ -7,7 +7,7 @@ public class Flash(float duration = 0.15f)
 {
   private float Duration = duration;
   private float? Timer;
-  public bool IsVisible { get; private set; }
+  public bool IsVisible { get; private set; } = true;
 
   public void Update(GameTime gameTime)
   {
