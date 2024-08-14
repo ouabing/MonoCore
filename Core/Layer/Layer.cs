@@ -72,7 +72,7 @@ public class Layer
           continue;
         }
         // Draw primitives should be executed outside sprite batch
-        if (component.EnableDrawPrimitives)
+        if (component.EnablePrimitiveBatch)
         {
           var matrix = Matrix.CreateOrthographicOffCenter(0, Core.ScreenWidth, Core.ScreenHeight, 0, 0, 1);
           var view = IsCameraFixed ? Matrix.Identity : Core.Camera.GetMatrix();
@@ -83,21 +83,28 @@ public class Layer
             ref matrix,
             ref view
           );
-          component.DrawPrimitives(gameTime);
+          component.Draw(gameTime);
           Core.Pb.End();
         }
-
-        // DrawPrimitives and Draw will both be executed
-        if (component.CurrentFX == null)
+        else if (component.EnableSpriteBatch)
         {
-          inBatch.Add(component);
+          // DrawPrimitives and Draw will both be executed
+          if (component.CurrentFX == null)
+          {
+            inBatch.Add(component);
+          }
+          else
+          {
+            // Component.CurrentEffect will override the canvas's default effect
+            Core.Sb!.Begin(samplerState: SamplerState.PointClamp, effect: component.CurrentFX, transformMatrix: transformMatrix);
+            component.Draw(gameTime);
+            Core.Sb.End();
+          }
         }
         else
         {
-          // Component.CurrentEffect will override the canvas's default effect
-          Core.Sb!.Begin(samplerState: SamplerState.PointClamp, effect: component.CurrentFX, transformMatrix: transformMatrix);
+          Core.GraphicsDevice.RasterizerState = RasterizerState.CullNone;
           component.Draw(gameTime);
-          Core.Sb.End();
         }
       }
       if (inBatch.Count != 0)

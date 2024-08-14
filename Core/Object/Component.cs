@@ -27,7 +27,8 @@ public abstract class Component : IBox
   public Effect? CurrentFX { get; protected set; }
 
   // Set this to true if you want to draw primitives
-  public bool EnableDrawPrimitives { get; protected set; }
+  public bool EnablePrimitiveBatch { get; protected set; }
+  public bool EnableSpriteBatch { get; protected set; } = true;
   public int Z { get; set; }
 
   public Texture2D? Texture { get; protected set; }
@@ -142,10 +143,6 @@ public abstract class Component : IBox
 
   public abstract void Update(GameTime gameTime);
   public virtual void PostUpdate(GameTime gameTime)
-  {
-  }
-
-  public virtual void DrawPrimitives(GameTime gameTime)
   {
   }
 
