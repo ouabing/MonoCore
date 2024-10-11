@@ -22,8 +22,9 @@ public class Container(Def.Container Name, int priority)
 
   public void Update(GameTime gameTime)
   {
-    foreach (var component in Components)
+    for (int i = 0; i < Components.Count; i++)
     {
+      var component = Components[i];
       component.Update(gameTime);
     }
     ClearDead();
@@ -32,8 +33,9 @@ public class Container(Def.Container Name, int priority)
   public void PostUpdate(GameTime gameTime)
   {
 
-    foreach (var component in Components)
+    for (int i = 0; i < Components.Count; i++)
     {
+      var component = Components[i];
       component.PostUpdate(gameTime);
     }
     ClearDead();

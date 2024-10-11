@@ -88,7 +88,6 @@ public class Layer
         }
         else if (component.EnableSpriteBatch)
         {
-          // DrawPrimitives and Draw will both be executed
           if (component.CurrentFX == null)
           {
             inBatch.Add(component);
