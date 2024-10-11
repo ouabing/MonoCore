@@ -209,21 +209,21 @@ public class InputManager
       case "MouseRightReleased":
         return previousMouse.RightButton == ButtonState.Pressed && mouse.RightButton != ButtonState.Pressed;
       case "StickLeftX-":
-        return gamepad.ThumbSticks.Left.X < 0.5f;
+        return gamepad.IsConnected && gamepad.ThumbSticks.Left.X < -0.5f;
       case "StickLeftX+":
-        return gamepad.ThumbSticks.Left.X > 0.5f;
+        return gamepad.IsConnected && gamepad.ThumbSticks.Left.X > 0.5f;
       case "StickLeftY-":
-        return gamepad.ThumbSticks.Left.Y < 0.5f;
+        return gamepad.IsConnected && gamepad.ThumbSticks.Left.Y < 0.5f;
       case "StickLeftY+":
-        return gamepad.ThumbSticks.Left.Y > 0.5f;
+        return gamepad.IsConnected && gamepad.ThumbSticks.Left.Y > 0.5f;
       case "StickRightX-":
-        return gamepad.ThumbSticks.Right.X < 0.5f;
+        return gamepad.IsConnected && gamepad.ThumbSticks.Right.X < 0.5f;
       case "StickRightX+":
-        return gamepad.ThumbSticks.Right.X > 0.5f;
+        return gamepad.IsConnected && gamepad.ThumbSticks.Right.X > 0.5f;
       case "StickRightY-":
-        return gamepad.ThumbSticks.Right.Y < 0.5f;
+        return gamepad.IsConnected && gamepad.ThumbSticks.Right.Y < 0.5f;
       case "StickRightY+":
-        return gamepad.ThumbSticks.Right.Y > 0.5f;
+        return gamepad.IsConnected && gamepad.ThumbSticks.Right.Y > 0.5f;
     }
     throw new NotImplementedException($"Key {key} not implemented");
   }
