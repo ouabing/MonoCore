@@ -126,14 +126,58 @@ public class InputManager
     var gamepad = GamePad.GetState(PlayerIndex.One);
     switch (key)
     {
-      case "W":
-        return Keyboard.GetState().IsKeyDown(Keys.W);
       case "A":
         return Keyboard.GetState().IsKeyDown(Keys.A);
-      case "S":
-        return Keyboard.GetState().IsKeyDown(Keys.S);
+      case "B":
+        return Keyboard.GetState().IsKeyDown(Keys.B);
+      case "C":
+        return Keyboard.GetState().IsKeyDown(Keys.C);
       case "D":
         return Keyboard.GetState().IsKeyDown(Keys.D);
+      case "E":
+        return Keyboard.GetState().IsKeyDown(Keys.E);
+      case "F":
+        return Keyboard.GetState().IsKeyDown(Keys.F);
+      case "G":
+        return Keyboard.GetState().IsKeyDown(Keys.G);
+      case "H":
+        return Keyboard.GetState().IsKeyDown(Keys.H);
+      case "I":
+        return Keyboard.GetState().IsKeyDown(Keys.I);
+      case "J":
+        return Keyboard.GetState().IsKeyDown(Keys.J);
+      case "K":
+        return Keyboard.GetState().IsKeyDown(Keys.K);
+      case "L":
+        return Keyboard.GetState().IsKeyDown(Keys.L);
+      case "M":
+        return Keyboard.GetState().IsKeyDown(Keys.M);
+      case "N":
+        return Keyboard.GetState().IsKeyDown(Keys.N);
+      case "O":
+        return Keyboard.GetState().IsKeyDown(Keys.O);
+      case "P":
+        return Keyboard.GetState().IsKeyDown(Keys.P);
+      case "Q":
+        return Keyboard.GetState().IsKeyDown(Keys.Q);
+      case "R":
+        return Keyboard.GetState().IsKeyDown(Keys.R);
+      case "S":
+        return Keyboard.GetState().IsKeyDown(Keys.S);
+      case "T":
+        return Keyboard.GetState().IsKeyDown(Keys.T);
+      case "U":
+        return Keyboard.GetState().IsKeyDown(Keys.U);
+      case "V":
+        return Keyboard.GetState().IsKeyDown(Keys.V);
+      case "W":
+        return Keyboard.GetState().IsKeyDown(Keys.W);
+      case "X":
+        return Keyboard.GetState().IsKeyDown(Keys.X);
+      case "Y":
+        return Keyboard.GetState().IsKeyDown(Keys.Y);
+      case "Z":
+        return Keyboard.GetState().IsKeyDown(Keys.Z);
       case "Space":
         return Keyboard.GetState().IsKeyDown(Keys.Space);
       case "Enter":
