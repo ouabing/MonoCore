@@ -15,7 +15,6 @@ public static class Core
   public static int TargetScreenHeight { get; } = Def.Screen.TargetScreenHeight;
   public static int ScreenWidth { get; } = Def.Screen.ScreenWidth;
   public static int ScreenHeight { get; } = Def.Screen.ScreenHeight;
-  public static int PPU { get; } = Def.Screen.PPU;
 
   #endregion  Customizable section
 

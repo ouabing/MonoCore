@@ -23,7 +23,6 @@ public class Def
     public static readonly int TargetScreenHeight = 768;
     public static readonly int ScreenWidth = 480;
     public static readonly int ScreenHeight = 256;
-    public static readonly int PPU = 16;
   }
 
   // Container for update component group
