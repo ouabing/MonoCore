@@ -7,6 +7,7 @@ public class Container(Def.Container Name, int priority)
 {
   public Def.Container Name { get; } = Name;
   public int Priority { get; } = priority;
+  public bool Pause { get; set; }
   private List<Component> Components { get; } = [];
 
   public void Add(Component component)
@@ -22,6 +23,11 @@ public class Container(Def.Container Name, int priority)
 
   public void Update(GameTime gameTime)
   {
+    if (Pause)
+    {
+      return;
+    }
+
     for (int i = 0; i < Components.Count; i++)
     {
       var component = Components[i];
@@ -32,6 +38,10 @@ public class Container(Def.Container Name, int priority)
 
   public void PostUpdate(GameTime gameTime)
   {
+    if (Pause)
+    {
+      return;
+    }
 
     for (int i = 0; i < Components.Count; i++)
     {

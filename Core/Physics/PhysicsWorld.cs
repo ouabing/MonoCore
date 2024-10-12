@@ -11,6 +11,7 @@ public class DuplicateBoxException(string message) : System.Exception(message)
 
 public class PhysicsWorld
 {
+  public bool Pause { get; set; }
   private readonly List<IBox> boxes = [];
   private List<Collision> Collisions { get; } = [];
   private Dictionary<IBox, List<Collision>> IndexedCollisions { get; } = [];
@@ -31,6 +32,10 @@ public class PhysicsWorld
 
   public void Update(GameTime gameTime)
   {
+    if (Pause)
+    {
+      return;
+    }
     for (int i = 0; i < boxes.Count; i++)
     {
       boxes[i].UpdatePhysics(gameTime);
@@ -55,7 +60,7 @@ public class PhysicsWorld
 
   public List<Collision> GetCollisions(IBox box)
   {
-    return IndexedCollisions[box] ?? [];
+    return IndexedCollisions.GetValueOrDefault(box, []);
   }
 
   private void CheckCollision(IBox a, IBox b)

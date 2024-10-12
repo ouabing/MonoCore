@@ -30,6 +30,11 @@ public class PhysicsManager
     GetWorld(world).Add(box);
   }
 
+  public void Remove(Def.PhysicsWorld world, IBox box)
+  {
+    GetWorld(world).Remove(box);
+  }
+
   public List<Collision> GetCollisions(Def.PhysicsWorld world, IBox box)
   {
     return GetWorld(world).GetCollisions(box);
