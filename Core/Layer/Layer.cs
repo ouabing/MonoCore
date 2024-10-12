@@ -51,6 +51,15 @@ public class Layer
     components.Add(component);
   }
 
+  public void Remove(Component component)
+  {
+    if (components.FindIndex(x => x == component) == -1)
+    {
+      return;
+    }
+    components.Remove(component);
+  }
+
   public void Draw(GameTime gameTime)
   {
     if (Canvases.Count == 0)

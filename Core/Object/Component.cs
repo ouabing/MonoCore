@@ -136,7 +136,7 @@ public abstract class Component : IBox
   {
     if (contentLoaded)
     {
-      throw new InvalidOperationException("Content already loaded");
+      return;
     }
     contentLoaded = true;
   }

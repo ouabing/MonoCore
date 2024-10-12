@@ -224,6 +224,14 @@ public class InputManager
         return gamepad.IsConnected && gamepad.ThumbSticks.Right.Y < 0.5f;
       case "StickRightY+":
         return gamepad.IsConnected && gamepad.ThumbSticks.Right.Y > 0.5f;
+      case "ButtonAPressed":
+        return gamepad.IsConnected && gamepad.Buttons.A == ButtonState.Pressed;
+      case "ButtonBPressed":
+        return gamepad.IsConnected && gamepad.Buttons.B == ButtonState.Pressed;
+      case "ButtonXPressed":
+        return gamepad.IsConnected && gamepad.Buttons.X == ButtonState.Pressed;
+      case "ButtonYPressed":
+        return gamepad.IsConnected && gamepad.Buttons.Y == ButtonState.Pressed;
     }
     throw new NotImplementedException($"Key {key} not implemented");
   }

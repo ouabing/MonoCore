@@ -25,6 +25,16 @@ public class PhysicsManager
     return value;
   }
 
+  public void Pause(Def.PhysicsWorld world)
+  {
+    GetWorld(world).Pause = true;
+  }
+
+  public void Resume(Def.PhysicsWorld world)
+  {
+    GetWorld(world).Pause = false;
+  }
+
   public void Add(Def.PhysicsWorld world, IBox box)
   {
     GetWorld(world).Add(box);

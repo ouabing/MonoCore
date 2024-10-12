@@ -16,26 +16,38 @@ public class ContainerManager
     }
   }
 
-  public void CreateContainer(Def.Container Name)
+  public void CreateContainer(Def.Container name)
   {
-    if (Containers.Exists(c => c.Name == Name))
+    if (Containers.Exists(c => c.Name == name))
     {
-      throw new ArgumentException($"Container {Name} already exists.");
+      throw new ArgumentException($"Container {name} already exists.");
     }
-    Containers.Add(new Container(Name, (int)Name));
+    Containers.Add(new Container(name, (int)name));
     Containers.Sort((a, b) => b.Priority.CompareTo(a.Priority));
   }
 
-  public void Add(Def.Container Name, Component component)
+  public void Pause(Def.Container name)
   {
-    var container = Containers.Find(c => c.Name == Name) ?? throw new ArgumentException($"Container {Name} not found.");
+    var container = Containers.Find(c => c.Name == name) ?? throw new ArgumentException($"Container {name} not found.");
+    container.Pause = true;
+  }
+
+  public void Resume(Def.Container name)
+  {
+    var container = Containers.Find(c => c.Name == name) ?? throw new ArgumentException($"Container {name} not found.");
+    container.Pause = false;
+  }
+
+  public void Add(Def.Container name, Component component)
+  {
+    var container = Containers.Find(c => c.Name == name) ?? throw new ArgumentException($"Container {name} not found.");
 
     container.Add(component);
   }
 
-  public void Remove(Def.Container Name, Component component)
+  public void Remove(Def.Container name, Component component)
   {
-    var container = Containers.Find(c => c.Name == Name) ?? throw new ArgumentException($"Container {Name} not found.");
+    var container = Containers.Find(c => c.Name == name) ?? throw new ArgumentException($"Container {name} not found.");
 
     container.Remove(component);
   }

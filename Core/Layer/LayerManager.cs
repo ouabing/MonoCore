@@ -42,6 +42,16 @@ public class LayerManager(Color backgroundColor)
     layer.Add(component);
   }
 
+  public void Remove(Def.Layer toLayer, Component component)
+  {
+    if (!Layers.TryGetValue(toLayer, out Layer? layer))
+    {
+      throw new KeyNotFoundException($"Layer {toLayer} not found.");
+    }
+
+    layer.Remove(component);
+  }
+
   public void Draw(GameTime gameTime)
   {
     var layers = Layers.Values.OrderBy(layer => layer.Z).Reverse();
