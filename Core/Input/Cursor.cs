@@ -11,7 +11,7 @@ public abstract class Cursor : IBox
 
   public Vector2 PreviousPosition => Core.Input.PreviousCursorWorldPosition;
   public Vector2 Velocity => Vector2.Zero;
-  public RectangleF Box => new(0, 0, 1, 1);
+  public BaseShape Shape => new ShapeRectangle(new RectangleF(0, 0, 1, 1));
 
   public abstract void OnCollision(Collision collision, IBox opponent);
 

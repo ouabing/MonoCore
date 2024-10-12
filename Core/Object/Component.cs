@@ -10,6 +10,7 @@ public enum OriginType { TopLeft, Center }
 
 public abstract class Component : IBox
 {
+  public virtual BaseShape Shape { get; set; } = new ShapeRectangle(new RectangleF(0, 0, 0, 0));
   public virtual Vector2 Position { get; set; }
   // The offset is use to draw the object at a different position than the actual position.
   // Will not affect the collision box.
@@ -18,7 +19,6 @@ public abstract class Component : IBox
   public virtual Vector2 Velocity { get; set; }
   public Vector2 Size { get; set; }
   public int FontSize { get; set; }
-  public virtual RectangleF Box { get; set; }
   public float Rotation { get; set; }
   public Vector2 Scale { get; set; } = Vector2.One;
   public bool IsDead { get; set; }
@@ -150,13 +150,10 @@ public abstract class Component : IBox
   {
     if (Core.DebugComponent)
     {
-      if (Box.Width > 0 && Box.Height > 0)
-      {
 #pragma warning disable CA1859 // Use concrete types when possible for improved performance
-        IBox box = this;
+      IBox box = this;
 #pragma warning restore CA1859 // Use concrete types when possible for improved performance
-        box.DrawBox(gameTime);
-      }
+      box.DrawBox(gameTime);
       var font = Core.Font.Get(10);
       font.DrawText(Core.Sb, $"({(int)Position.X},{(int)Position.Y})", TopLeft, Palette.White);
     }

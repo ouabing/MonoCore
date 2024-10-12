@@ -25,7 +25,7 @@ public class Def
     public static readonly int ScreenHeight = 256;
   }
 
-  // Container for update component group
+  // Container for updating component group
   public enum Container
   {
     Scene = 1,
@@ -39,7 +39,7 @@ public class Def
     Main = 1
   }
 
-  // Layer for draws components
+  // Layer for drawing components
   public enum Layer
   {
     DevUI = 0,

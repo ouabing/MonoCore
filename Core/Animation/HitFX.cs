@@ -7,7 +7,7 @@ public class HitFX
 {
   public HitFX()
   {
-    Add("Main", 1);
+    Add("Main", 0);
   }
 
   private Dictionary<string, Spring> springs { get; } = [];

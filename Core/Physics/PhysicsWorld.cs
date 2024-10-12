@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
+using MonoGame.Extended;
 
 namespace G;
 
@@ -58,7 +60,31 @@ public class PhysicsWorld
 
   private void CheckCollision(IBox a, IBox b)
   {
-    if (!a.BoxAbs.Intersects(b.BoxAbs))
+    var hasCollision = false;
+    if (a.Shape.Type == ShapeType.Circle)
+    {
+      if (b.Shape.Type == ShapeType.Circle)
+      {
+        hasCollision = CheckCollisionCircleCircle(a, b);
+      }
+      else if (b.Shape.Type == ShapeType.Rectangle)
+      {
+        hasCollision = CheckCollisionCircleRectangle(a, b);
+      }
+    }
+    else if (a.Shape.Type == ShapeType.Rectangle)
+    {
+      if (b.Shape.Type == ShapeType.Circle)
+      {
+        hasCollision = CheckCollisionCircleRectangle(b, a);
+      }
+      else if (b.Shape.Type == ShapeType.Rectangle)
+      {
+        hasCollision = CheckCollisionRectangleRectangle(b, a);
+      }
+    }
+
+    if (!hasCollision)
     {
       return;
     }
@@ -67,6 +93,46 @@ public class PhysicsWorld
     SaveCollision(collision);
     a.OnCollision(collision, b);
     b.OnCollision(collision, a);
+  }
+
+  private static bool CheckCollisionCircleCircle(IBox a, IBox b)
+  {
+    var shapeA = a.Shape as ShapeCircle;
+    var shapeB = b.Shape as ShapeCircle;
+    var circleAAbs = new CircleF(shapeA!.Circle.Center + a.Position, shapeA.Circle.Radius);
+    var circleBAbs = new CircleF(shapeB!.Circle.Center + a.Position, shapeB.Circle.Radius);
+
+    return Vector2.Distance(circleAAbs.Center, circleBAbs.Center) <= circleAAbs.Radius + circleBAbs.Radius;
+  }
+
+  private static bool CheckCollisionCircleRectangle(IBox a, IBox b)
+  {
+    var shapeA = a.Shape as ShapeCircle;
+    var shapeB = b.Shape as ShapeRectangle;
+
+    var circleAAbs = new CircleF(shapeA!.Circle.Center + a.Position, shapeA.Circle.Radius);
+    var rectBAbs = new RectangleF(shapeB!.Rectangle.X + b.Position.X, shapeB.Rectangle.Y + b.Position.Y, shapeB.Rectangle.Width, shapeB.Rectangle.Height);
+
+    float closestX = Math.Max(
+      rectBAbs.Left,
+      Math.Min(circleAAbs.Center.X, rectBAbs.Right)
+    );
+    float closestY = Math.Max(rectBAbs.Top, Math.Min(circleAAbs.Center.Y, rectBAbs.Bottom));
+
+    float distanceX = circleAAbs.Center.X - closestX;
+    float distanceY = circleAAbs.Center.Y - closestY;
+    float distanceSquared = (distanceX * distanceX) + (distanceY * distanceY);
+
+    return distanceSquared <= (circleAAbs.Radius * circleAAbs.Radius);
+  }
+
+  private static bool CheckCollisionRectangleRectangle(IBox a, IBox b)
+  {
+    var shapeA = a.Shape as ShapeRectangle;
+    var shapeAAbs = new RectangleF(shapeA!.Rectangle.X + a.Position.X, shapeA.Rectangle.Y + a.Position.Y, shapeA.Rectangle.Width, shapeA.Rectangle.Height);
+    var shapeB = b.Shape as ShapeRectangle;
+    var shapeBAbs = new RectangleF(shapeB!.Rectangle.X + b.Position.X, shapeB.Rectangle.Y + b.Position.Y, shapeB.Rectangle.Width, shapeB.Rectangle.Height);
+    return shapeAAbs.Intersects(shapeBAbs);
   }
 
   private void SaveCollision(Collision collision)

@@ -6,14 +6,11 @@ namespace G;
 public interface IBox
 {
   public bool IsDead { get; set; }
+  public abstract BaseShape Shape { get; }
   public abstract Vector2 Position { get; }
   public abstract Vector2 Origin { get; }
   public abstract Vector2 PreviousPosition { get; }
   public abstract Vector2 Velocity { get; }
-
-  // Relative to the Position.
-  public abstract RectangleF Box { get; }
-  public RectangleF BoxAbs => new(Box.Position.X + Position.X, Box.Position.Y + Position.Y, Box.Width, Box.Height);
 
   public abstract void UpdatePhysics(GameTime gameTime);
 
@@ -21,6 +18,22 @@ public interface IBox
 
   public virtual void DrawBox(GameTime gameTime)
   {
-    Core.Sb.DrawRectangle(BoxAbs, Color.Red, 1);
+    if (Shape is ShapeRectangle rect)
+    {
+      if (rect.Rectangle.Width == 0 || rect.Rectangle.Height == 0)
+      {
+        return;
+      }
+      var boxAbs = new RectangleF(rect.Rectangle.X + Position.X, rect.Rectangle.Y + Position.Y, rect.Rectangle.Width, rect.Rectangle.Height);
+      Core.Sb.DrawRectangle(boxAbs, Color.Red, 1);
+    }
+    else if (Shape is ShapeCircle circle)
+    {
+      if (circle.Circle.Radius == 0)
+      {
+        return;
+      }
+      Core.Sb.DrawCircle(circle.Circle, 16, Color.Red, 1);
+    }
   }
 }
