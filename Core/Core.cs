@@ -24,7 +24,7 @@ public static class Core
   public static PhysicsManager Physics { get; } = new();
   public static WindSim Wind { get; } = new WindSim();
 
-  public static bool DebugComponent { get; }
+  public static bool DebugComponent { get; set; }
   public static Camera Camera { get; } = new Camera();
   public static LayerManager Layer { get; } = new LayerManager(Def.Screen.BackgroundColor);
   public static Timer Timer { get; } = new Timer();

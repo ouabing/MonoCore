@@ -29,9 +29,9 @@ public class PhysicsWorld
 
   public void Update(GameTime gameTime)
   {
-    foreach (var box in boxes)
+    for (int i = 0; i < boxes.Count; i++)
     {
-      box.UpdatePhysics(gameTime);
+      boxes[i].UpdatePhysics(gameTime);
     }
 
     for (int i = 0; i < boxes.Count; i++)

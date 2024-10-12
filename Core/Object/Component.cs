@@ -168,8 +168,8 @@ public abstract class Component : IBox
 
   public virtual void UpdatePhysics(GameTime gameTime)
   {
-    PreviousPosition = Position;
-    Position += Velocity * (float)gameTime.ElapsedGameTime.TotalSeconds;
+    // PreviousPosition = Position;
+    // Position += Velocity * (float)gameTime.ElapsedGameTime.TotalSeconds;
   }
 
   public virtual void Die()
