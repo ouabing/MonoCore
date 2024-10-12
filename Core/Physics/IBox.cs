@@ -33,7 +33,8 @@ public interface IBox
       {
         return;
       }
-      Core.Sb.DrawCircle(circle.Circle, 16, Color.Red, 1);
+      var circleAbs = new CircleF(circle.Circle.Position + Position, circle.Circle.Radius);
+      Core.Sb.DrawCircle(circleAbs, 16, Color.Red, 1);
     }
   }
 }
