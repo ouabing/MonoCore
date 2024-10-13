@@ -18,7 +18,6 @@ public abstract class Component : IBox
   public virtual Vector2 PreviousPosition { get; set; }
   public virtual Vector2 Velocity { get; set; }
   public Vector2 Size { get; set; }
-  public int FontSize { get; set; }
   public float Rotation { get; set; }
   public Vector2 Scale { get; set; } = Vector2.One;
   public bool IsDead { get; set; }
