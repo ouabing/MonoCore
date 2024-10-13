@@ -8,6 +8,8 @@ public abstract class Cursor : IBox
   public bool IsDead { get; set; }
   public Vector2 Position => Core.Input.CursorWorldPosition;
   public Vector2 Origin { get; } = Vector2.Zero;
+  public float Rotation { get; }
+  public Vector2 Scale { get; } = new Vector2(1);
 
   public Vector2 PreviousPosition => Core.Input.PreviousCursorWorldPosition;
   public Vector2 Velocity => Vector2.Zero;

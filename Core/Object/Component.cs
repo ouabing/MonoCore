@@ -6,7 +6,7 @@ using MonoGame.Extended;
 
 namespace G;
 
-public enum OriginType { TopLeft, Center }
+public enum OriginType { TopLeft, Center, Custom }
 
 public abstract class Component : IBox
 {
@@ -75,6 +75,7 @@ public abstract class Component : IBox
   public HitFX? HitFX { get; protected set; }
 
   private bool contentLoaded;
+  private Vector2 customOrigin;
 
   public Vector2 Origin
   {
@@ -84,52 +85,29 @@ public abstract class Component : IBox
       {
         OriginType.TopLeft => Vector2.Zero,
         OriginType.Center => Size / 2f,
+        OriginType.Custom => customOrigin,
         _ => throw new NotImplementedException(),
       };
     }
+    set
+    {
+      if (OriginType == OriginType.Custom)
+      {
+        customOrigin = value;
+      }
+      else
+      {
+        throw new InvalidOperationException("OriginType must be set to Custom to set a custom origin.");
+      }
+    }
   }
 
-  public Vector2 TopLeft => OriginType switch
-  {
-    OriginType.TopLeft => Position,
-    OriginType.Center => Position - Size / 2f,
-    _ => throw new NotImplementedException()
-  };
-
-  public Vector2 TopRight => OriginType switch
-  {
-    OriginType.TopLeft => new Vector2(Position.X + Size.X, Position.Y),
-    OriginType.Center => new Vector2(Position.X + Size.X / 2f, Position.Y - Size.Y / 2f),
-    _ => throw new NotImplementedException()
-  };
-
-  public Vector2 BottomLeft => OriginType switch
-  {
-    OriginType.TopLeft => Position + new Vector2(0, Size.Y),
-    OriginType.Center => new Vector2(Position.X - Size.X / 2f, Position.Y + Size.Y / 2f),
-    _ => throw new NotImplementedException()
-  };
-
-  public Vector2 BottomRight => OriginType switch
-  {
-    OriginType.TopLeft => Position + Size,
-    OriginType.Center => new Vector2(Position.X + Size.X / 2f, Position.Y + Size.Y / 2f),
-    _ => throw new NotImplementedException()
-  };
-
-  public Vector2 Center => OriginType switch
-  {
-    OriginType.TopLeft => Position + Size / 2f,
-    OriginType.Center => Position,
-    _ => throw new NotImplementedException()
-  };
-
-  public Vector2 BottomCenter => OriginType switch
-  {
-    OriginType.TopLeft => Position + new Vector2(Size.X / 2, Size.Y),
-    OriginType.Center => Position + new Vector2(0, Size.Y / 2),
-    _ => throw new NotImplementedException()
-  };
+  public Vector2 TopLeft => Position - Origin;
+  public Vector2 TopRight => Position + new Vector2(Size.X, 0) - Origin;
+  public Vector2 BottomLeft => Position + new Vector2(0, Size.Y) - Origin;
+  public Vector2 BottomRight => Position + Size - Origin;
+  public Vector2 Center => Position + Size / 2f - Origin;
+  public Vector2 BottomCenter => Position + new Vector2(Size.X / 2, Size.Y) - Origin;
 
   public virtual void LoadContent()
   {

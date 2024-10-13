@@ -1,5 +1,6 @@
 using Microsoft.Xna.Framework;
 using MonoGame.Extended;
+using MonoGame.Extended.Shapes;
 
 namespace G;
 
@@ -8,7 +9,8 @@ public interface IBox
   public bool IsDead { get; set; }
   public abstract BaseShape Shape { get; }
   public abstract Vector2 Position { get; }
-  public abstract Vector2 Origin { get; }
+  public abstract float Rotation { get; }
+  public abstract Vector2 Scale { get; }
   public abstract Vector2 PreviousPosition { get; }
   public abstract Vector2 Velocity { get; }
 
@@ -24,8 +26,7 @@ public interface IBox
       {
         return;
       }
-      var boxAbs = new RectangleF(rect.Rectangle.X + Position.X, rect.Rectangle.Y + Position.Y, rect.Rectangle.Width, rect.Rectangle.Height);
-      Core.Sb.DrawRectangle(boxAbs, Color.Red, 1);
+      Core.Sb.DrawPolygon(Vector2.Zero, new Polygon(rect.GetTransformedRectangleVertices(Position, Scale, Rotation)), Color.Red, 1);
     }
     else if (Shape is ShapeCircle circle)
     {
@@ -33,7 +34,7 @@ public interface IBox
       {
         return;
       }
-      var circleAbs = new CircleF(circle.Circle.Position + Position, circle.Circle.Radius);
+      var circleAbs = circle.GetTransformedCircle(Position, Scale);
       Core.Sb.DrawCircle(circleAbs, 16, Color.Red, 1);
     }
   }
