@@ -38,6 +38,15 @@ public class TweenTask<TTarget, TMember>(
   public override void Update(GameTime gameTime)
   {
     Debug.Assert(!IsCompleted, "TweenTask:Error:Task is already completed");
+
+    if (Actor is Component component)
+    {
+      if (component.IsDead)
+      {
+        return;
+      }
+    }
+
     if (!IsInitInvoked)
     {
       Debug.WriteLine($"[{Core.Timer.Time}] Task:init: " + ID);

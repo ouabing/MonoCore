@@ -53,6 +53,14 @@ public class Task(
     Debug.Assert(!IsCompleted, "Task is already completed");
     ElapsedTime += gameTime.ElapsedGameTime.TotalSeconds;
 
+    if (Actor is Component component)
+    {
+      if (component.IsDead)
+      {
+        return;
+      }
+    }
+
     if (!IsInitInvoked)
     {
       Debug.WriteLine($"[{Core.Timer.Time}] Task:init: " + ID);
