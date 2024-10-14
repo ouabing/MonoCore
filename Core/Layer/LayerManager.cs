@@ -19,7 +19,7 @@ public class LayerManager(Color backgroundColor)
 
   public void Initialize()
   {
-    foreach (Def.Layer layer in Enum.GetValues(typeof(Def.Layer)))
+    foreach (Def.Layer layer in Enum.GetValues<Def.Layer>())
     {
       CreateLayer(layer);
       var isCameraFixed = Def.LayerConfig.TryGetValue(layer, out var config) && config.TryGetValue("IsCameraFixed", out var isFixed) && (bool)isFixed;

@@ -10,7 +10,7 @@ public class PhysicsManager
 
   public PhysicsManager()
   {
-    foreach (Def.PhysicsWorld world in Enum.GetValues(typeof(Def.PhysicsWorld)))
+    foreach (Def.PhysicsWorld world in Enum.GetValues<Def.PhysicsWorld>())
     {
       CreateWorld(world);
     }

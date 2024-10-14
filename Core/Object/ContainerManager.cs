@@ -10,7 +10,7 @@ public class ContainerManager
 
   public ContainerManager()
   {
-    foreach (Def.Container name in Enum.GetValues(typeof(Def.Container)))
+    foreach (Def.Container name in Enum.GetValues<Def.Container>())
     {
       CreateContainer(name);
     }
