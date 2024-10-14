@@ -39,7 +39,7 @@ public class FontManager : IDisposable
       };
       var system = new FontSystem(settings);
       fontSystems[name] = system;
-      system.AddFont(File.ReadAllBytes(path));
+      system.AddFont(File.ReadAllBytes(Path.Combine(AppContext.BaseDirectory, path)));
     }
   }
 
