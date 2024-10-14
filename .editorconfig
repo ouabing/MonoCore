@@ -1,5 +1,4 @@
-# see https://github.com/CppCXY/EmmyLuaCodeStyle
-[*.lua]
+[*.{cs,vb}]
 # [basic]
 
 # optional space/tab
@@ -168,7 +167,6 @@ remove_call_expression_list_finish_comma = false
 # keep / always / same_line / replace_with_newline / never
 end_statement_with_semicolon = keep
 
-[*.{cs,vb}]
 dotnet_diagnostic.IDE0005.severity = error
 dotnet_diagnostic.CA1852.severity = none
 dotnet_sort_system_directives_first = true
