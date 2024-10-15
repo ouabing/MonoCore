@@ -45,7 +45,7 @@ public class PhysicsWorld
     {
       for (int j = i + 1; j < boxes.Count; j++)
       {
-        CheckCollision(boxes[i], boxes[j]);
+        CheckCollision(gameTime, boxes[i], boxes[j]);
       }
     }
     ClearDead();
@@ -63,7 +63,7 @@ public class PhysicsWorld
     return IndexedCollisions.GetValueOrDefault(box, []);
   }
 
-  private void CheckCollision(IBox a, IBox b)
+  private void CheckCollision(GameTime gameTime, IBox a, IBox b)
   {
     var hasCollision = false;
     if (a.Shape.Type == ShapeType.Circle)
@@ -96,8 +96,8 @@ public class PhysicsWorld
 
     var collision = new Collision(a, b);
     SaveCollision(collision);
-    a.OnCollision(collision, b);
-    b.OnCollision(collision, a);
+    a.OnCollision(gameTime, collision, b);
+    b.OnCollision(gameTime, collision, a);
   }
 
   private static bool CheckCollisionCircleCircle(IBox a, IBox b)

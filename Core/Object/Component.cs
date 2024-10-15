@@ -136,7 +136,7 @@ public abstract class Component : IBox
     }
   }
 
-  public virtual void OnCollision(Collision collision, IBox opponent)
+  public virtual void OnCollision(GameTime gameTime, Collision collision, IBox opponent)
   {
   }
 

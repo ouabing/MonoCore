@@ -16,7 +16,7 @@ public interface IBox
 
   public abstract void UpdatePhysics(GameTime gameTime);
 
-  public abstract void OnCollision(Collision collision, IBox opponent);
+  public abstract void OnCollision(GameTime gameTime, Collision collision, IBox opponent);
 
   public virtual void DrawBox(GameTime gameTime)
   {
