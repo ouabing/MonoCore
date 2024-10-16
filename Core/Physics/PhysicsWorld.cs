@@ -66,26 +66,31 @@ public class PhysicsWorld
   private void CheckCollision(GameTime gameTime, IBox a, IBox b)
   {
     var hasCollision = false;
+    var minimumTranslationVector = Vector2.Zero;
     if (a.Shape.Type == ShapeType.Circle)
     {
       if (b.Shape.Type == ShapeType.Circle)
       {
-        hasCollision = CheckCollisionCircleCircle(a, b);
+        hasCollision = CheckCollisionCircleCircle(a, b, out minimumTranslationVector);
       }
       else if (b.Shape.Type == ShapeType.Rectangle)
       {
-        hasCollision = CheckCollisionCircleRectangle(a, b);
+        hasCollision = CheckCollisionCircleRectangle(a, b, out minimumTranslationVector);
       }
     }
     else if (a.Shape.Type == ShapeType.Rectangle)
     {
       if (b.Shape.Type == ShapeType.Circle)
       {
-        hasCollision = CheckCollisionCircleRectangle(b, a);
+        hasCollision = CheckCollisionCircleRectangle(b, a, out Vector2 correctionVector);
+        if (hasCollision)
+        {
+          minimumTranslationVector = -correctionVector;
+        }
       }
       else if (b.Shape.Type == ShapeType.Rectangle)
       {
-        hasCollision = CheckCollisionRectangleRectangle(b, a);
+        hasCollision = CheckCollisionRectangleRectangle(b, a, out minimumTranslationVector);
       }
     }
 
@@ -94,40 +99,51 @@ public class PhysicsWorld
       return;
     }
 
-    var collision = new Collision(a, b);
+    var collision = new Collision(a, b, minimumTranslationVector);
     SaveCollision(collision);
     a.OnCollision(gameTime, collision, b);
     b.OnCollision(gameTime, collision, a);
   }
 
-  private static bool CheckCollisionCircleCircle(IBox a, IBox b)
+  private static bool CheckCollisionCircleCircle(IBox a, IBox b, out Vector2 minimumTranslationVector)
   {
     var shapeA = a.Shape as ShapeCircle;
     var shapeB = b.Shape as ShapeCircle;
     var circleA = shapeA!.GetTransformedCircle(a.Position, a.Scale);
     var circleB = shapeB!.GetTransformedCircle(b.Position, b.Scale);
 
-    return Vector2.Distance(circleA.Center, circleB.Center) <= circleA.Radius + circleB.Radius;
+    minimumTranslationVector = Vector2.Zero;
+    if (Vector2.Distance(circleA.Center, circleB.Center) <= circleA.Radius + circleB.Radius)
+    {
+      minimumTranslationVector = Vector2.Normalize(circleA.Center - circleB.Center) * (circleA.Radius + circleB.Radius - Vector2.Distance(circleA.Center, circleB.Center));
+      return true;
+    }
+    else
+    {
+      return false;
+    }
   }
 
-  private static bool CheckCollisionCircleRectangle(IBox a, IBox b)
+  private static bool CheckCollisionCircleRectangle(IBox a, IBox b, out Vector2 minimumTranslationVector)
   {
     var shapeA = a.Shape as ShapeCircle;
     var shapeB = b.Shape as ShapeRectangle;
 
     var circleA = shapeA!.GetTransformedCircle(a.Position, a.Scale);
     var rectBVertices = shapeB!.GetTransformedRectangleVertices(b.Position, b.Scale, b.Rotation);
+    minimumTranslationVector = Vector2.Zero;
 
     if (IsPointInPolygon(circleA.Center, rectBVertices))
     {
       return true;
     }
 
+
     // check if any of the rectangle's edges intersect with the circle
     for (int i = 0; i < rectBVertices.Length; i++)
     {
       Vector2 start = rectBVertices[i];
-      Vector2 end = rectBVertices[(i + 1) % rectBVertices.Length]; // 循环访问最后一条边
+      Vector2 end = rectBVertices[(i + 1) % rectBVertices.Length];
 
       // calculate the closest point on the segment to the circle's center
       Vector2 closestPoint = GetClosestPointOnSegment(circleA.Center, start, end);
@@ -138,8 +154,16 @@ public class PhysicsWorld
       // if the distance is less than the circle's radius, they intersect
       if (distanceSquared <= circleA.Radius * circleA.Radius)
       {
-        return true;
+        var correctVector = Vector2.Normalize(circleA.Center - closestPoint) * (circleA.Radius - Vector2.Distance(circleA.Center, closestPoint));
+        if (minimumTranslationVector == Vector2.Zero || correctVector.LengthSquared() < minimumTranslationVector.LengthSquared())
+        {
+          minimumTranslationVector = correctVector;
+        }
       }
+    }
+    if (minimumTranslationVector != Vector2.Zero)
+    {
+      return true;
     }
 
     // if none of the edges intersected, check if the circle is inside the rectangle
@@ -147,7 +171,7 @@ public class PhysicsWorld
 
   }
 
-  private static bool CheckCollisionRectangleRectangle(IBox a, IBox b)
+  private static bool CheckCollisionRectangleRectangle(IBox a, IBox b, out Vector2 minimumTranslationVector)
   {
     var shapeA = a.Shape as ShapeRectangle;
     var shapeB = b.Shape as ShapeRectangle;
@@ -156,7 +180,7 @@ public class PhysicsWorld
     var verticesB = shapeB!.GetTransformedRectangleVertices(b.Position, b.Scale, b.Rotation);
 
     // For rotated rectangles, we need to use SAT
-    return CheckSATCollision(verticesA, verticesB);
+    return CheckSATCollision(verticesA, verticesB, out minimumTranslationVector);
   }
 
 
@@ -216,23 +240,72 @@ public class PhysicsWorld
 
   #region SAT detection
 
-  private static bool CheckSATCollision(Vector2[] verticesA, Vector2[] verticesB)
+  private static bool CheckSATCollision(Vector2[] verticesA, Vector2[] verticesB, out Vector2 minimumTranslationVector)
   {
     var axesA = GetAxes(verticesA);
     var axesB = GetAxes(verticesB);
 
+    var overlapDepth = float.MaxValue;
+    var overlapAxis = Vector2.Zero;
+    minimumTranslationVector = Vector2.Zero;
+
     // Check for overlap on all axes
     foreach (var axis in axesA.Concat(axesB))
     {
-      if (!IsOverlappingOnAxis(axis, verticesA, verticesB))
+      var (minA, maxA) = ProjectVerticesOnAxis(axis, verticesA);
+      var (minB, maxB) = ProjectVerticesOnAxis(axis, verticesB);
+      if (maxA < minB || maxB < minA)
       {
-        // if there's a gap on any axis, we can exit early
         return false;
+      }
+      var currentOverlapDepth = Math.Min(maxA, maxB) - Math.Max(minA, minB);
+
+      if (currentOverlapDepth < 1e-5f)
+      {
+        continue; // Ignore very small overlaps
+      }
+      if (currentOverlapDepth < overlapDepth)
+      {
+        overlapDepth = currentOverlapDepth;
+        overlapAxis = axis;
       }
     }
 
+    // Calculate the center points of the two shapes
+    var centerA = GetCentroid(verticesA);
+    var centerB = GetCentroid(verticesB);
+
+    // Determine the direction of the minimum translation vector
+    var direction = centerB - centerA;
+
+    // If the dot product is negative, it means the overlapAxis is pointing from B to A, so reverse the direction
+    if (Vector2.Dot(direction, overlapAxis) < 0)
+    {
+      overlapAxis = -overlapAxis;
+    }
+
+    minimumTranslationVector = overlapAxis * overlapDepth;
+
     // all axes had overlap, so the rectangles are colliding
     return true;
+  }
+
+  private static Vector2 GetCentroid(Vector2[] vertices)
+  {
+    float sumX = 0;
+    float sumY = 0;
+    int count = vertices.Length;
+
+    foreach (var vertex in vertices)
+    {
+      sumX += vertex.X;
+      sumY += vertex.Y;
+    }
+
+    float centroidX = sumX / count;
+    float centroidY = sumY / count;
+
+    return new Vector2(centroidX, centroidY);
   }
 
   private static Vector2[] GetAxes(Vector2[] vertices)
@@ -244,14 +317,6 @@ public class PhysicsWorld
       axes[i] = Vector2.Normalize(new Vector2(-edge.Y, edge.X));
     }
     return axes;
-  }
-
-  private static bool IsOverlappingOnAxis(Vector2 axis, Vector2[] verticesA, Vector2[] verticesB)
-  {
-    var (minA, maxA) = ProjectVerticesOnAxis(axis, verticesA);
-    var (minB, maxB) = ProjectVerticesOnAxis(axis, verticesB);
-
-    return maxA >= minB && maxB >= minA;
   }
 
   private static (float min, float max) ProjectVerticesOnAxis(Vector2 axis, Vector2[] vertices)

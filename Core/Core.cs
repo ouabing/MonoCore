@@ -96,7 +96,6 @@ public static class Core
   public static bool Update(GameTime gameTime)
   {
     Input.Update(gameTime);
-    Physics.Update(gameTime);
     Timer.Update(gameTime);
 
     Wind.Update(gameTime);
@@ -106,10 +105,12 @@ public static class Core
 
     if (Task.Update(gameTime))
     {
+      Physics.Update(gameTime);
       return true;
     }
 
     Container.Update(gameTime);
+    Physics.Update(gameTime);
 
     PostUpdate(gameTime);
 
