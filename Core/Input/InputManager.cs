@@ -17,6 +17,7 @@ public class InputManager
   private readonly Dictionary<Def.Input.Action, bool> Activated = [];
 
   private MouseState previousMouse;
+  private KeyboardState previousKeyboard;
 
 #pragma warning disable CA1822 // Mark members as static
   public void LoadContent()
@@ -113,6 +114,7 @@ public class InputManager
       }
     }
     previousMouse = Mouse.GetState();
+    previousKeyboard = Keyboard.GetState();
   }
 
   public bool Hover(Rectangle r)
@@ -128,70 +130,136 @@ public class InputManager
     {
       case "A":
         return Keyboard.GetState().IsKeyDown(Keys.A);
+      case "A_Pressed":
+        return IsKeyPressed(Keys.A);
       case "B":
         return Keyboard.GetState().IsKeyDown(Keys.B);
+      case "B_Pressed":
+        return IsKeyPressed(Keys.B);
       case "C":
         return Keyboard.GetState().IsKeyDown(Keys.C);
+      case "C_Pressed":
+        return IsKeyPressed(Keys.C);
       case "D":
         return Keyboard.GetState().IsKeyDown(Keys.D);
+      case "D_Pressed":
+        return IsKeyPressed(Keys.D);
       case "E":
         return Keyboard.GetState().IsKeyDown(Keys.E);
+      case "E_Pressed":
+        return IsKeyPressed(Keys.E);
       case "F":
         return Keyboard.GetState().IsKeyDown(Keys.F);
+      case "F_Pressed":
+        return IsKeyPressed(Keys.F);
       case "G":
         return Keyboard.GetState().IsKeyDown(Keys.G);
+      case "G_Pressed":
+        return IsKeyPressed(Keys.G);
       case "H":
         return Keyboard.GetState().IsKeyDown(Keys.H);
+      case "H_Pressed":
+        return IsKeyPressed(Keys.H);
       case "I":
         return Keyboard.GetState().IsKeyDown(Keys.I);
+      case "I_Pressed":
+        return IsKeyPressed(Keys.I);
       case "J":
         return Keyboard.GetState().IsKeyDown(Keys.J);
+      case "J_Pressed":
+        return IsKeyPressed(Keys.J);
       case "K":
         return Keyboard.GetState().IsKeyDown(Keys.K);
+      case "K_Pressed":
+        return IsKeyPressed(Keys.K);
       case "L":
         return Keyboard.GetState().IsKeyDown(Keys.L);
+      case "L_Pressed":
+        return IsKeyPressed(Keys.L);
       case "M":
         return Keyboard.GetState().IsKeyDown(Keys.M);
+      case "M_Pressed":
+        return IsKeyPressed(Keys.M);
       case "N":
         return Keyboard.GetState().IsKeyDown(Keys.N);
+      case "N_Pressed":
+        return IsKeyPressed(Keys.N);
       case "O":
         return Keyboard.GetState().IsKeyDown(Keys.O);
+      case "O_Pressed":
+        return IsKeyPressed(Keys.O);
       case "P":
         return Keyboard.GetState().IsKeyDown(Keys.P);
+      case "P_Pressed":
+        return IsKeyPressed(Keys.P);
       case "Q":
         return Keyboard.GetState().IsKeyDown(Keys.Q);
+      case "Q_Pressed":
+        return IsKeyPressed(Keys.Q);
       case "R":
         return Keyboard.GetState().IsKeyDown(Keys.R);
+      case "R_Pressed":
+        return IsKeyPressed(Keys.R);
       case "S":
         return Keyboard.GetState().IsKeyDown(Keys.S);
+      case "S_Pressed":
+        return IsKeyPressed(Keys.S);
       case "T":
         return Keyboard.GetState().IsKeyDown(Keys.T);
+      case "T_Pressed":
+        return IsKeyPressed(Keys.T);
       case "U":
         return Keyboard.GetState().IsKeyDown(Keys.U);
+      case "U_Pressed":
+        return IsKeyPressed(Keys.U);
       case "V":
         return Keyboard.GetState().IsKeyDown(Keys.V);
+      case "V_Pressed":
+        return IsKeyPressed(Keys.V);
       case "W":
         return Keyboard.GetState().IsKeyDown(Keys.W);
+      case "W_Pressed":
+        return IsKeyPressed(Keys.W);
       case "X":
         return Keyboard.GetState().IsKeyDown(Keys.X);
+      case "X_Pressed":
+        return IsKeyPressed(Keys.X);
       case "Y":
         return Keyboard.GetState().IsKeyDown(Keys.Y);
+      case "Y_Pressed":
+        return IsKeyPressed(Keys.Y);
       case "Z":
         return Keyboard.GetState().IsKeyDown(Keys.Z);
+      case "Z_Pressed":
+        return IsKeyPressed(Keys.Z);
       case "Space":
         return Keyboard.GetState().IsKeyDown(Keys.Space);
+      case "SpacePressed":
+        return IsKeyPressed(Keys.Space);
       case "Enter":
         return Keyboard.GetState().IsKeyDown(Keys.Enter);
+      case "EnterPressed":
+        return IsKeyPressed(Keys.Enter);
       case "Escape":
         return Keyboard.GetState().IsKeyDown(Keys.Escape);
+      case "EscapePressed":
+        return IsKeyPressed(Keys.Escape);
       case "Left":
         return Keyboard.GetState().IsKeyDown(Keys.Left);
+      case "LeftPressed":
+        return IsKeyPressed(Keys.Left);
       case "Right":
         return Keyboard.GetState().IsKeyDown(Keys.Right);
+      case "RightPressed":
+        return IsKeyPressed(Keys.Right);
       case "Up":
         return Keyboard.GetState().IsKeyDown(Keys.Up);
+      case "UpPressed":
+        return IsKeyPressed(Keys.Up);
       case "Down":
         return Keyboard.GetState().IsKeyDown(Keys.Down);
+      case "DownPressed":
+        return IsKeyPressed(Keys.Down);
       case "MouseLeftPressed":
         return previousMouse.LeftButton == ButtonState.Pressed && mouse.LeftButton == ButtonState.Released;
       case "MouseLeftDown":
@@ -234,6 +302,11 @@ public class InputManager
         return gamepad.IsConnected && gamepad.Buttons.Y == ButtonState.Pressed;
     }
     throw new NotImplementedException($"Key {key} not implemented");
+  }
+
+  private bool IsKeyPressed(Keys key)
+  {
+    return previousKeyboard.IsKeyDown(key) && Keyboard.GetState().IsKeyUp(key);
   }
 
 #pragma warning disable CA1822 // Mark members as static
