@@ -14,6 +14,7 @@ public class PhysicsWorld
   public bool Pause { get; set; }
   private readonly List<IBox> boxes = [];
   private List<Collision> Collisions { get; } = [];
+  private List<Collision> LastCollisions { get; set; } = [];
   private Dictionary<IBox, List<Collision>> IndexedCollisions { get; } = [];
 
   public void Add(IBox box)
@@ -29,7 +30,6 @@ public class PhysicsWorld
   {
     boxes.Remove(box);
   }
-
   public void Update(GameTime gameTime)
   {
     if (Pause)
@@ -41,6 +41,10 @@ public class PhysicsWorld
       boxes[i].UpdatePhysics(gameTime);
     }
 
+    LastCollisions = new List<Collision>(Collisions);
+    Collisions.Clear();
+    IndexedCollisions.Clear();
+
     for (int i = 0; i < boxes.Count; i++)
     {
       for (int j = i + 1; j < boxes.Count; j++)
@@ -48,19 +52,65 @@ public class PhysicsWorld
         CheckCollision(gameTime, boxes[i], boxes[j]);
       }
     }
+
+    foreach (var kv in IndexedCollisions)
+    {
+      var box = kv.Key;
+      var collisions = kv.Value;
+
+      foreach (var collision in collisions)
+      {
+        if (collision.State == CollisionState.Enter)
+        {
+          box.OnCollisionEnter(gameTime, collision, collision.GetOpponent(box));
+        }
+        else if (collision.State == CollisionState.Stay)
+        {
+          box.OnCollisionStay(gameTime, collision, collision.GetOpponent(box));
+        }
+      }
+    }
+    var exitedCollisions = LastCollisions.Except(Collisions).ToList();
+    foreach (var collision in exitedCollisions)
+    {
+      collision.A.OnCollisionExit(gameTime, collision, collision.GetOpponent(collision.A));
+      collision.B.OnCollisionExit(gameTime, collision, collision.GetOpponent(collision.B));
+    }
+
+    LastCollisions.Clear();
     ClearDead();
   }
 
   public void PostUpdate(GameTime gameTime)
   {
-    Collisions.Clear();
-    IndexedCollisions.Clear();
     ClearDead();
   }
 
   public List<Collision> GetCollisions(IBox box)
   {
     return IndexedCollisions.GetValueOrDefault(box, []);
+  }
+
+  public List<Collision> GetCollisions<T>(IBox box)
+  {
+    var collisions = GetCollisions(box);
+    return collisions.Where(c => c.A is T || c.B is T).ToList();
+  }
+
+  public Vector2 GetSmoothCorrectionVector<T>(IBox box)
+  {
+    var collisions = GetCollisions<T>(box);
+    if (collisions.Count == 0)
+    {
+      return Vector2.Zero;
+    }
+
+    var correctionVector = Vector2.Zero;
+    foreach (var collision in collisions)
+    {
+      correctionVector += collision.GetCorrectionVector(box);
+    }
+    return correctionVector / collisions.Count;
   }
 
   private void CheckCollision(GameTime gameTime, IBox a, IBox b)
@@ -101,8 +151,6 @@ public class PhysicsWorld
 
     var collision = new Collision(a, b, minimumTranslationVector);
     SaveCollision(collision);
-    a.OnCollision(gameTime, collision, b);
-    b.OnCollision(gameTime, collision, a);
   }
 
   private static bool CheckCollisionCircleCircle(IBox a, IBox b, out Vector2 minimumTranslationVector)
@@ -214,7 +262,7 @@ public class PhysicsWorld
 
     // calculate the t value for the closest point
     float t = Vector2.Dot(point - start, lineDirection) / lineLengthSquared;
-    t = Math.Clamp(t, 0f, 1f); // 将 t 限制在 [0, 1] 之间
+    t = Math.Clamp(t, 0f, 1f);
 
     // return the closest point on the line
     return start + t * lineDirection;
@@ -222,20 +270,27 @@ public class PhysicsWorld
 
   private void SaveCollision(Collision collision)
   {
-    Collisions.Add(collision);
-    if (!IndexedCollisions.TryGetValue(collision.A, out List<Collision>? valueA))
+    var foundCollision = LastCollisions.Find(c => (c.A == collision.A && c.B == collision.B) || (c.A == collision.B && c.B == collision.A));
+    if (foundCollision != null)
+    {
+      foundCollision.State = CollisionState.Stay;
+      foundCollision.CorrectionVector = collision.CorrectionVector;
+    }
+    var finalCollision = foundCollision ?? collision;
+    Collisions.Add(finalCollision);
+    if (!IndexedCollisions.TryGetValue(finalCollision.A, out List<Collision>? valueA))
     {
       valueA = [];
-      IndexedCollisions[collision.A] = valueA;
+      IndexedCollisions[finalCollision.A] = valueA;
     }
-    valueA!.Add(collision);
+    valueA!.Add(finalCollision);
 
-    if (!IndexedCollisions.TryGetValue(collision.B, out List<Collision>? valueB))
+    if (!IndexedCollisions.TryGetValue(finalCollision.B, out List<Collision>? valueB))
     {
       valueB = [];
-      IndexedCollisions[collision.B] = valueB;
+      IndexedCollisions[finalCollision.B] = valueB;
     }
-    valueB!.Add(collision);
+    valueB!.Add(finalCollision);
   }
 
   #region SAT detection
@@ -254,22 +309,23 @@ public class PhysicsWorld
     {
       var (minA, maxA) = ProjectVerticesOnAxis(axis, verticesA);
       var (minB, maxB) = ProjectVerticesOnAxis(axis, verticesB);
-      if (maxA < minB || maxB < minA)
+      if (maxA <= minB || maxB <= minA)
       {
         return false;
       }
       var currentOverlapDepth = Math.Min(maxA, maxB) - Math.Max(minA, minB);
 
-      if (currentOverlapDepth < 1e-5f)
-      {
-        continue; // Ignore very small overlaps
-      }
       if (currentOverlapDepth < overlapDepth)
       {
         overlapDepth = currentOverlapDepth;
         overlapAxis = axis;
       }
     }
+
+    // if (overlapDepth < 1e-3f)
+    // {
+    //   return false;
+    // }
 
     // Calculate the center points of the two shapes
     var centerA = GetCentroid(verticesA);

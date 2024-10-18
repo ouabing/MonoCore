@@ -109,6 +109,8 @@ public abstract class Component : IBox
   public Vector2 Center => Position + Size / 2f - Origin;
   public Vector2 BottomCenter => Position + new Vector2(Size.X / 2, Size.Y) - Origin;
 
+  public bool IsRigid { get; set; }
+
   public virtual void LoadContent()
   {
     if (contentLoaded)
@@ -136,18 +138,26 @@ public abstract class Component : IBox
     }
   }
 
-  public virtual void OnCollision(GameTime gameTime, Collision collision, IBox opponent)
-  {
-  }
-
   public virtual void UpdatePhysics(GameTime gameTime)
   {
-    // PreviousPosition = Position;
-    // Position += Velocity * (float)gameTime.ElapsedGameTime.TotalSeconds;
+    PreviousPosition = Position;
+    Position += Velocity * (float)gameTime.ElapsedGameTime.TotalSeconds;
   }
 
   public virtual void Die()
   {
     IsDead = true;
+  }
+
+  public virtual void OnCollisionEnter(GameTime gameTime, Collision collision, IBox opponent)
+  {
+  }
+
+  public virtual void OnCollisionStay(GameTime gameTime, Collision collision, IBox opponent)
+  {
+  }
+
+  public virtual void OnCollisionExit(GameTime gameTime, Collision collision, IBox opponent)
+  {
   }
 }

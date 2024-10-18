@@ -15,7 +15,19 @@ public abstract class Cursor : IBox
   public Vector2 Velocity => Vector2.Zero;
   public BaseShape Shape => new ShapeRectangle(new RectangleF(0, 0, 1, 1));
 
-  public abstract void OnCollision(GameTime gameTime, Collision collision, IBox opponent);
+  public bool IsRigid { get; set; }
+
+  public virtual void OnCollisionEnter(GameTime gameTime, Collision collision, IBox opponent)
+  {
+  }
+
+  public virtual void OnCollisionExit(GameTime gameTime, Collision collision, IBox opponent)
+  {
+  }
+
+  public virtual void OnCollisionStay(GameTime gameTime, Collision collision, IBox opponent)
+  {
+  }
 
   public abstract void UpdatePhysics(GameTime gameTime);
 }

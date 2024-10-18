@@ -105,7 +105,6 @@ public static class Core
 
     if (Task.Update(gameTime))
     {
-      Physics.Update(gameTime);
       return true;
     }
 

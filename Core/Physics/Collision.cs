@@ -3,11 +3,18 @@ using Microsoft.Xna.Framework;
 
 namespace G;
 
+public enum CollisionState
+{
+  Enter,
+  Stay,
+}
+
 public class Collision(IBox a, IBox b, Vector2 correctionVector)
 {
   public IBox A { get; } = a;
   public IBox B { get; } = b;
-  private Vector2 CorrectionVector { get; } = correctionVector;
+  public CollisionState State { get; set; } = CollisionState.Enter;
+  public Vector2 CorrectionVector { get; set; } = correctionVector;
 
   public IBox GetOpponent(IBox self)
   {

@@ -7,6 +7,7 @@ namespace G;
 public interface IBox
 {
   public bool IsDead { get; set; }
+  public bool IsRigid { get; set; }
   public abstract BaseShape Shape { get; }
   public abstract Vector2 Position { get; }
   public abstract float Rotation { get; }
@@ -16,7 +17,9 @@ public interface IBox
 
   public abstract void UpdatePhysics(GameTime gameTime);
 
-  public abstract void OnCollision(GameTime gameTime, Collision collision, IBox opponent);
+  public abstract void OnCollisionEnter(GameTime gameTime, Collision collision, IBox opponent);
+  public abstract void OnCollisionStay(GameTime gameTime, Collision collision, IBox opponent);
+  public abstract void OnCollisionExit(GameTime gameTime, Collision collision, IBox opponent);
 
   public virtual void DrawBox(GameTime gameTime)
   {

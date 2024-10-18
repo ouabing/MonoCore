@@ -50,6 +50,15 @@ public class PhysicsManager
     return GetWorld(world).GetCollisions(box);
   }
 
+  /**
+   * Smooth the correction vectors of the box against type T
+   * There may be jumps if you apply
+   */
+  public Vector2 GetSmoothCorrectionVector<T>(Def.PhysicsWorld world, IBox box)
+  {
+    return GetWorld(world).GetSmoothCorrectionVector<T>(box);
+  }
+
   public void CreateWorld(Def.PhysicsWorld world)
   {
     if (PhysicsWorlds.ContainsKey(world))
