@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
+using MonoGame.Extended;
 
 namespace G;
 
@@ -113,6 +114,47 @@ public class PhysicsWorld
     return correctionVector / collisions.Count;
   }
 
+  public bool Raycast(Vector2 origin, Vector2 direction, out IBox? hitbox, out Vector2 hitPoint)
+  {
+    float closestDistance = float.MaxValue;
+    hitbox = null;
+    hitPoint = Vector2.Zero;
+
+    foreach (var box in boxes)
+    {
+      if (box.Shape.Type == ShapeType.Rectangle)
+      {
+        var rectVertices = (box.Shape as ShapeRectangle)!.GetTransformedRectangleVertices(box.Position, box.Scale, box.Rotation);
+        if (CheckRayIntersectsRectangle(origin, direction, rectVertices, out Vector2 intersection))
+        {
+          float distance = Vector2.Distance(origin, intersection);
+          if (distance < closestDistance)
+          {
+            closestDistance = distance;
+            hitbox = box;
+            hitPoint = intersection;
+          }
+        }
+      }
+      else if (box.Shape.Type == ShapeType.Circle)
+      {
+        var circle = (box.Shape as ShapeCircle)!.GetTransformedCircle(box.Position, box.Scale);
+        if (CheckRayIntersectsCircle(origin, direction, circle, out Vector2 intersection))
+        {
+          float distance = Vector2.Distance(origin, intersection);
+          if (distance < closestDistance)
+          {
+            closestDistance = distance;
+            hitbox = box;
+            hitPoint = intersection;
+          }
+        }
+      }
+    }
+
+    return hitbox != null;
+  }
+
   private void CheckCollision(GameTime gameTime, IBox a, IBox b)
   {
     var hasCollision = false;
@@ -121,18 +163,24 @@ public class PhysicsWorld
     {
       if (b.Shape.Type == ShapeType.Circle)
       {
-        hasCollision = CheckCollisionCircleCircle(a, b, out minimumTranslationVector);
+        var circleA = (a.Shape as ShapeCircle)!.GetTransformedCircle(a.Position, a.Scale);
+        var circleB = (b.Shape as ShapeCircle)!.GetTransformedCircle(b.Position, b.Scale);
+        hasCollision = CheckCollisionCircleCircle(circleA, circleB, out minimumTranslationVector);
       }
       else if (b.Shape.Type == ShapeType.Rectangle)
       {
-        hasCollision = CheckCollisionCircleRectangle(a, b, out minimumTranslationVector);
+        var circleA = (a.Shape as ShapeCircle)!.GetTransformedCircle(a.Position, a.Scale);
+        var rectBVertices = (b.Shape as ShapeRectangle)!.GetTransformedRectangleVertices(b.Position, b.Scale, b.Rotation);
+        hasCollision = CheckCollisionCircleRectangle(circleA, rectBVertices, out minimumTranslationVector);
       }
     }
     else if (a.Shape.Type == ShapeType.Rectangle)
     {
       if (b.Shape.Type == ShapeType.Circle)
       {
-        hasCollision = CheckCollisionCircleRectangle(b, a, out Vector2 correctionVector);
+        var rectAVertices = (a.Shape as ShapeRectangle)!.GetTransformedRectangleVertices(a.Position, a.Scale, a.Rotation);
+        var circleB = (b.Shape as ShapeCircle)!.GetTransformedCircle(b.Position, b.Scale);
+        hasCollision = CheckCollisionCircleRectangle(circleB, rectAVertices, out Vector2 correctionVector);
         if (hasCollision)
         {
           minimumTranslationVector = -correctionVector;
@@ -140,7 +188,9 @@ public class PhysicsWorld
       }
       else if (b.Shape.Type == ShapeType.Rectangle)
       {
-        hasCollision = CheckCollisionRectangleRectangle(b, a, out minimumTranslationVector);
+        var rectAVertices = (a.Shape as ShapeRectangle)!.GetTransformedRectangleVertices(a.Position, a.Scale, a.Rotation);
+        var rectBVertices = (b.Shape as ShapeRectangle)!.GetTransformedRectangleVertices(b.Position, b.Scale, b.Rotation);
+        hasCollision = CheckCollisionRectangleRectangle(rectBVertices, rectAVertices, out minimumTranslationVector);
       }
     }
 
@@ -153,13 +203,8 @@ public class PhysicsWorld
     SaveCollision(collision);
   }
 
-  private static bool CheckCollisionCircleCircle(IBox a, IBox b, out Vector2 minimumTranslationVector)
+  private static bool CheckCollisionCircleCircle(CircleF circleA, CircleF circleB, out Vector2 minimumTranslationVector)
   {
-    var shapeA = a.Shape as ShapeCircle;
-    var shapeB = b.Shape as ShapeCircle;
-    var circleA = shapeA!.GetTransformedCircle(a.Position, a.Scale);
-    var circleB = shapeB!.GetTransformedCircle(b.Position, b.Scale);
-
     minimumTranslationVector = Vector2.Zero;
     if (Vector2.Distance(circleA.Center, circleB.Center) <= circleA.Radius + circleB.Radius)
     {
@@ -172,13 +217,8 @@ public class PhysicsWorld
     }
   }
 
-  private static bool CheckCollisionCircleRectangle(IBox a, IBox b, out Vector2 minimumTranslationVector)
+  private static bool CheckCollisionCircleRectangle(CircleF circleA, Vector2[] rectBVertices, out Vector2 minimumTranslationVector)
   {
-    var shapeA = a.Shape as ShapeCircle;
-    var shapeB = b.Shape as ShapeRectangle;
-
-    var circleA = shapeA!.GetTransformedCircle(a.Position, a.Scale);
-    var rectBVertices = shapeB!.GetTransformedRectangleVertices(b.Position, b.Scale, b.Rotation);
     minimumTranslationVector = Vector2.Zero;
 
     if (IsPointInPolygon(circleA.Center, rectBVertices))
@@ -219,14 +259,8 @@ public class PhysicsWorld
 
   }
 
-  private static bool CheckCollisionRectangleRectangle(IBox a, IBox b, out Vector2 minimumTranslationVector)
+  private static bool CheckCollisionRectangleRectangle(Vector2[] verticesA, Vector2[] verticesB, out Vector2 minimumTranslationVector)
   {
-    var shapeA = a.Shape as ShapeRectangle;
-    var shapeB = b.Shape as ShapeRectangle;
-
-    var verticesA = shapeA!.GetTransformedRectangleVertices(a.Position, a.Scale, a.Rotation);
-    var verticesB = shapeB!.GetTransformedRectangleVertices(b.Position, b.Scale, b.Rotation);
-
     // For rotated rectangles, we need to use SAT
     return CheckSATCollision(verticesA, verticesB, out minimumTranslationVector);
   }
@@ -386,6 +420,101 @@ public class PhysicsWorld
       if (projection > max) max = projection;
     }
     return (min, max);
+  }
+  #endregion
+
+  #region Raycasting
+  private static bool CheckRayIntersectsCircle(Vector2 origin, Vector2 direction, CircleF circle, out Vector2 intersection)
+  {
+    intersection = Vector2.Zero;
+
+    Vector2 toCircle = circle.Center - origin;
+
+    Vector2 rayDirNormalized = Vector2.Normalize(direction);
+
+    float projectionLength = Vector2.Dot(toCircle, rayDirNormalized);
+
+    Vector2 projectionPoint = origin + projectionLength * rayDirNormalized;
+
+    float distanceToCenter = Vector2.Distance(projectionPoint, circle.Center);
+
+    if (distanceToCenter > circle.Radius)
+    {
+      return false;
+    }
+
+    float offset = MathF.Sqrt(circle.Radius * circle.Radius - distanceToCenter * distanceToCenter);
+
+    float t1 = projectionLength - offset;
+    float t2 = projectionLength + offset;
+
+    float tMin = Math.Min(t1, t2);
+    float tMax = Math.Max(t1, t2);
+
+    if (tMax < 0)
+    {
+      return false;
+    }
+
+    if (tMin >= 0)
+    {
+      intersection = origin + tMin * rayDirNormalized;
+      return true;
+    }
+
+    intersection = origin + tMax * rayDirNormalized;
+    return true;
+  }
+  private static bool CheckRayIntersectsRectangle(Vector2 origin, Vector2 direction, Vector2[] rectVertices, out Vector2 intersection)
+  {
+    intersection = Vector2.Zero;
+    float tMin = float.MinValue;
+    float tMax = float.MaxValue;
+
+    var axes = GetAxes(rectVertices);
+
+    axes = axes.Append(direction).ToArray();
+
+    foreach (var axis in axes)
+    {
+      var (minA, maxA) = ProjectVerticesOnAxis(axis, rectVertices);
+      float originProj = Vector2.Dot(origin, axis);
+      float directionProj = Vector2.Dot(direction, axis);
+
+      if (Math.Abs(directionProj) < 1e-5)
+      {
+        if (originProj < minA || originProj > maxA)
+        {
+          return false;
+        }
+      }
+      else
+      {
+        float t1 = (minA - originProj) / directionProj;
+        float t2 = (maxA - originProj) / directionProj;
+
+        if (t1 > t2)
+        {
+          (t1, t2) = (t2, t1);
+        }
+
+        tMin = Math.Max(tMin, t1);
+        tMax = Math.Min(tMax, t2);
+
+        if (tMin > tMax)
+        {
+          return false;
+        }
+      }
+    }
+
+    if (tMin >= 0)
+    {
+      intersection = origin + tMin * direction;
+      return true;
+    }
+
+    return false;
   }
   #endregion
 

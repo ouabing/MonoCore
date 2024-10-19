@@ -45,6 +45,11 @@ public class PhysicsManager
     GetWorld(world).Remove(box);
   }
 
+  public bool Raycast(Def.PhysicsWorld world, Vector2 origin, Vector2 direction, out IBox? hitbox, out Vector2 hitPoint)
+  {
+    return GetWorld(world).Raycast(origin, direction, out hitbox, out hitPoint);
+  }
+
   public List<Collision> GetCollisions(Def.PhysicsWorld world, IBox box)
   {
     return GetWorld(world).GetCollisions(box);
