@@ -128,6 +128,42 @@ public class InputManager
     var gamepad = GamePad.GetState(PlayerIndex.One);
     switch (key)
     {
+      case "D1":
+        return Keyboard.GetState().IsKeyDown(Keys.D1);
+      case "D1_Pressed":
+        return IsKeyPressed(Keys.D1);
+      case "D2":
+        return Keyboard.GetState().IsKeyDown(Keys.D2);
+      case "D2_Pressed":
+        return IsKeyPressed(Keys.D2);
+      case "D3":
+        return Keyboard.GetState().IsKeyDown(Keys.D3);
+      case "D3_Pressed":
+        return IsKeyPressed(Keys.D3);
+      case "D4":
+        return Keyboard.GetState().IsKeyDown(Keys.D4);
+      case "D4_Pressed":
+        return IsKeyPressed(Keys.D4);
+      case "D5":
+        return Keyboard.GetState().IsKeyDown(Keys.D5);
+      case "D5_Pressed":
+        return IsKeyPressed(Keys.D5);
+      case "D6":
+        return Keyboard.GetState().IsKeyDown(Keys.D6);
+      case "D6_Pressed":
+        return IsKeyPressed(Keys.D6);
+      case "D7":
+        return Keyboard.GetState().IsKeyDown(Keys.D7);
+      case "D7_Pressed":
+        return IsKeyPressed(Keys.D7);
+      case "D8":
+        return Keyboard.GetState().IsKeyDown(Keys.D8);
+      case "D8_Pressed":
+        return IsKeyPressed(Keys.D8);
+      case "D9":
+        return Keyboard.GetState().IsKeyDown(Keys.D9);
+      case "D9_Pressed":
+        return IsKeyPressed(Keys.D9);
       case "A":
         return Keyboard.GetState().IsKeyDown(Keys.A);
       case "A_Pressed":
