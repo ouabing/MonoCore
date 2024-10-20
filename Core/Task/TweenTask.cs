@@ -20,7 +20,7 @@ public class TweenTask<TTarget, TMember>(
   TaskPriority priority = TaskPriority.Normal,
   float attack = 0, float decay = 0, float release = 0,
   bool isUnique = false, bool overwrite = false,
-  bool enableDebug = true) :
+  bool enableDebug = false) :
   Task(id, target, update, before, after, isBlockable, isBlocking, priority, attack, decay, release, isUnique, overwrite, enableDebug), IDisposable where TTarget : class where TMember : struct
 {
 
