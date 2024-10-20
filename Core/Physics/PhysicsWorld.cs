@@ -120,6 +120,8 @@ public class PhysicsWorld
     hitbox = null;
     hitPoint = Vector2.Zero;
 
+    direction = Vector2.Normalize(direction);
+
     foreach (var box in boxes)
     {
       if (box.Shape == null)

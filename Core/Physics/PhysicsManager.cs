@@ -33,7 +33,7 @@ public class PhysicsManager
 
   public bool Raycast(Vector2 origin, Vector2 direction, out IBox? hitbox, out Vector2 hitPoint, Def.Category collidesWith = Def.Category.All)
   {
-    return world.Raycast(origin, direction, out hitbox, out hitPoint);
+    return world.Raycast(origin, direction, out hitbox, out hitPoint, collidesWith);
   }
 
   public List<Collision> GetCollisions(IBox box)
