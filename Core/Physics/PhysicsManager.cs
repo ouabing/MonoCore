@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 
@@ -6,86 +5,58 @@ namespace G;
 
 public class PhysicsManager
 {
-  private Dictionary<Def.PhysicsWorld, PhysicsWorld> PhysicsWorlds { get; } = [];
+  private PhysicsWorld world = new();
 
   public PhysicsManager()
   {
-    foreach (Def.PhysicsWorld world in Enum.GetValues<Def.PhysicsWorld>())
-    {
-      CreateWorld(world);
-    }
   }
 
-  public PhysicsWorld GetWorld(Def.PhysicsWorld world)
+  public void Pause()
   {
-    if (!PhysicsWorlds.TryGetValue(world, out PhysicsWorld? value))
-    {
-      throw new KeyNotFoundException($"Physics world {world} not found.");
-    }
-    return value;
+    world.Pause = true;
   }
 
-  public void Pause(Def.PhysicsWorld world)
+  public void Resume()
   {
-    GetWorld(world).Pause = true;
+    world.Pause = false;
   }
 
-  public void Resume(Def.PhysicsWorld world)
+  public void Add(IBox box)
   {
-    GetWorld(world).Pause = false;
+    world.Add(box);
   }
 
-  public void Add(Def.PhysicsWorld world, IBox box)
+  public void Remove(IBox box)
   {
-    GetWorld(world).Add(box);
+    world.Remove(box);
   }
 
-  public void Remove(Def.PhysicsWorld world, IBox box)
+  public bool Raycast(Vector2 origin, Vector2 direction, out IBox? hitbox, out Vector2 hitPoint, Def.Category collidesWith = Def.Category.All)
   {
-    GetWorld(world).Remove(box);
+    return world.Raycast(origin, direction, out hitbox, out hitPoint);
   }
 
-  public bool Raycast(Def.PhysicsWorld world, Vector2 origin, Vector2 direction, out IBox? hitbox, out Vector2 hitPoint)
+  public List<Collision> GetCollisions(IBox box)
   {
-    return GetWorld(world).Raycast(origin, direction, out hitbox, out hitPoint);
-  }
-
-  public List<Collision> GetCollisions(Def.PhysicsWorld world, IBox box)
-  {
-    return GetWorld(world).GetCollisions(box);
+    return world.GetCollisions(box);
   }
 
   /**
    * Smooth the correction vectors of the box against type T
    * There may be jumps if you apply
    */
-  public Vector2 GetSmoothCorrectionVector<T>(Def.PhysicsWorld world, IBox box)
+  public Vector2 GetSmoothCorrectionVector<T>(IBox box)
   {
-    return GetWorld(world).GetSmoothCorrectionVector<T>(box);
-  }
-
-  public void CreateWorld(Def.PhysicsWorld world)
-  {
-    if (PhysicsWorlds.ContainsKey(world))
-    {
-      throw new ArgumentException($"Physics world {world} already exists.");
-    }
-    PhysicsWorlds[world] = new PhysicsWorld();
+    return world.GetSmoothCorrectionVector<T>(box);
   }
 
   public void Update(GameTime gameTime)
   {
-    foreach (var physicsWorld in PhysicsWorlds.Values)
-    {
-      physicsWorld.Update(gameTime);
-    }
+    world.Update(gameTime);
   }
 
   public void PostUpdate(GameTime gameTime)
   {
-    foreach (var physicsWorld in PhysicsWorlds.Values)
-    {
-      physicsWorld.PostUpdate(gameTime);
-    }
+    world.PostUpdate(gameTime);
   }
 }

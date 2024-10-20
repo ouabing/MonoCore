@@ -114,7 +114,7 @@ public class PhysicsWorld
     return correctionVector / collisions.Count;
   }
 
-  public bool Raycast(Vector2 origin, Vector2 direction, out IBox? hitbox, out Vector2 hitPoint)
+  public bool Raycast(Vector2 origin, Vector2 direction, out IBox? hitbox, out Vector2 hitPoint, Def.Category collidesWith = Def.Category.All)
   {
     float closestDistance = float.MaxValue;
     hitbox = null;
@@ -122,6 +122,14 @@ public class PhysicsWorld
 
     foreach (var box in boxes)
     {
+      if (box.Shape == null)
+      {
+        continue;
+      }
+      if ((box.CollisionCategory & collidesWith) == Def.Category.None)
+      {
+        continue;
+      }
       if (box.Shape.Type == ShapeType.Rectangle)
       {
         var rectVertices = (box.Shape as ShapeRectangle)!.GetTransformedRectangleVertices(box.Position, box.Scale, box.Rotation);
@@ -157,6 +165,14 @@ public class PhysicsWorld
 
   private void CheckCollision(GameTime gameTime, IBox a, IBox b)
   {
+    if ((a.CollisionCategory & b.CollidesWith) == Def.Category.None || (b.CollisionCategory & a.CollidesWith) == Def.Category.None)
+    {
+      return;
+    }
+    if (a.Shape == null || b.Shape == null)
+    {
+      return;
+    }
     var hasCollision = false;
     var minimumTranslationVector = Vector2.Zero;
     if (a.Shape.Type == ShapeType.Circle)

@@ -7,8 +7,11 @@ namespace G;
 public interface IBox
 {
   public bool IsDead { get; set; }
-  public bool IsRigid { get; set; }
-  public abstract BaseShape Shape { get; }
+  // Which collision category this box belongs to
+  public abstract Def.Category CollisionCategory { get; set; }
+  // Which collision categories this box can collide with
+  public abstract Def.Category CollidesWith { get; set; }
+  public abstract BaseShape? Shape { get; }
   public abstract Vector2 Position { get; }
   public abstract float Rotation { get; }
   public abstract Vector2 Scale { get; }
@@ -20,6 +23,7 @@ public interface IBox
   public abstract void OnCollisionEnter(GameTime gameTime, Collision collision, IBox opponent);
   public abstract void OnCollisionStay(GameTime gameTime, Collision collision, IBox opponent);
   public abstract void OnCollisionExit(GameTime gameTime, Collision collision, IBox opponent);
+  public abstract bool BelongsTo(Def.Category category);
 
   public virtual void DrawBox(GameTime gameTime)
   {

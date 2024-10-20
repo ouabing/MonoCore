@@ -1,7 +1,6 @@
 using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using MonoGame.Extended;
 
 
 namespace G;
@@ -10,7 +9,7 @@ public enum OriginType { TopLeft, Center, Custom }
 
 public abstract class Component : IBox
 {
-  public virtual BaseShape Shape { get; set; } = new ShapeRectangle(new RectangleF(0, 0, 0, 0));
+  public virtual BaseShape? Shape { get; set; }
   public virtual Vector2 Position { get; set; }
   // The offset is use to draw the object at a different position than the actual position.
   // Will not affect the collision box.
@@ -109,7 +108,9 @@ public abstract class Component : IBox
   public Vector2 Center => Position + Size / 2f - Origin;
   public Vector2 BottomCenter => Position + new Vector2(Size.X / 2, Size.Y) - Origin;
 
-  public bool IsRigid { get; set; }
+  public Def.Category CollisionCategory { get; set; } = Def.Category.Default;
+  public Def.Category CollidesWith { get; set; } = Def.Category.All;
+
 
   public virtual void LoadContent()
   {
@@ -159,5 +160,10 @@ public abstract class Component : IBox
 
   public virtual void OnCollisionExit(GameTime gameTime, Collision collision, IBox opponent)
   {
+  }
+
+  public bool BelongsTo(Def.Category category)
+  {
+    return (CollisionCategory & category) != Def.Category.None;
   }
 }

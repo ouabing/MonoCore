@@ -15,7 +15,13 @@ public abstract class Cursor : IBox
   public Vector2 Velocity => Vector2.Zero;
   public BaseShape Shape => new ShapeRectangle(new RectangleF(0, 0, 1, 1));
 
-  public bool IsRigid { get; set; }
+  public Def.Category CollisionCategory { get; set; } = Def.Category.Default;
+  public Def.Category CollidesWith { get; set; } = Def.Category.All;
+
+  public bool BelongsTo(Def.Category category)
+  {
+    return (CollisionCategory & category) != Def.Category.None;
+  }
 
   public virtual void OnCollisionEnter(GameTime gameTime, Collision collision, IBox opponent)
   {

@@ -33,10 +33,17 @@ public class Def
     UI = 3,
   }
 
-  // PhysicsWorld for collision detection and other physics simulations
-  public enum PhysicsWorld
+  // Define the collision category masks
+  public enum Category
   {
-    Main = 1
+    // Must have
+    All = int.MaxValue,
+    None = 0,
+    Default = 1,
+
+    // Your custom values
+    Human = 1 << 1,
+    Bird = 1 << 2,
   }
 
   // Layer for drawing components
