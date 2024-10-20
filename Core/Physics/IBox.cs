@@ -8,7 +8,7 @@ public interface IBox
 {
   public bool IsDead { get; set; }
   // Which collision category this box belongs to
-  public abstract Def.Category CollisionCategory { get; set; }
+  public abstract Def.Category Category { get; set; }
   // Which collision categories this box can collide with
   public abstract Def.Category CollidesWith { get; set; }
   public abstract BaseShape? Shape { get; }

@@ -126,7 +126,7 @@ public class PhysicsWorld
       {
         continue;
       }
-      if ((box.CollisionCategory & collidesWith) == Def.Category.None)
+      if ((box.Category & collidesWith) == Def.Category.None)
       {
         continue;
       }
@@ -165,7 +165,7 @@ public class PhysicsWorld
 
   private void CheckCollision(GameTime gameTime, IBox a, IBox b)
   {
-    if ((a.CollisionCategory & b.CollidesWith) == Def.Category.None || (b.CollisionCategory & a.CollidesWith) == Def.Category.None)
+    if ((a.Category & b.CollidesWith) == Def.Category.None || (b.Category & a.CollidesWith) == Def.Category.None)
     {
       return;
     }

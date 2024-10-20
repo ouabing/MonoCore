@@ -108,7 +108,7 @@ public abstract class Component : IBox
   public Vector2 Center => Position + Size / 2f - Origin;
   public Vector2 BottomCenter => Position + new Vector2(Size.X / 2, Size.Y) - Origin;
 
-  public Def.Category CollisionCategory { get; set; } = Def.Category.Default;
+  public Def.Category Category { get; set; } = Def.Category.Default;
   public Def.Category CollidesWith { get; set; } = Def.Category.All;
 
 
@@ -164,6 +164,6 @@ public abstract class Component : IBox
 
   public bool BelongsTo(Def.Category category)
   {
-    return (CollisionCategory & category) != Def.Category.None;
+    return (Category & category) != Def.Category.None;
   }
 }
