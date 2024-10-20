@@ -49,7 +49,6 @@ public class TweenTask<TTarget, TMember>(
 
     if (!IsInitInvoked)
     {
-      Debug.WriteLine($"[{Core.Timer.Time}] Task:init: " + ID);
       Init?.Invoke();
       IsInitInvoked = true;
     }
@@ -108,6 +107,14 @@ public class TweenTask<TTarget, TMember>(
         tween.RepeatForever(RepeatDelay);
       }
       IsTweenerStarted = true;
+    }
+
+    if (UpdateAction != null)
+    {
+      if (UpdateAction(gameTime))
+      {
+        tweener.CancelAndCompleteAll();
+      }
     }
 
     if (IsCompleted == true)
