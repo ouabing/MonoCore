@@ -281,7 +281,7 @@ public class PhysicsWorld
   private static bool CheckCollisionRectangleRectangle(ref Vector2[] verticesA, ref Vector2[] verticesB, out Vector2 minimumTranslationVector)
   {
     // For rotated rectangles, we need to use SAT
-    return CheckSATCollision(verticesA, verticesB, out minimumTranslationVector);
+    return CheckSATCollision(ref verticesA, ref verticesB, out minimumTranslationVector);
   }
 
 
@@ -348,10 +348,10 @@ public class PhysicsWorld
 
   #region SAT detection
 
-  private static bool CheckSATCollision(Vector2[] verticesA, Vector2[] verticesB, out Vector2 minimumTranslationVector)
+  private static bool CheckSATCollision(ref Vector2[] verticesA, ref Vector2[] verticesB, out Vector2 minimumTranslationVector)
   {
-    var axesA = GetAxes(verticesA);
-    var axesB = GetAxes(verticesB);
+    var axesA = GetAxes(ref verticesA);
+    var axesB = GetAxes(ref verticesB);
 
     var overlapDepth = float.MaxValue;
     var overlapAxis = Vector2.Zero;
@@ -417,7 +417,7 @@ public class PhysicsWorld
     return new Vector2(centroidX, centroidY);
   }
 
-  private static Vector2[] GetAxes(Vector2[] vertices)
+  private static Vector2[] GetAxes(ref Vector2[] vertices)
   {
     var axes = new Vector2[vertices.Length];
     for (int i = 0; i < vertices.Length; i++)
@@ -490,7 +490,7 @@ public class PhysicsWorld
     float tMin = float.MinValue;
     float tMax = float.MaxValue;
 
-    var axes = GetAxes(rectVertices);
+    var axes = GetAxes(ref rectVertices);
 
     axes = axes.Append(direction).ToArray();
 
