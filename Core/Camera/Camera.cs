@@ -14,7 +14,11 @@ public class Camera : Component
     set
     {
       PreviousPosition = _position;
-      _position = value;
+      _position = Vector2.Clamp(
+        value,
+        new Vector2(Bounds.Left + Core.ScreenWidth / 2, Bounds.Top + Core.ScreenHeight / 2),
+        new Vector2(Bounds.Right - Core.ScreenWidth / 2, Bounds.Bottom - Core.ScreenHeight / 2)
+      );
     }
   }
 
@@ -80,7 +84,6 @@ public class Camera : Component
   public override void Update(GameTime gameTime)
   {
     Position += Velocity * gameTime.GetElapsedSeconds();
-    // Position = Vector2.Clamp(Position, new Vector2(Bounds.Left, Bounds.Top), new Vector2(Bounds.Right, Bounds.Bottom));
 
     if (Velocity.Length() > 0)
     {
@@ -96,4 +99,5 @@ public class Camera : Component
   {
     Position = target.Center;
   }
+
 }
