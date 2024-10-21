@@ -94,6 +94,6 @@ public class Camera : Component
 
   public void Follow(Component target, GameTime gameTime)
   {
-    Position = Vector2.Round(target.Center);
+    Position = target.Center;
   }
 }
