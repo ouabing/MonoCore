@@ -7,6 +7,7 @@ public enum CollisionState
 {
   Enter,
   Stay,
+  Exit
 }
 
 public class Collision(IBox a, IBox b, Vector2 correctionVector)

@@ -74,6 +74,7 @@ public class PhysicsWorld
     var exitedCollisions = LastCollisions.Except(Collisions).ToList();
     foreach (var collision in exitedCollisions)
     {
+      collision.State = CollisionState.Exit;
       collision.A.OnCollisionExit(gameTime, collision, collision.GetOpponent(collision.A));
       collision.B.OnCollisionExit(gameTime, collision, collision.GetOpponent(collision.B));
     }
@@ -208,7 +209,7 @@ public class PhysicsWorld
       {
         var rectAVertices = (a.Shape as ShapeRectangle)!.GetTransformedRectangleVertices(a.Position, a.Scale, a.Rotation);
         var rectBVertices = (b.Shape as ShapeRectangle)!.GetTransformedRectangleVertices(b.Position, b.Scale, b.Rotation);
-        hasCollision = CheckCollisionRectangleRectangle(rectBVertices, rectAVertices, out minimumTranslationVector);
+        hasCollision = CheckCollisionRectangleRectangle(ref rectBVertices, ref rectAVertices, out minimumTranslationVector);
       }
     }
 
@@ -277,7 +278,7 @@ public class PhysicsWorld
 
   }
 
-  private static bool CheckCollisionRectangleRectangle(Vector2[] verticesA, Vector2[] verticesB, out Vector2 minimumTranslationVector)
+  private static bool CheckCollisionRectangleRectangle(ref Vector2[] verticesA, ref Vector2[] verticesB, out Vector2 minimumTranslationVector)
   {
     // For rotated rectangles, we need to use SAT
     return CheckSATCollision(verticesA, verticesB, out minimumTranslationVector);
@@ -374,10 +375,10 @@ public class PhysicsWorld
       }
     }
 
-    // if (overlapDepth < 1e-3f)
-    // {
-    //   return false;
-    // }
+    if (overlapDepth < 1e-3f)
+    {
+      return false;
+    }
 
     // Calculate the center points of the two shapes
     var centerA = GetCentroid(verticesA);

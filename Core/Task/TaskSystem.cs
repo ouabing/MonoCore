@@ -142,7 +142,7 @@ public class TaskSystem
     TaskPriority priority = TaskPriority.Normal,
     float attack = 0, float decay = 0, float release = 0,
     bool isUnique = false, bool overwrite = false,
-    bool enableDebug = true
+    bool enableDebug = false
   ) where TTarget : class where TMember : struct
   {
     AddTask(new TweenTask<TTarget, TMember>(
