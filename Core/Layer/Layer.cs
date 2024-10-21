@@ -114,6 +114,7 @@ public class Layer
           Core.GraphicsDevice.RasterizerState = RasterizerState.CullNone;
           component.Draw(gameTime);
         }
+
       }
       if (inBatch.Count != 0)
       {
@@ -123,6 +124,22 @@ public class Layer
           component.Draw(gameTime);
         }
         Core.Sb.End();
+      }
+
+      // Draw shape and position for debugging
+      if (Core.DebugComponent)
+      {
+        foreach (var component in orderedByZ)
+        {
+          Core.Sb!.Begin(samplerState: SamplerState.PointClamp, transformMatrix: transformMatrix, effect: canvas.FX);
+#pragma warning disable CA1859 // Use concrete types when possible for improved performance
+          IBox box = component;
+#pragma warning restore CA1859 // Use concrete types when possible for improved performance
+          box.DrawBox(gameTime);
+          var font = Core.Font.Get(10);
+          font.DrawText(Core.Sb, $"({(int)component.Position.X},{(int)component.Position.Y})", component.TopLeft, Palette.White);
+          Core.Sb.End();
+        }
       }
       canvas.End();
     }

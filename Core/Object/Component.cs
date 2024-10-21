@@ -128,15 +128,6 @@ public abstract class Component : IBox
 
   public virtual void Draw(GameTime gameTime)
   {
-    if (Core.DebugComponent)
-    {
-#pragma warning disable CA1859 // Use concrete types when possible for improved performance
-      IBox box = this;
-#pragma warning restore CA1859 // Use concrete types when possible for improved performance
-      box.DrawBox(gameTime);
-      var font = Core.Font.Get(10);
-      font.DrawText(Core.Sb, $"({(int)Position.X},{(int)Position.Y})", TopLeft, Palette.White);
-    }
   }
 
   public virtual void UpdatePhysics(GameTime gameTime)
