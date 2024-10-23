@@ -43,7 +43,7 @@ public class ContainerManager
     var container = Containers.Find(c => c.Name == name) ?? throw new ArgumentException($"Container {name} not found.");
 
     container.Add(component);
-    Core.Physics.Add(component);
+    // Core.Physics.Add(component);
   }
 
   public void Remove(Def.Container name, Component component)

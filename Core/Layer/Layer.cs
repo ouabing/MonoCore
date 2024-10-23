@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using MonoGame.Extended;
+using MonoGame.Extended.Shapes;
+using nkast.Aether.Physics2D.Collision.Shapes;
 
 namespace G;
 
@@ -132,10 +135,7 @@ public class Layer
         foreach (var component in orderedByZ)
         {
           Core.Sb!.Begin(samplerState: SamplerState.PointClamp, transformMatrix: transformMatrix, effect: canvas.FX);
-#pragma warning disable CA1859 // Use concrete types when possible for improved performance
-          IBox box = component;
-#pragma warning restore CA1859 // Use concrete types when possible for improved performance
-          box.DrawBox(gameTime);
+          DrawFixtures(component);
           var font = Core.Font.Get(10);
           font.DrawText(Core.Sb, $"({(int)component.Position.X},{(int)component.Position.Y})", component.TopLeft, Palette.White);
           Core.Sb.End();
@@ -154,5 +154,34 @@ public class Layer
   {
     var canvas = Canvases.Find(x => x.Name == canvasName) ?? throw new ArgumentException($"Canvas with name {canvasName} does not exist.");
     canvas.ApplyFX(fx);
+  }
+
+  private static void DrawFixtures(Component component)
+  {
+    if (component.Body == null)
+    {
+      return;
+    }
+    if (component.Body.FixtureList.Count == 0)
+    {
+      return;
+    }
+    foreach (var fixture in component.Body.FixtureList)
+    {
+      if (fixture.Shape is PolygonShape poly)
+      {
+        var vectors = poly.Vertices.Select(v =>
+        {
+          var point = component.Body.GetWorldPoint(v);
+          return new Vector2(point.X, point.Y);
+        }).ToArray();
+        Core.Sb.DrawPolygon(Vector2.Zero, new Polygon(vectors), Color.Red, 1);
+      }
+      else if (fixture.Shape is CircleShape circle)
+      {
+        var center = component.Body.GetWorldPoint(circle.Position);
+        Core.Sb.DrawCircle(new CircleF(new Vector2(center.X, center.Y), circle.Radius), 16, Color.Red, 1);
+      }
+    }
   }
 }

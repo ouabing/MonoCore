@@ -46,6 +46,7 @@ public class Container(Def.Container Name, int priority)
     for (int i = 0; i < Components.Count; i++)
     {
       var component = Components[i];
+      component.UpdatePhysics(gameTime);
       component.PostUpdate(gameTime);
     }
     ClearDead();

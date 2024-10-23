@@ -21,6 +21,7 @@ public class Camera : Component
       );
     }
   }
+  public Vector2 Velocity { get; set; } = Vector2.Zero;
 
   public float Zoom { get; set; } = 1;
   public RectangleF Bounds { get; set; }

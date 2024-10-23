@@ -21,10 +21,10 @@ public static class Core
   public static Vector2 ScreenCenter => new(ScreenWidth / 2, ScreenHeight / 2);
 
   public static ContainerManager Container { get; } = new();
-  public static PhysicsManager Physics { get; } = new();
   public static WindSim Wind { get; } = new WindSim();
 
   public static bool DebugComponent { get; set; }
+  public static PhysicsManager Physics { get; } = new();
   public static Camera Camera { get; } = new Camera();
   public static LayerManager Layer { get; } = new LayerManager(Def.Screen.BackgroundColor);
   public static Timer Timer { get; } = new Timer();
@@ -58,6 +58,7 @@ public static class Core
     };
     Texture = new TextureManager(contentManager);
     Effect = new EffectManager(contentManager);
+    Physics.InitializeWorld();
     Palette.SetTheme(Def.Screen.Theme);
   }
 
@@ -119,7 +120,6 @@ public static class Core
   public static void PostUpdate(GameTime gameTime)
   {
     Container.PostUpdate(gameTime);
-    Physics.PostUpdate(gameTime);
   }
 
   public static void Draw(GameTime gameTime)

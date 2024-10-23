@@ -1,23 +1,54 @@
 using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using nkast.Aether.Physics2D.Dynamics;
+using nkast.Aether.Physics2D.Dynamics.Contacts;
 
 
 namespace G;
 
 public enum OriginType { TopLeft, Center, Custom }
 
-public abstract class Component : IBox
+public abstract class Component
 {
-  public virtual BaseShape? Shape { get; set; }
-  public virtual Vector2 Position { get; set; }
+  public virtual Body Body { get; set; }
+  private Vector2 _position;
+  public virtual Vector2 Position
+  {
+    get
+    {
+      return _position;
+    }
+    set
+    {
+      if (Body != null)
+      {
+        Body.Position = new nkast.Aether.Physics2D.Common.Vector2(value.X, value.Y);
+      }
+      _position = value;
+    }
+  }
   // The offset is use to draw the object at a different position than the actual position.
   // Will not affect the collision box.
   public virtual Vector2 Offset { get; set; }
   public virtual Vector2 PreviousPosition { get; set; }
-  public virtual Vector2 Velocity { get; set; }
   public Vector2 Size { get; set; }
-  public float Rotation { get; set; }
+  private float _rotation;
+  public float Rotation
+  {
+    get
+    {
+      return _rotation;
+    }
+    set
+    {
+      if (Body != null)
+      {
+        Body.Rotation = value;
+      }
+      _rotation = value;
+    }
+  }
   public Vector2 Scale { get; set; } = Vector2.One;
   public bool IsDead { get; set; }
   public float Opacity { get; set; } = 1f;
@@ -108,9 +139,112 @@ public abstract class Component : IBox
   public Vector2 Center => Position + Size / 2f - Origin;
   public Vector2 BottomCenter => Position + new Vector2(Size.X / 2, Size.Y) - Origin;
 
-  public Def.Category Category { get; set; } = Def.Category.Default;
-  public Def.Category CollidesWith { get; set; } = Def.Category.All;
+  private Def.Physics.Cat _category = Def.Physics.Cat.Default;
+  public Def.Physics.Cat Category
+  {
+    get
+    {
+      return _category;
+    }
+    set
+    {
+      if (Body != null)
+      {
+        foreach (var fixture in Body.FixtureList)
+        {
+          fixture.CollisionCategories = value.ToPhysicsCategory();
+        }
+      }
+      _category = value;
+    }
+  }
+  private Def.Physics.Cat _collidesWith = Def.Physics.Cat.All;
+  public Def.Physics.Cat CollidesWith
+  {
+    get
+    {
+      return _collidesWith;
+    }
+    set
+    {
+      if (Body != null)
+      {
+        foreach (var fixture in Body.FixtureList)
+        {
+          fixture.CollidesWith = (nkast.Aether.Physics2D.Dynamics.Category)value;
+        }
+      }
+      _collidesWith = value;
+    }
+  }
 
+  public Body CreateRectangleBody(BodyType bodyType, Vector2 center, float width, float height, float density = 1, bool isSensor = false)
+  {
+    if (Body != null)
+    {
+      Core.Physics.Remove(Body);
+    }
+    Body = Core.Physics.World.CreateBody(new nkast.Aether.Physics2D.Common.Vector2(Position.X, Position.Y), Rotation, bodyType);
+    var fixture = Body.CreateRectangle(
+      width,
+      height,
+      density,
+      new(center.X, center.Y)
+    );
+    if (isSensor)
+    {
+      fixture.IsSensor = true;
+    }
+    Core.Physics.AddBody(Body, this);
+    EnablePhysics();
+    return Body;
+  }
+
+  public Body CreateCircleBody(BodyType bodyType, Vector2 center, float radius, float density = 1, bool isSensor = false)
+  {
+    if (Body != null)
+    {
+      Core.Physics.Remove(Body);
+    }
+    Body = Core.Physics.World.CreateBody(new nkast.Aether.Physics2D.Common.Vector2(Position.X, Position.Y), Rotation, bodyType);
+    var fixture = Body.CreateCircle(
+      radius,
+      density,
+      new(center.X, center.Y)
+    );
+    if (isSensor)
+    {
+      fixture.IsSensor = true;
+    }
+    Core.Physics.AddBody(Body, this);
+    EnablePhysics();
+    return Body;
+  }
+
+  private void EnablePhysics()
+  {
+    if (Body == null)
+    {
+      return;
+    }
+    foreach (var fixture in Body.FixtureList)
+    {
+      fixture.CollisionCategories = (nkast.Aether.Physics2D.Dynamics.Category)Category;
+      fixture.CollidesWith = (nkast.Aether.Physics2D.Dynamics.Category)CollidesWith;
+    }
+    Body.OnCollision += OnCollision;
+    Body.OnSeparation += OnSeparation;
+  }
+
+  private void DisablePhysics()
+  {
+    if (Body == null)
+    {
+      return;
+    }
+    Body.OnCollision -= OnCollision;
+    Body.OnSeparation -= OnSeparation;
+  }
 
   public virtual void LoadContent()
   {
@@ -133,28 +267,34 @@ public abstract class Component : IBox
   public virtual void UpdatePhysics(GameTime gameTime)
   {
     PreviousPosition = Position;
-    Position += Velocity * (float)gameTime.ElapsedGameTime.TotalSeconds;
+    if (Body != null)
+    {
+      _position = new Vector2(Body.Position.X, Body.Position.Y);
+      _rotation = Body.Rotation;
+    }
   }
 
   public virtual void Die()
   {
+    if (Body != null)
+    {
+      Core.Physics.Remove(Body);
+      DisablePhysics();
+    }
     IsDead = true;
   }
 
-  public virtual void OnCollisionEnter(GameTime gameTime, Collision collision, IBox opponent)
+  public virtual bool OnCollision(Fixture sender, Fixture other, Contact contact)
+  {
+    return true;
+  }
+
+  public virtual void OnSeparation(Fixture sender, Fixture other, Contact contact)
   {
   }
 
-  public virtual void OnCollisionStay(GameTime gameTime, Collision collision, IBox opponent)
+  public bool BelongsTo(Def.Physics.Cat category)
   {
-  }
-
-  public virtual void OnCollisionExit(GameTime gameTime, Collision collision, IBox opponent)
-  {
-  }
-
-  public bool BelongsTo(Def.Category category)
-  {
-    return (Category & category) != Def.Category.None;
+    return (Category & category) != Def.Physics.Cat.None;
   }
 }
