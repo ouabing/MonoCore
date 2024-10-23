@@ -195,7 +195,7 @@ public abstract class Component
     {
       fixture.IsSensor = true;
     }
-    Core.Physics.AddBody(Body, this);
+    Core.Physics.Add(Body, this);
     EnablePhysics();
     return Body;
   }
@@ -216,7 +216,7 @@ public abstract class Component
     {
       fixture.IsSensor = true;
     }
-    Core.Physics.AddBody(Body, this);
+    Core.Physics.Add(Body, this);
     EnablePhysics();
     return Body;
   }
@@ -278,8 +278,8 @@ public abstract class Component
   {
     if (Body != null)
     {
-      Core.Physics.Remove(Body);
       DisablePhysics();
+      Core.Physics.Remove(Body);
     }
     IsDead = true;
   }

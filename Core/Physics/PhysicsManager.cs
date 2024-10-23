@@ -12,7 +12,7 @@ public class PhysicsManager
   public Dictionary<Body, Component> BodyMap { get; } = [];
   public bool IsPaused { get; private set; }
   private List<Body> BodiesToRemove { get; } = [];
-  public void InitializeWorld()
+  public void CreateWorld()
   {
     World = new World(Def.Physics.Gravity.ToAetherVector2());
   }
@@ -38,7 +38,7 @@ public class PhysicsManager
     World.Remove(body);
   }
 
-  public void AddBody(Body body, Component component)
+  public void Add(Body body, Component component)
   {
     BodyMap.Add(body, component);
   }

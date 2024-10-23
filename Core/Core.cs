@@ -58,7 +58,7 @@ public static class Core
     };
     Texture = new TextureManager(contentManager);
     Effect = new EffectManager(contentManager);
-    Physics.InitializeWorld();
+    Physics.CreateWorld();
     Palette.SetTheme(Def.Screen.Theme);
   }
 
