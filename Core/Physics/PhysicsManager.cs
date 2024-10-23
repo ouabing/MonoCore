@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Xna.Framework;
 using MonoGame.Extended;
 using nkast.Aether.Physics2D.Dynamics;
@@ -9,7 +10,6 @@ public class PhysicsManager
 {
   public delegate float RayCastCallback(Fixture fixture, Vector2 point, Vector2 normal, float fraction);
   public World World { get; private set; }
-  public Dictionary<Body, Component> BodyMap { get; } = [];
   public bool IsPaused { get; private set; }
   private List<Body> BodiesToRemove { get; } = [];
   public void CreateWorld()
@@ -34,19 +34,9 @@ public class PhysicsManager
       BodiesToRemove.Add(body);
       return;
     }
-    BodyMap.Remove(body);
     World.Remove(body);
   }
 
-  public void Add(Body body, Component component)
-  {
-    BodyMap.Add(body, component);
-  }
-
-  public void RemoveBody(Body body)
-  {
-    BodyMap.Remove(body);
-  }
 
   // Summary:
   //     Ray-cast the world for all fixtures in the path of the ray. Your callback controls
@@ -77,16 +67,21 @@ public class PhysicsManager
     Fixture? fixtureResult = null;
     var pointResult = Vector2.Zero;
     var normalResult = Vector2.Zero;
-    var fractionResult = 0f;
-    World.RayCast((f, point, normal, fraction) =>
+    var fractionResult = float.MaxValue;
+    World.RayCast((f, hitpoint, normal, fraction) =>
     {
       if (f.CollisionCategories.ContainsAny(category))
       {
-        fixtureResult = f;
-        pointResult = point.ToVector2();
-        normalResult = normal.ToVector2();
-        fractionResult = fraction;
-        return 0;
+        if (fraction < fractionResult)
+        {
+          fixtureResult = f;
+          pointResult = hitpoint.ToVector2();
+          normalResult = normal.ToVector2();
+          fractionResult = fraction;
+
+          // Clip the ray and try to find closer point
+          return fraction;
+        }
       }
       return 1;
     }, point1.ToAetherVector2(), point2.ToAetherVector2());
@@ -119,38 +114,6 @@ public class PhysicsManager
     return RayCast(point1, point2, out fixture, out _, out _, out _, category);
   }
 
-  public Component? GetComponent(Fixture fixture)
-  {
-    BodyMap.TryGetValue(fixture.Body, out var component);
-    return component;
-  }
-
-  public T? GetComponent<T>(Fixture fixture) where T : Component
-  {
-    BodyMap.TryGetValue(fixture.Body, out var component);
-    if (component is T)
-    {
-      return component as T;
-    }
-    return null;
-  }
-
-  public Component? GetComponent(Body body)
-  {
-    BodyMap.TryGetValue(body, out var component);
-    return component;
-  }
-
-  public T? GetComponent<T>(Body body) where T : Component
-  {
-    BodyMap.TryGetValue(body, out var component);
-    if (component is T)
-    {
-      return component as T;
-    }
-    return null;
-  }
-
   public void Update(GameTime gameTime)
   {
     if (IsPaused)
@@ -160,5 +123,16 @@ public class PhysicsManager
     World.Step(gameTime.GetElapsedSeconds());
     BodiesToRemove.ForEach(body => Remove(body));
     BodiesToRemove.Clear();
+  }
+
+  public List<(Component?, Fixture)> DebugFixtures()
+  {
+    return World.BodyList.SelectMany(body =>
+    {
+      return body.FixtureList.Select(fixture =>
+      {
+        return (fixture.Tag as Component, fixture);
+      });
+    }).ToList();
   }
 }

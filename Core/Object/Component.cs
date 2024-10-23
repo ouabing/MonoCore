@@ -191,11 +191,12 @@ public abstract class Component
       density,
       new(center.X, center.Y)
     );
+    fixture.Tag = this;
+    Body.Tag = this;
     if (isSensor)
     {
       fixture.IsSensor = true;
     }
-    Core.Physics.Add(Body, this);
     EnablePhysics();
     return Body;
   }
@@ -212,11 +213,12 @@ public abstract class Component
       density,
       new(center.X, center.Y)
     );
+    fixture.Tag = this;
+    Body.Tag = this;
     if (isSensor)
     {
       fixture.IsSensor = true;
     }
-    Core.Physics.Add(Body, this);
     EnablePhysics();
     return Body;
   }
