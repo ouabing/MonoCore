@@ -13,6 +13,37 @@ public class MapData(int width, int height, int tileWidth, int tileHeight, Dicti
   public Dictionary<int, Func<int, (Component, Def.Container, Def.Layer)>> ComponentFactory { get; private set; } = componentFactory;
   public List<Dictionary<int, int>> LayerData { get; private set; } = layerData;
 
+  public string PrintLayer(int layerIndex)
+  {
+    if (layerIndex >= LayerData.Count)
+    {
+      throw new ArgumentException($"Invalid layer index: {layerIndex}");
+    }
+
+    var result = "";
+
+    for (int y = 0; y < Height; y++)
+    {
+      for (int x = 0; x < Width; x++)
+      {
+        var layer = LayerData[layerIndex];
+        if (layer.TryGetValue(y * Width + x, out int id))
+        {
+          result += id + ",";
+        }
+        else
+        {
+          result += "0,";
+        }
+      }
+      if (y < Height - 1)
+      {
+        result += "\n";
+      }
+    }
+    return result;
+  }
+
   public static Dictionary<int, int> LoadSingleLayerDataFromString(string data)
   {
     var layerData = new Dictionary<int, int>();
