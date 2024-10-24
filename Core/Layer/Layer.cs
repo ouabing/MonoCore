@@ -130,7 +130,7 @@ public class Layer
       }
 
       // Draw shape and position for debugging
-      if (Core.DebugComponent)
+      if (Core.EnableDebug)
       {
         foreach (var component in orderedByZ)
         {

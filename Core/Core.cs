@@ -23,7 +23,26 @@ public static class Core
   public static ContainerManager Container { get; } = new();
   public static WindSim Wind { get; } = new WindSim();
 
-  public static bool DebugComponent { get; set; }
+  private static bool enableDebug;
+  public static bool EnableDebug
+  {
+    get
+    {
+      return enableDebug;
+    }
+    set
+    {
+      if (value)
+      {
+        Debugger.Enable();
+      }
+      else
+      {
+        Debugger.Disable();
+      }
+      enableDebug = value;
+    }
+  }
   public static PhysicsManager Physics { get; } = new();
   public static Camera Camera { get; } = new Camera();
   public static LayerManager Layer { get; } = new LayerManager(Def.Screen.BackgroundColor);
@@ -43,6 +62,7 @@ public static class Core
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
   public static GRandom Random { get; } = new GRandom();
   public static AnimationManager Animation { get; } = new();
+  public static Debugger Debugger { get; } = new();
 
   private static bool contentLoaded;
   private static bool graphicsInitialized;
