@@ -1,8 +1,11 @@
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Microsoft.Xna.Framework;
 using MonoGame.Extended;
+using nkast.Aether.Physics2D.Collision;
 using nkast.Aether.Physics2D.Dynamics;
+using nkast.Aether.Physics2D.Dynamics.Contacts;
 
 namespace G;
 
@@ -11,10 +14,15 @@ public class PhysicsManager
   public delegate float RayCastCallback(Fixture fixture, Vector2 point, Vector2 normal, float fraction);
   public World World { get; private set; }
   public bool IsPaused { get; private set; }
+  public bool EnableDebug { get; set; }
   private List<Body> BodiesToRemove { get; } = [];
   public void CreateWorld()
   {
     World = new World(Def.Physics.Gravity.ToAetherVector2());
+    World.ContactManager.BeginContact += BeginContact;
+    World.ContactManager.EndContact += EndContact;
+    World.ContactManager.PreSolve += PreSolve;
+    World.ContactManager.PostSolve += PostSolve;
   }
 
   public void Pause()
@@ -27,6 +35,8 @@ public class PhysicsManager
     IsPaused = false;
   }
 
+  // Remove a body from the world
+  // If the world is locked, remove after the world step
   public void Remove(Body body)
   {
     if (World.IsLocked)
@@ -61,7 +71,7 @@ public class PhysicsManager
     out Vector2 point,
     out Vector2 normal,
     out float fraction,
-    Def.Physics.Cat category = Def.Physics.Cat.Default
+    Category category = Category.All
   )
   {
     Fixture? fixtureResult = null;
@@ -98,7 +108,7 @@ public class PhysicsManager
     Vector2 point2,
     out Fixture? fixture,
     out Vector2 point,
-    Def.Physics.Cat category = Def.Physics.Cat.Default
+    Category category = Category.All
   )
   {
     return RayCast(point1, point2, out fixture, out point, out _, out _, category);
@@ -108,7 +118,7 @@ public class PhysicsManager
     Vector2 point1,
     Vector2 point2,
     out Fixture? fixture,
-    Def.Physics.Cat category = Def.Physics.Cat.Default
+    Category category = Category.All
   )
   {
     return RayCast(point1, point2, out fixture, out _, out _, out _, category);
@@ -121,7 +131,7 @@ public class PhysicsManager
       return;
     }
     World.Step(gameTime.GetElapsedSeconds());
-    BodiesToRemove.ForEach(body => Remove(body));
+    BodiesToRemove.ForEach(Remove);
     BodiesToRemove.Clear();
   }
 
@@ -135,4 +145,69 @@ public class PhysicsManager
       });
     }).ToList();
   }
+
+  private bool BeginContact(Contact contact)
+  {
+    if (EnableDebug)
+    {
+      Debug.WriteLine("BeginContact: " + contact.FixtureA.Tag + " " + contact.FixtureB.Tag);
+    }
+    if (contact.FixtureA.Tag is Component a && contact.FixtureB.Tag is Component b)
+    {
+      if (a.IsDead || b.IsDead)
+      {
+        return false;
+      }
+
+      return a.BeginContact(contact.FixtureA, contact.FixtureB, contact) &&
+             b.BeginContact(contact.FixtureB, contact.FixtureA, contact);
+    }
+    return false;
+  }
+
+  private void EndContact(Contact contact)
+  {
+    if (EnableDebug)
+    {
+      Debug.WriteLine("EndContact: " + contact.FixtureA.Tag + " " + contact.FixtureB.Tag);
+    }
+    if (contact.FixtureA.Tag is Component a && contact.FixtureB.Tag is Component b)
+    {
+      if (a.IsDead || b.IsDead)
+      {
+        return;
+      }
+
+      a.EndContact(contact.FixtureA, contact.FixtureB, contact);
+      b.EndContact(contact.FixtureB, contact.FixtureA, contact);
+    }
+  }
+
+  private void PreSolve(Contact contact, ref Manifold oldManifold)
+  {
+    if (contact.FixtureA.Tag is Component a && contact.FixtureB.Tag is Component b)
+    {
+      if (a.IsDead || b.IsDead)
+      {
+        contact.Enabled = false;
+        return;
+      }
+      a.PreSolve(contact.FixtureA, contact.FixtureB, contact, ref oldManifold);
+      b.PreSolve(contact.FixtureB, contact.FixtureA, contact, ref oldManifold);
+    }
+  }
+
+  private void PostSolve(Contact contact, ContactVelocityConstraint impulse)
+  {
+    if (contact.FixtureA.Tag is Component a && contact.FixtureB.Tag is Component b)
+    {
+      if (a.IsDead || b.IsDead)
+      {
+        return;
+      }
+      a.PostSolve(contact.FixtureA, contact.FixtureB, contact, impulse);
+      b.PostSolve(contact.FixtureB, contact.FixtureA, contact, impulse);
+    }
+  }
+
 }

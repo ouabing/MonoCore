@@ -1,6 +1,7 @@
 using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using nkast.Aether.Physics2D.Collision;
 using nkast.Aether.Physics2D.Dynamics;
 using nkast.Aether.Physics2D.Dynamics.Contacts;
 
@@ -47,6 +48,52 @@ public abstract class Component
         Body.Rotation = value;
       }
       _rotation = value;
+    }
+  }
+
+  public Category Categories
+  {
+    get
+    {
+      if (Body == null)
+      {
+        return Category.None;
+      }
+      return Body.FixtureList[0].CollisionCategories;
+    }
+    set
+    {
+      if (Body != null)
+      {
+        return;
+      }
+      foreach (var fixture in Body!.FixtureList)
+      {
+        fixture.CollisionCategories = value;
+      }
+    }
+  }
+
+  public Category CollidesWith
+  {
+    get
+    {
+      if (Body == null)
+      {
+        return Category.None;
+      }
+      return Body.FixtureList[0].CollidesWith;
+    }
+    set
+    {
+      if (Body == null)
+      {
+        return;
+      }
+      foreach (var fixture in Body!.FixtureList)
+      {
+        fixture.CollidesWith = value;
+      }
     }
   }
   public Vector2 Scale { get; set; } = Vector2.One;
@@ -139,57 +186,27 @@ public abstract class Component
   public Vector2 Center => Position + Size / 2f - Origin;
   public Vector2 BottomCenter => Position + new Vector2(Size.X / 2, Size.Y) - Origin;
 
-  private Def.Physics.Cat _category = Def.Physics.Cat.Default;
-  public Def.Physics.Cat Category
-  {
-    get
-    {
-      return _category;
-    }
-    set
-    {
-      if (Body != null)
-      {
-        foreach (var fixture in Body.FixtureList)
-        {
-          fixture.CollisionCategories = value.ToPhysicsCategory();
-        }
-      }
-      _category = value;
-    }
-  }
-  private Def.Physics.Cat _collidesWith = Def.Physics.Cat.All;
-  public Def.Physics.Cat CollidesWith
-  {
-    get
-    {
-      return _collidesWith;
-    }
-    set
-    {
-      if (Body != null)
-      {
-        foreach (var fixture in Body.FixtureList)
-        {
-          fixture.CollidesWith = (nkast.Aether.Physics2D.Dynamics.Category)value;
-        }
-      }
-      _collidesWith = value;
-    }
-  }
-
-  public Body CreateRectangleBody(BodyType bodyType, Vector2 center, float width, float height, float density = 1, bool isSensor = false)
+  public Body CreateRectangleBody(
+    BodyType bodyType,
+    Vector2 center,
+    float width,
+    float height,
+    float density = 1,
+    bool isSensor = false,
+    Category categories = Category.Cat1,
+    Category collidesWith = Category.All
+  )
   {
     if (Body != null)
     {
       Core.Physics.Remove(Body);
     }
-    Body = Core.Physics.World.CreateBody(new nkast.Aether.Physics2D.Common.Vector2(Position.X, Position.Y), Rotation, bodyType);
+    Body = Core.Physics.World.CreateBody(Position.ToAetherVector2(), Rotation, bodyType);
     var fixture = Body.CreateRectangle(
       width,
       height,
       density,
-      new(center.X, center.Y)
+      center.ToAetherVector2()
     );
     fixture.Tag = this;
     Body.Tag = this;
@@ -197,21 +214,30 @@ public abstract class Component
     {
       fixture.IsSensor = true;
     }
-    EnablePhysics();
+    fixture.CollidesWith = collidesWith;
+    fixture.CollisionCategories = categories;
     return Body;
   }
 
-  public Body CreateCircleBody(BodyType bodyType, Vector2 center, float radius, float density = 1, bool isSensor = false)
+  public Body CreateCircleBody(
+    BodyType bodyType,
+    Vector2 center,
+    float radius,
+    float density = 1,
+    bool isSensor = false,
+    Category categories = Category.Cat1,
+    Category collidesWith = Category.All
+  )
   {
     if (Body != null)
     {
       Core.Physics.Remove(Body);
     }
-    Body = Core.Physics.World.CreateBody(new nkast.Aether.Physics2D.Common.Vector2(Position.X, Position.Y), Rotation, bodyType);
+    Body = Core.Physics.World.CreateBody(Position.ToAetherVector2(), Rotation, bodyType);
     var fixture = Body.CreateCircle(
       radius,
       density,
-      new(center.X, center.Y)
+      center.ToAetherVector2()
     );
     fixture.Tag = this;
     Body.Tag = this;
@@ -219,33 +245,9 @@ public abstract class Component
     {
       fixture.IsSensor = true;
     }
-    EnablePhysics();
+    fixture.CollidesWith = collidesWith;
+    fixture.CollisionCategories = categories;
     return Body;
-  }
-
-  private void EnablePhysics()
-  {
-    if (Body == null)
-    {
-      return;
-    }
-    foreach (var fixture in Body.FixtureList)
-    {
-      fixture.CollisionCategories = (nkast.Aether.Physics2D.Dynamics.Category)Category;
-      fixture.CollidesWith = (nkast.Aether.Physics2D.Dynamics.Category)CollidesWith;
-    }
-    Body.OnCollision += OnCollision;
-    Body.OnSeparation += OnSeparation;
-  }
-
-  private void DisablePhysics()
-  {
-    if (Body == null)
-    {
-      return;
-    }
-    Body.OnCollision -= OnCollision;
-    Body.OnSeparation -= OnSeparation;
   }
 
   public virtual void LoadContent()
@@ -280,23 +282,25 @@ public abstract class Component
   {
     if (Body != null)
     {
-      DisablePhysics();
       Core.Physics.Remove(Body);
     }
     IsDead = true;
   }
 
-  public virtual bool OnCollision(Fixture sender, Fixture other, Contact contact)
+  public virtual bool BeginContact(Fixture sender, Fixture other, Contact contact)
   {
     return true;
   }
 
-  public virtual void OnSeparation(Fixture sender, Fixture other, Contact contact)
+  public virtual void EndContact(Fixture sender, Fixture other, Contact contact)
   {
   }
 
-  public bool BelongsTo(Def.Physics.Cat category)
+  public virtual void PreSolve(Fixture sender, Fixture other, Contact contact, ref Manifold oldManifold)
   {
-    return (Category & category) != Def.Physics.Cat.None;
+  }
+
+  public virtual void PostSolve(Fixture sender, Fixture other, Contact contact, ContactVelocityConstraint impulse)
+  {
   }
 }
