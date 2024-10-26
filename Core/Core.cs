@@ -43,6 +43,7 @@ public static class Core
       enableDebug = value;
     }
   }
+  public static bool EnablePositionDebug { get; set; }
   public static PhysicsManager Physics { get; } = new();
   public static Camera Camera { get; } = new Camera();
   public static LayerManager Layer { get; } = new LayerManager(Def.Screen.BackgroundColor);

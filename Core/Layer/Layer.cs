@@ -23,10 +23,10 @@ public class Layer
     Name = name;
     Z = z;
     IsCameraFixed = isCameraFixed;
-    AddCanvas("Main", Core.ScreenWidth, Core.ScreenHeight, isCameraFixed);
+    AddCanvas("Main", Core.ScreenWidth, Core.ScreenHeight);
   }
 
-  public void AddCanvas(string name, int width, int height, bool isCameraFixed)
+  public void AddCanvas(string name, int width, int height)
   {
     if (Canvases.FindIndex(x => x.Name == name) != -1)
     {
@@ -136,8 +136,11 @@ public class Layer
         {
           Core.Sb!.Begin(samplerState: SamplerState.PointClamp, transformMatrix: transformMatrix, effect: canvas.FX);
           DrawFixtures(component);
-          var font = Core.Font.Get(10);
-          font.DrawText(Core.Sb, $"({(int)component.Position.X},{(int)component.Position.Y})", component.TopLeft, Palette.White);
+          if (Core.EnablePositionDebug)
+          {
+            var font = Core.Font.Get(10);
+            font.DrawText(Core.Sb, $"({(int)component.Position.X},{(int)component.Position.Y})", component.TopLeft, Palette.White);
+          }
           Core.Sb.End();
         }
       }
