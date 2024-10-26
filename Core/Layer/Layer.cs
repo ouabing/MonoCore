@@ -172,15 +172,14 @@ public class Layer
       {
         var vectors = poly.Vertices.Select(v =>
         {
-          var point = component.Body.GetWorldPoint(v);
-          return new Vector2(point.X, point.Y);
+          return component.Body.GetWorldPoint(v).ToPixelVector2();
         }).ToArray();
         Core.Sb.DrawPolygon(Vector2.Zero, new Polygon(vectors), Color.Red, 1);
       }
       else if (fixture.Shape is CircleShape circle)
       {
         var center = component.Body.GetWorldPoint(circle.Position);
-        Core.Sb.DrawCircle(new CircleF(new Vector2(center.X, center.Y), circle.Radius), 16, Color.Red, 1);
+        Core.Sb.DrawCircle(new CircleF(center.ToPixelVector2(), circle.Radius), 16, Color.Red, 1);
       }
     }
   }

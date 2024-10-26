@@ -24,7 +24,7 @@ public abstract class Component
     {
       if (Body != null)
       {
-        Body.Position = new nkast.Aether.Physics2D.Common.Vector2(value.X, value.Y);
+        Body.Position = value.ToMeterVector2();
       }
       _position = value;
     }
@@ -201,12 +201,12 @@ public abstract class Component
     {
       Core.Physics.Remove(Body);
     }
-    Body = Core.Physics.World.CreateBody(Position.ToAetherVector2(), Rotation, bodyType);
+    Body = Core.Physics.World.CreateBody(Position.ToMeterVector2(), Rotation, bodyType);
     var fixture = Body.CreateRectangle(
-      width,
-      height,
+      width.ToMeters(),
+      height.ToMeters(),
       density,
-      center.ToAetherVector2()
+      center.ToMeterVector2()
     );
     fixture.Tag = this;
     Body.Tag = this;
@@ -233,11 +233,11 @@ public abstract class Component
     {
       Core.Physics.Remove(Body);
     }
-    Body = Core.Physics.World.CreateBody(Position.ToAetherVector2(), Rotation, bodyType);
+    Body = Core.Physics.World.CreateBody(Position.ToMeterVector2(), Rotation, bodyType);
     var fixture = Body.CreateCircle(
-      radius,
+      radius.ToMeters(),
       density,
-      center.ToAetherVector2()
+      center.ToMeterVector2()
     );
     fixture.Tag = this;
     Body.Tag = this;
@@ -273,7 +273,7 @@ public abstract class Component
     PreviousPosition = Position;
     if (Body != null)
     {
-      _position = new Vector2(Body.Position.X, Body.Position.Y);
+      _position = Body.Position.ToPixelVector2();
       _rotation = Body.Rotation;
     }
   }

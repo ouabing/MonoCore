@@ -60,8 +60,8 @@ public class PhysicsManager
   {
     World.RayCast((fixture, point, normal, fraction) =>
     {
-      return callback(fixture, point.ToVector2(), normal.ToVector2(), fraction);
-    }, point1.ToAetherVector2(), point2.ToAetherVector2());
+      return callback(fixture, point.ToPixelVector2(), normal.ToPixelVector2(), fraction);
+    }, point1.ToMeterVector2(), point2.ToMeterVector2());
   }
 
   public bool RayCast(
@@ -85,8 +85,8 @@ public class PhysicsManager
         if (fraction < fractionResult)
         {
           fixtureResult = f;
-          pointResult = hitpoint.ToVector2();
-          normalResult = normal.ToVector2();
+          pointResult = hitpoint.ToPixelVector2();
+          normalResult = normal.ToPixelVector2();
           fractionResult = fraction;
 
           // Clip the ray and try to find closer point
@@ -94,7 +94,7 @@ public class PhysicsManager
         }
       }
       return 1;
-    }, point1.ToAetherVector2(), point2.ToAetherVector2());
+    }, point1.ToMeterVector2(), point2.ToMeterVector2());
 
     fixture = fixtureResult;
     point = pointResult;
