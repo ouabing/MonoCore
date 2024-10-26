@@ -186,6 +186,46 @@ public abstract class Component
   public Vector2 Center => Position + Size / 2f - Origin;
   public Vector2 BottomCenter => Position + new Vector2(Size.X / 2, Size.Y) - Origin;
 
+  public Vector2 LinearVelocity
+  {
+    get
+    {
+      if (Body == null)
+      {
+        throw new InvalidOperationException("The component without a body can not use Physics Attributes.");
+      }
+      return Body.LinearVelocity.ToPixelVector2();
+    }
+    set
+    {
+      if (Body == null)
+      {
+        throw new InvalidOperationException("The component without a body can not use Physics Attributes.");
+      }
+      Body.LinearVelocity = value.ToMeterVector2();
+    }
+  }
+
+  public float AngularVelocity
+  {
+    get
+    {
+      if (Body == null)
+      {
+        throw new InvalidOperationException("The component without a body can not use Physics Attributes.");
+      }
+      return Body.AngularVelocity;
+    }
+    set
+    {
+      if (Body == null)
+      {
+        throw new InvalidOperationException("The component without a body can not use Physics Attributes.");
+      }
+      Body.AngularVelocity = value;
+    }
+  }
+
   public Body CreateRectangleBody(
     BodyType bodyType,
     Vector2 center,

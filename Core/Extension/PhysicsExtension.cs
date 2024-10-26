@@ -6,7 +6,7 @@ public static class PhysicsExtensions
 {
   public static Vector2 ToMeters(this Vector2 pixelVector)
   {
-    return pixelVector * 1 / Def.Physics.PixelsPerMeter;
+    return pixelVector * 1.0f / Def.Physics.PixelsPerMeter;
   }
 
   public static Vector2 ToPixels(this Vector2 meterVector)
@@ -16,7 +16,7 @@ public static class PhysicsExtensions
 
   public static float ToMeters(this float pixels)
   {
-    return pixels * 1 / Def.Physics.PixelsPerMeter;
+    return pixels * 1.0f / Def.Physics.PixelsPerMeter;
   }
 
   public static float ToPixels(this float meters)
