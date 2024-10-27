@@ -63,7 +63,6 @@ public class Task(
 
     if (!IsInitInvoked)
     {
-      Debug.WriteLine($"[{Core.Timer.Time}] Task:init: " + ID);
       Init?.Invoke();
       IsInitInvoked = true;
     }
