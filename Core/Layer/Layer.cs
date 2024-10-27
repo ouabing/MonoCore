@@ -86,6 +86,7 @@ public class Layer
         // Draw primitives should be executed outside sprite batch
         if (component.EnablePrimitiveBatch)
         {
+          FlushBatch(ref gameTime, ref inBatch, ref transformMatrix, canvas);
           var matrix = Matrix.CreateOrthographicOffCenter(0, Core.ScreenWidth, Core.ScreenHeight, 0, 0, 1);
           var view = IsCameraFixed ? Matrix.Identity : Core.Camera.GetMatrix();
           // Each time a SpriteBatch is ended, the RasterizerState will be reset
@@ -114,6 +115,7 @@ public class Layer
         }
         else
         {
+          FlushBatch(ref gameTime, ref inBatch, ref transformMatrix, canvas);
           Core.GraphicsDevice.RasterizerState = RasterizerState.CullNone;
           component.Draw(gameTime);
         }
@@ -145,6 +147,20 @@ public class Layer
         }
       }
       canvas.End();
+    }
+  }
+
+  private static void FlushBatch(ref GameTime gameTime, ref List<Component> inBatch, ref Matrix? transformMatrix, Canvas canvas)
+  {
+    if (inBatch.Count != 0)
+    {
+      Core.Sb!.Begin(samplerState: SamplerState.PointClamp, transformMatrix: transformMatrix, effect: canvas.FX);
+      foreach (var component in inBatch)
+      {
+        component.Draw(gameTime);
+      }
+      Core.Sb.End();
+      inBatch.Clear();
     }
   }
 

@@ -105,7 +105,7 @@ public abstract class Component
   // Set this to true if you want to draw primitives
   public bool EnablePrimitiveBatch { get; protected set; }
   public bool EnableSpriteBatch { get; protected set; } = true;
-  public int Z { get; set; }
+  public virtual int Z { get; set; }
 
   public Texture2D? Texture { get; protected set; }
 
