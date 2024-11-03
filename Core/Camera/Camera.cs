@@ -5,26 +5,43 @@ namespace G;
 public class Camera : Component
 {
   private Vector2 _position;
-#pragma warning disable CA1822 // Mark members as static
-  public Vector2 InitialPosition => new(Core.ScreenWidth * 0.5f, Core.ScreenHeight * 0.5f);
-#pragma warning restore CA1822 // Mark members as static
   public override Vector2 Position
   {
     get => _position;
     set
     {
       PreviousPosition = _position;
-      _position = Vector2.Clamp(
-        value,
-        new Vector2(Bounds.Left + Core.ScreenWidth / 2, Bounds.Top + Core.ScreenHeight / 2),
-        new Vector2(Bounds.Right - Core.ScreenWidth / 2, Bounds.Bottom - Core.ScreenHeight / 2)
-      );
+      if (IsBoundsSet)
+      {
+        _position = Vector2.Clamp(
+          value,
+          new Vector2(Bounds!.Left + Core.ScreenWidth / 2, Bounds.Top + Core.ScreenHeight / 2),
+          new Vector2(Bounds!.Right - Core.ScreenWidth / 2, Bounds.Bottom - Core.ScreenHeight / 2)
+        );
+      }
+      else
+      {
+        _position = value;
+      }
     }
   }
   public Vector2 Velocity { get; set; } = Vector2.Zero;
 
   public float Zoom { get; set; } = 1;
-  public RectangleF Bounds { get; set; }
+  private RectangleF bounds { get; set; }
+  private bool IsBoundsSet;
+  public RectangleF Bounds
+  {
+    get
+    {
+      return bounds;
+    }
+    set
+    {
+      IsBoundsSet = true;
+      bounds = value;
+    }
+  }
 
   public override void LoadContent()
   {
@@ -33,25 +50,14 @@ public class Camera : Component
     EnableShake = true;
   }
 
-  public void SetPosition(Vector2 position)
-  {
-    Position = position;
-  }
-
   public Vector2 ScreenToWorld(Vector2 screenPosition)
   {
-    return Position + screenPosition - InitialPosition;
-  }
-
-  public Vector2 PreviousScreenToWorld(Vector2 screenPosition)
-  {
-    return PreviousPosition + screenPosition - InitialPosition;
+    return Position - new Vector2(Core.ScreenWidth, Core.ScreenHeight) * 0.5f + screenPosition;
   }
 
   public void Reset()
   {
-    Position = InitialPosition;
-    Bounds = new RectangleF(Position.X, Position.Y, 0, 0);
+    Position = new(0, 0);
   }
 
   public void MoveUp()

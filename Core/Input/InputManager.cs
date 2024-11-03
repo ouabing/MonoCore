@@ -350,7 +350,7 @@ public class InputManager
   {
     get
     {
-      var scale = Core.GraphicsDevice.Viewport.Width / Core.ScreenWidth;
+      var scale = Core.TargetScreenWidth / Core.ScreenWidth;
       return Mouse.GetState().Position.ToVector2() / scale;
     }
   }
@@ -377,7 +377,7 @@ public class InputManager
   {
     get
     {
-      return Core.Camera.PreviousScreenToWorld(PreviousCursorScreenPosition);
+      return Core.Camera.ScreenToWorld(PreviousCursorScreenPosition);
     }
   }
 
