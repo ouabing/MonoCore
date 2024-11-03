@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -12,47 +13,21 @@ namespace G;
 public class PhysicsManager
 {
   public delegate float RayCastCallback(Fixture fixture, Vector2 point, Vector2 normal, float fraction);
-  public World World { get; private set; }
+  public Dictionary<Def.Physics.World, World> Worlds { get; private set; } = [];
   public bool IsPaused { get; private set; }
   public bool EnableDebug { get; set; }
-  private List<Body> BodiesToRemove { get; } = [];
-  public void CreateWorld()
+  private Dictionary<Def.Physics.World, List<Body>> BodiesToRemove { get; } = [];
+  public void CreateWorlds()
   {
-    World = new World(Def.Physics.Gravity.ToAetherVector2());
-    World.ContactManager.BeginContact += BeginContact;
-    World.ContactManager.EndContact += EndContact;
-    World.ContactManager.PreSolve += PreSolve;
-    World.ContactManager.PostSolve += PostSolve;
-  }
-
-
-  // Query simpoe AABB, if you don't want to use the entire physics engine,
-  // you can simply use this function to check AABB collision by hand.
-  // This method only returns the first overlapped AABB
-  //
-  // Note: by the word AABB, the result is not precise if you have rotation on your body
-  public Component? QueryFirstAABB(Component component, Category category = Category.All)
-  {
-    var transform = component.Body.GetTransform();
-    component.Body.FixtureList[0].Shape.ComputeAABB(out AABB aabb, ref transform, 0);
-    Component? result = null;
-    World.QueryAABB(fixture =>
+    foreach (Def.Physics.World name in Enum.GetValues<Def.Physics.World>())
     {
-      if (fixture.Tag is Component other)
-      {
-        if (other == component)
-        {
-          return true;
-        }
-        if (other.Categories.ContainsAny(category))
-        {
-          result = other;
-          return false;
-        }
-      }
-      return true;
-    }, ref aabb);
-    return result;
+      var world = new World(Def.Physics.Gravity.ToAetherVector2());
+      world.ContactManager.BeginContact += BeginContact;
+      world.ContactManager.EndContact += EndContact;
+      world.ContactManager.PreSolve += PreSolve;
+      world.ContactManager.PostSolve += PostSolve;
+      Worlds[name] = world;
+    }
   }
 
   // Query simpoe AABB, if you don't want to use the entire physics engine,
@@ -60,7 +35,12 @@ public class PhysicsManager
   // This method returns all the overlapped AABBs
   //
   // Note: by the word AABB, the result is not precise if you have rotation on your body
-  public List<Component> QueryAABBs(Component component, Category category = Category.All)
+  public List<Component> QueryAABBs(Component component, Category category = Category.All, Def.Physics.World world = Def.Physics.World.Main)
+  {
+    return QueryAABBs<Component>(component, category, world);
+  }
+
+  public List<T> QueryAABBs<T>(Component component, Category category = Category.All, Def.Physics.World world = Def.Physics.World.Main) where T : Component
   {
     var body = component.Body;
     if (body == null)
@@ -70,10 +50,10 @@ public class PhysicsManager
     var transform = body.GetTransform();
     var fixture = body.FixtureList[0];
     body.FixtureList[0].Shape.ComputeAABB(out AABB aabb, ref transform, 0);
-    var result = new List<Component>();
-    World.QueryAABB(fixture =>
+    var result = new List<T>();
+    GetWorld(world).QueryAABB(fixture =>
     {
-      if (fixture.Tag is Component other)
+      if (fixture.Tag is T other)
       {
         if (other == component)
         {
@@ -90,12 +70,36 @@ public class PhysicsManager
     return result;
   }
 
-  public List<Component> QueryAABBs(AABB aabb, Category category = Category.All, Component? ignoreComponent = null)
+  // Note: This method will ignore the world each component belongs to
+#pragma warning disable CA1822 // Mark members as static
+  public bool TestAABB(Component a, Component b)
+#pragma warning restore CA1822 // Mark members as static
   {
-    var result = new List<Component>();
-    World.QueryAABB(fixture =>
+    var fixtureA = a.Body?.FixtureList[0];
+    var fixtureB = b.Body?.FixtureList[0];
+    if (fixtureA == null || fixtureB == null)
     {
-      if (fixture.Tag is Component other)
+      return false;
+    }
+
+    var transform1 = a.Body!.GetTransform();
+    var transform2 = b.Body!.GetTransform();
+    fixtureA.Shape.ComputeAABB(out AABB aabb1, ref transform1, 0);
+    fixtureB.Shape.ComputeAABB(out AABB aabb2, ref transform2, 0);
+    return AABB.TestOverlap(ref aabb1, ref aabb2);
+  }
+
+  public List<Component> QueryAABBs(AABB aabb, Category category = Category.All, Component? ignoreComponent = null, Def.Physics.World world = Def.Physics.World.Main)
+  {
+    return QueryAABBs<Component>(aabb, category, ignoreComponent, world);
+  }
+
+  public List<T> QueryAABBs<T>(AABB aabb, Category category = Category.All, Component? ignoreComponent = null, Def.Physics.World world = Def.Physics.World.Main) where T : Component
+  {
+    var result = new List<T>();
+    GetWorld(world).QueryAABB(fixture =>
+    {
+      if (fixture.Tag is T other)
       {
         if (other == ignoreComponent)
         {
@@ -123,14 +127,28 @@ public class PhysicsManager
 
   // Remove a body from the world
   // If the world is locked, remove after the world step
-  public void Remove(Body body)
+  public void Remove(Body body, Def.Physics.World world = Def.Physics.World.Main)
   {
-    if (World.IsLocked)
+    if (GetWorld(world).IsLocked)
     {
-      BodiesToRemove.Add(body);
+      if (!BodiesToRemove.TryGetValue(world, out List<Body>? value))
+      {
+        value = ([]);
+        BodiesToRemove[world] = value;
+      }
+
+      value.Add(body);
       return;
     }
-    World.Remove(body);
+    GetWorld(world).Remove(body);
+  }
+
+  public void RemoveFromAllWorlds(Body body)
+  {
+    foreach (var world in Enum.GetValues<Def.Physics.World>())
+    {
+      Remove(body, world);
+    }
   }
 
 
@@ -142,9 +160,9 @@ public class PhysicsManager
   //     return 0: terminate the ray cast
   //     return fraction: clip the ray to this point
   //     return 1: don't clip the ray and continue
-  public void RayCast(RayCastCallback callback, Vector2 point1, Vector2 point2)
+  public void RayCast(RayCastCallback callback, Vector2 point1, Vector2 point2, Def.Physics.World world = Def.Physics.World.Main)
   {
-    World.RayCast((fixture, point, normal, fraction) =>
+    GetWorld(world).RayCast((fixture, point, normal, fraction) =>
     {
       return callback(fixture, point.ToPixelVector2(), normal.ToPixelVector2(), fraction);
     }, point1.ToMeterVector2(), point2.ToMeterVector2());
@@ -157,14 +175,15 @@ public class PhysicsManager
     out Vector2 point,
     out Vector2 normal,
     out float fraction,
-    Category category = Category.All
+    Category category = Category.All,
+    Def.Physics.World world = Def.Physics.World.Main
   )
   {
     Fixture? fixtureResult = null;
     var pointResult = Vector2.Zero;
     var normalResult = Vector2.Zero;
     var fractionResult = float.MaxValue;
-    World.RayCast((f, hitpoint, normal, fraction) =>
+    GetWorld(world).RayCast((f, hitpoint, normal, fraction) =>
     {
       if (f.CollisionCategories.ContainsAny(category))
       {
@@ -216,20 +235,34 @@ public class PhysicsManager
     {
       return;
     }
-    World.Step(gameTime.GetElapsedSeconds());
-    BodiesToRemove.ForEach(Remove);
+    foreach (var world in Worlds.Values)
+    {
+      world.Step(gameTime.GetElapsedSeconds());
+    }
+    foreach (var kv in BodiesToRemove)
+    {
+      foreach (var body in kv.Value)
+      {
+        Remove(body, kv.Key);
+      }
+    }
     BodiesToRemove.Clear();
   }
 
-  public List<(Component?, Fixture)> DebugFixtures()
+  public List<(Component?, Fixture)> DebugFixtures(Def.Physics.World world = Def.Physics.World.Main)
   {
-    return World.BodyList.SelectMany(body =>
+    return GetWorld(world).BodyList.SelectMany(body =>
     {
       return body.FixtureList.Select(fixture =>
       {
         return (fixture.Tag as Component, fixture);
       });
     }).ToList();
+  }
+
+  public World GetWorld(Def.Physics.World world)
+  {
+    return Worlds[world];
   }
 
   private bool BeginContact(Contact contact)

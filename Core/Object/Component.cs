@@ -234,14 +234,15 @@ public abstract class Component
     float density = 1,
     bool isSensor = false,
     Category categories = Category.Cat1,
-    Category collidesWith = Category.All
+    Category collidesWith = Category.All,
+    Def.Physics.World world = Def.Physics.World.Main
   )
   {
     if (Body != null)
     {
-      Core.Physics.Remove(Body);
+      Core.Physics.RemoveFromAllWorlds(Body);
     }
-    Body = Core.Physics.World.CreateBody(Position.ToMeterVector2(), Rotation, bodyType);
+    Body = Core.Physics.GetWorld(world).CreateBody(Position.ToMeterVector2(), Rotation, bodyType);
     var fixture = Body.CreateRectangle(
       width.ToMeters(),
       height.ToMeters(),
@@ -266,14 +267,15 @@ public abstract class Component
     float density = 1,
     bool isSensor = false,
     Category categories = Category.Cat1,
-    Category collidesWith = Category.All
+    Category collidesWith = Category.All,
+    Def.Physics.World world = Def.Physics.World.Main
   )
   {
     if (Body != null)
     {
-      Core.Physics.Remove(Body);
+      Core.Physics.RemoveFromAllWorlds(Body);
     }
-    Body = Core.Physics.World.CreateBody(Position.ToMeterVector2(), Rotation, bodyType);
+    Body = Core.Physics.GetWorld(world).CreateBody(Position.ToMeterVector2(), Rotation, bodyType);
     var fixture = Body.CreateCircle(
       radius.ToMeters(),
       density,
@@ -322,7 +324,7 @@ public abstract class Component
   {
     if (Body != null)
     {
-      Core.Physics.Remove(Body);
+      Core.Physics.RemoveFromAllWorlds(Body);
     }
     IsDead = true;
   }
