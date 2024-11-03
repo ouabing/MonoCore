@@ -63,7 +63,7 @@ public abstract class Component
     }
     set
     {
-      if (Body != null)
+      if (Body == null)
       {
         return;
       }
