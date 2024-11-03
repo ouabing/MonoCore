@@ -25,6 +25,92 @@ public class PhysicsManager
     World.ContactManager.PostSolve += PostSolve;
   }
 
+
+  // Query simpoe AABB, if you don't want to use the entire physics engine,
+  // you can simply use this function to check AABB collision by hand.
+  // This method only returns the first overlapped AABB
+  //
+  // Note: by the word AABB, the result is not precise if you have rotation on your body
+  public Component? QueryFirstAABB(Component component, Category category = Category.All)
+  {
+    var transform = component.Body.GetTransform();
+    component.Body.FixtureList[0].Shape.ComputeAABB(out AABB aabb, ref transform, 0);
+    Component? result = null;
+    World.QueryAABB(fixture =>
+    {
+      if (fixture.Tag is Component other)
+      {
+        if (other == component)
+        {
+          return true;
+        }
+        if (other.Categories.ContainsAny(category))
+        {
+          result = other;
+          return false;
+        }
+      }
+      return true;
+    }, ref aabb);
+    return result;
+  }
+
+  // Query simpoe AABB, if you don't want to use the entire physics engine,
+  // you can simply use this function to check AABB collision by hand.
+  // This method returns all the overlapped AABBs
+  //
+  // Note: by the word AABB, the result is not precise if you have rotation on your body
+  public List<Component> QueryAABBs(Component component, Category category = Category.All)
+  {
+    var body = component.Body;
+    if (body == null)
+    {
+      return [];
+    }
+    var transform = body.GetTransform();
+    var fixture = body.FixtureList[0];
+    body.FixtureList[0].Shape.ComputeAABB(out AABB aabb, ref transform, 0);
+    var result = new List<Component>();
+    World.QueryAABB(fixture =>
+    {
+      if (fixture.Tag is Component other)
+      {
+        if (other == component)
+        {
+          return true;
+        }
+        if (other.Categories.ContainsAny(category))
+        {
+          result.Add(other);
+        }
+      }
+      return true;
+    }, ref aabb);
+
+    return result;
+  }
+
+  public List<Component> QueryAABBs(AABB aabb, Category category = Category.All, Component? ignoreComponent = null)
+  {
+    var result = new List<Component>();
+    World.QueryAABB(fixture =>
+    {
+      if (fixture.Tag is Component other)
+      {
+        if (other == ignoreComponent)
+        {
+          return true;
+        }
+        if (other.Categories.ContainsAny(category))
+        {
+          result.Add(other);
+        }
+      }
+      return true;
+    }, aabb);
+    return result;
+  }
+
   public void Pause()
   {
     IsPaused = true;
