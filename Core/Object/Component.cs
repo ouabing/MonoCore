@@ -226,7 +226,7 @@ public abstract class Component
     }
   }
 
-  public Body CreateRectangleBody(
+  public virtual Body CreateRectangleBody(
     BodyType bodyType,
     Vector2 center,
     float width,
@@ -260,7 +260,7 @@ public abstract class Component
     return Body;
   }
 
-  public Body CreateCircleBody(
+  public virtual Body CreateCircleBody(
     BodyType bodyType,
     Vector2 center,
     float radius,

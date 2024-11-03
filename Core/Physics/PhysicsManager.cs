@@ -89,12 +89,12 @@ public class PhysicsManager
     return AABB.TestOverlap(ref aabb1, ref aabb2);
   }
 
-  public List<Component> QueryAABBs(AABB aabb, Category category = Category.All, Component? ignoreComponent = null, Def.Physics.World world = Def.Physics.World.Main)
+  public List<Component> QueryAABBs(AABB aabb, Category category = Category.All, Def.Physics.World world = Def.Physics.World.Main, Component? ignoreComponent = null)
   {
-    return QueryAABBs<Component>(aabb, category, ignoreComponent, world);
+    return QueryAABBs<Component>(aabb, category, world, ignoreComponent);
   }
 
-  public List<T> QueryAABBs<T>(AABB aabb, Category category = Category.All, Component? ignoreComponent = null, Def.Physics.World world = Def.Physics.World.Main) where T : Component
+  public List<T> QueryAABBs<T>(AABB aabb, Category category = Category.All, Def.Physics.World world = Def.Physics.World.Main, Component? ignoreComponent = null) where T : Component
   {
     var result = new List<T>();
     GetWorld(world).QueryAABB(fixture =>
