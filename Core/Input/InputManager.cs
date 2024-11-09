@@ -13,6 +13,7 @@ public class InputManager
   public bool LeftClicked { get; set; }
   public bool RightClicked { get; set; }
   public bool LeftDown { get; set; }
+  public bool IsDisabled { get; private set; }
   public List<Def.Input.World> WorldQueue { get; } = [];
   private readonly Dictionary<Def.Input.Action, bool> Activated = [];
 
@@ -70,6 +71,12 @@ public class InputManager
     return Activated.ContainsKey(action);
   }
 
+  // Test if input is activated in any world
+  public bool IsActive(Def.Input.Action action)
+  {
+    return Activated.ContainsKey(action);
+  }
+
   /*
    * Consume an action to avoid propagating the same input to any other listeners
    * Useful for scenarios like, a UI button is on top of a game object,
@@ -97,9 +104,24 @@ public class InputManager
     return true;
   }
 
+  public void Disable()
+  {
+    IsDisabled = true;
+  }
+
+  public void Enable()
+  {
+    IsDisabled = false;
+  }
+
   public void Update(GameTime gameTime)
   {
     Activated.Clear();
+
+    if (IsDisabled)
+    {
+      return;
+    }
     foreach (var binding in Def.Input.Bindings)
     {
       var action = binding.Key;
@@ -113,6 +135,10 @@ public class InputManager
         }
       }
     }
+  }
+
+  public void PostUpdate(GameTime gameTime)
+  {
     previousMouse = Mouse.GetState();
     previousKeyboard = Keyboard.GetState();
   }
@@ -126,221 +152,118 @@ public class InputManager
   {
     var mouse = Mouse.GetState();
     var gamepad = GamePad.GetState(PlayerIndex.One);
-    switch (key)
+    return key switch
     {
-      case "D1":
-        return Keyboard.GetState().IsKeyDown(Keys.D1);
-      case "D1_Pressed":
-        return IsKeyPressed(Keys.D1);
-      case "D2":
-        return Keyboard.GetState().IsKeyDown(Keys.D2);
-      case "D2_Pressed":
-        return IsKeyPressed(Keys.D2);
-      case "D3":
-        return Keyboard.GetState().IsKeyDown(Keys.D3);
-      case "D3_Pressed":
-        return IsKeyPressed(Keys.D3);
-      case "D4":
-        return Keyboard.GetState().IsKeyDown(Keys.D4);
-      case "D4_Pressed":
-        return IsKeyPressed(Keys.D4);
-      case "D5":
-        return Keyboard.GetState().IsKeyDown(Keys.D5);
-      case "D5_Pressed":
-        return IsKeyPressed(Keys.D5);
-      case "D6":
-        return Keyboard.GetState().IsKeyDown(Keys.D6);
-      case "D6_Pressed":
-        return IsKeyPressed(Keys.D6);
-      case "D7":
-        return Keyboard.GetState().IsKeyDown(Keys.D7);
-      case "D7_Pressed":
-        return IsKeyPressed(Keys.D7);
-      case "D8":
-        return Keyboard.GetState().IsKeyDown(Keys.D8);
-      case "D8_Pressed":
-        return IsKeyPressed(Keys.D8);
-      case "D9":
-        return Keyboard.GetState().IsKeyDown(Keys.D9);
-      case "D9_Pressed":
-        return IsKeyPressed(Keys.D9);
-      case "A":
-        return Keyboard.GetState().IsKeyDown(Keys.A);
-      case "A_Pressed":
-        return IsKeyPressed(Keys.A);
-      case "B":
-        return Keyboard.GetState().IsKeyDown(Keys.B);
-      case "B_Pressed":
-        return IsKeyPressed(Keys.B);
-      case "C":
-        return Keyboard.GetState().IsKeyDown(Keys.C);
-      case "C_Pressed":
-        return IsKeyPressed(Keys.C);
-      case "D":
-        return Keyboard.GetState().IsKeyDown(Keys.D);
-      case "D_Pressed":
-        return IsKeyPressed(Keys.D);
-      case "E":
-        return Keyboard.GetState().IsKeyDown(Keys.E);
-      case "E_Pressed":
-        return IsKeyPressed(Keys.E);
-      case "F":
-        return Keyboard.GetState().IsKeyDown(Keys.F);
-      case "F_Pressed":
-        return IsKeyPressed(Keys.F);
-      case "G":
-        return Keyboard.GetState().IsKeyDown(Keys.G);
-      case "G_Pressed":
-        return IsKeyPressed(Keys.G);
-      case "H":
-        return Keyboard.GetState().IsKeyDown(Keys.H);
-      case "H_Pressed":
-        return IsKeyPressed(Keys.H);
-      case "I":
-        return Keyboard.GetState().IsKeyDown(Keys.I);
-      case "I_Pressed":
-        return IsKeyPressed(Keys.I);
-      case "J":
-        return Keyboard.GetState().IsKeyDown(Keys.J);
-      case "J_Pressed":
-        return IsKeyPressed(Keys.J);
-      case "K":
-        return Keyboard.GetState().IsKeyDown(Keys.K);
-      case "K_Pressed":
-        return IsKeyPressed(Keys.K);
-      case "L":
-        return Keyboard.GetState().IsKeyDown(Keys.L);
-      case "L_Pressed":
-        return IsKeyPressed(Keys.L);
-      case "M":
-        return Keyboard.GetState().IsKeyDown(Keys.M);
-      case "M_Pressed":
-        return IsKeyPressed(Keys.M);
-      case "N":
-        return Keyboard.GetState().IsKeyDown(Keys.N);
-      case "N_Pressed":
-        return IsKeyPressed(Keys.N);
-      case "O":
-        return Keyboard.GetState().IsKeyDown(Keys.O);
-      case "O_Pressed":
-        return IsKeyPressed(Keys.O);
-      case "P":
-        return Keyboard.GetState().IsKeyDown(Keys.P);
-      case "P_Pressed":
-        return IsKeyPressed(Keys.P);
-      case "Q":
-        return Keyboard.GetState().IsKeyDown(Keys.Q);
-      case "Q_Pressed":
-        return IsKeyPressed(Keys.Q);
-      case "R":
-        return Keyboard.GetState().IsKeyDown(Keys.R);
-      case "R_Pressed":
-        return IsKeyPressed(Keys.R);
-      case "S":
-        return Keyboard.GetState().IsKeyDown(Keys.S);
-      case "S_Pressed":
-        return IsKeyPressed(Keys.S);
-      case "T":
-        return Keyboard.GetState().IsKeyDown(Keys.T);
-      case "T_Pressed":
-        return IsKeyPressed(Keys.T);
-      case "U":
-        return Keyboard.GetState().IsKeyDown(Keys.U);
-      case "U_Pressed":
-        return IsKeyPressed(Keys.U);
-      case "V":
-        return Keyboard.GetState().IsKeyDown(Keys.V);
-      case "V_Pressed":
-        return IsKeyPressed(Keys.V);
-      case "W":
-        return Keyboard.GetState().IsKeyDown(Keys.W);
-      case "W_Pressed":
-        return IsKeyPressed(Keys.W);
-      case "X":
-        return Keyboard.GetState().IsKeyDown(Keys.X);
-      case "X_Pressed":
-        return IsKeyPressed(Keys.X);
-      case "Y":
-        return Keyboard.GetState().IsKeyDown(Keys.Y);
-      case "Y_Pressed":
-        return IsKeyPressed(Keys.Y);
-      case "Z":
-        return Keyboard.GetState().IsKeyDown(Keys.Z);
-      case "Z_Pressed":
-        return IsKeyPressed(Keys.Z);
-      case "Space":
-        return Keyboard.GetState().IsKeyDown(Keys.Space);
-      case "SpacePressed":
-        return IsKeyPressed(Keys.Space);
-      case "Enter":
-        return Keyboard.GetState().IsKeyDown(Keys.Enter);
-      case "EnterPressed":
-        return IsKeyPressed(Keys.Enter);
-      case "Escape":
-        return Keyboard.GetState().IsKeyDown(Keys.Escape);
-      case "EscapePressed":
-        return IsKeyPressed(Keys.Escape);
-      case "Left":
-        return Keyboard.GetState().IsKeyDown(Keys.Left);
-      case "LeftPressed":
-        return IsKeyPressed(Keys.Left);
-      case "Right":
-        return Keyboard.GetState().IsKeyDown(Keys.Right);
-      case "RightPressed":
-        return IsKeyPressed(Keys.Right);
-      case "Up":
-        return Keyboard.GetState().IsKeyDown(Keys.Up);
-      case "UpPressed":
-        return IsKeyPressed(Keys.Up);
-      case "Down":
-        return Keyboard.GetState().IsKeyDown(Keys.Down);
-      case "DownPressed":
-        return IsKeyPressed(Keys.Down);
-      case "MouseLeftPressed":
-        return previousMouse.LeftButton == ButtonState.Pressed && mouse.LeftButton == ButtonState.Released;
-      case "MouseLeftDown":
-        return mouse.LeftButton == ButtonState.Pressed;
-      case "MouseLeftUp":
-        return mouse.LeftButton == ButtonState.Released;
-      case "MouseLeftReleased":
-        return previousMouse.LeftButton == ButtonState.Pressed && mouse.LeftButton != ButtonState.Pressed;
-      case "MouseRightPressed":
-        return previousMouse.RightButton == ButtonState.Pressed && mouse.RightButton == ButtonState.Released;
-      case "MouseRightDown":
-        return mouse.RightButton == ButtonState.Pressed;
-      case "MouseRightUp":
-        return mouse.RightButton == ButtonState.Released;
-      case "MouseRightReleased":
-        return previousMouse.RightButton == ButtonState.Pressed && mouse.RightButton != ButtonState.Pressed;
-      case "StickLeftX-":
-        return gamepad.IsConnected && gamepad.ThumbSticks.Left.X < -0.5f;
-      case "StickLeftX+":
-        return gamepad.IsConnected && gamepad.ThumbSticks.Left.X > 0.5f;
-      case "StickLeftY-":
-        return gamepad.IsConnected && gamepad.ThumbSticks.Left.Y < 0.5f;
-      case "StickLeftY+":
-        return gamepad.IsConnected && gamepad.ThumbSticks.Left.Y > 0.5f;
-      case "StickRightX-":
-        return gamepad.IsConnected && gamepad.ThumbSticks.Right.X < 0.5f;
-      case "StickRightX+":
-        return gamepad.IsConnected && gamepad.ThumbSticks.Right.X > 0.5f;
-      case "StickRightY-":
-        return gamepad.IsConnected && gamepad.ThumbSticks.Right.Y < 0.5f;
-      case "StickRightY+":
-        return gamepad.IsConnected && gamepad.ThumbSticks.Right.Y > 0.5f;
-      case "ButtonAPressed":
-        return gamepad.IsConnected && gamepad.Buttons.A == ButtonState.Pressed;
-      case "ButtonBPressed":
-        return gamepad.IsConnected && gamepad.Buttons.B == ButtonState.Pressed;
-      case "ButtonXPressed":
-        return gamepad.IsConnected && gamepad.Buttons.X == ButtonState.Pressed;
-      case "ButtonYPressed":
-        return gamepad.IsConnected && gamepad.Buttons.Y == ButtonState.Pressed;
-    }
-    throw new NotImplementedException($"Key {key} not implemented");
+      "D1" => Keyboard.GetState().IsKeyDown(Keys.D1),
+      "D1_Pressed" => IsKeyPressed(Keys.D1),
+      "D2" => Keyboard.GetState().IsKeyDown(Keys.D2),
+      "D2_Pressed" => IsKeyPressed(Keys.D2),
+      "D3" => Keyboard.GetState().IsKeyDown(Keys.D3),
+      "D3_Pressed" => IsKeyPressed(Keys.D3),
+      "D4" => Keyboard.GetState().IsKeyDown(Keys.D4),
+      "D4_Pressed" => IsKeyPressed(Keys.D4),
+      "D5" => Keyboard.GetState().IsKeyDown(Keys.D5),
+      "D5_Pressed" => IsKeyPressed(Keys.D5),
+      "D6" => Keyboard.GetState().IsKeyDown(Keys.D6),
+      "D6_Pressed" => IsKeyPressed(Keys.D6),
+      "D7" => Keyboard.GetState().IsKeyDown(Keys.D7),
+      "D7_Pressed" => IsKeyPressed(Keys.D7),
+      "D8" => Keyboard.GetState().IsKeyDown(Keys.D8),
+      "D8_Pressed" => IsKeyPressed(Keys.D8),
+      "D9" => Keyboard.GetState().IsKeyDown(Keys.D9),
+      "D9_Pressed" => IsKeyPressed(Keys.D9),
+      "A" => Keyboard.GetState().IsKeyDown(Keys.A),
+      "A_Pressed" => IsKeyPressed(Keys.A),
+      "B" => Keyboard.GetState().IsKeyDown(Keys.B),
+      "B_Pressed" => IsKeyPressed(Keys.B),
+      "C" => Keyboard.GetState().IsKeyDown(Keys.C),
+      "C_Pressed" => IsKeyPressed(Keys.C),
+      "D" => Keyboard.GetState().IsKeyDown(Keys.D),
+      "D_Pressed" => IsKeyPressed(Keys.D),
+      "E" => Keyboard.GetState().IsKeyDown(Keys.E),
+      "E_Pressed" => IsKeyPressed(Keys.E),
+      "F" => Keyboard.GetState().IsKeyDown(Keys.F),
+      "F_Pressed" => IsKeyPressed(Keys.F),
+      "G" => Keyboard.GetState().IsKeyDown(Keys.G),
+      "G_Pressed" => IsKeyPressed(Keys.G),
+      "H" => Keyboard.GetState().IsKeyDown(Keys.H),
+      "H_Pressed" => IsKeyPressed(Keys.H),
+      "I" => Keyboard.GetState().IsKeyDown(Keys.I),
+      "I_Pressed" => IsKeyPressed(Keys.I),
+      "J" => Keyboard.GetState().IsKeyDown(Keys.J),
+      "J_Pressed" => IsKeyPressed(Keys.J),
+      "K" => Keyboard.GetState().IsKeyDown(Keys.K),
+      "K_Pressed" => IsKeyPressed(Keys.K),
+      "L" => Keyboard.GetState().IsKeyDown(Keys.L),
+      "L_Pressed" => IsKeyPressed(Keys.L),
+      "M" => Keyboard.GetState().IsKeyDown(Keys.M),
+      "M_Pressed" => IsKeyPressed(Keys.M),
+      "N" => Keyboard.GetState().IsKeyDown(Keys.N),
+      "N_Pressed" => IsKeyPressed(Keys.N),
+      "O" => Keyboard.GetState().IsKeyDown(Keys.O),
+      "O_Pressed" => IsKeyPressed(Keys.O),
+      "P" => Keyboard.GetState().IsKeyDown(Keys.P),
+      "P_Pressed" => IsKeyPressed(Keys.P),
+      "Q" => Keyboard.GetState().IsKeyDown(Keys.Q),
+      "Q_Pressed" => IsKeyPressed(Keys.Q),
+      "R" => Keyboard.GetState().IsKeyDown(Keys.R),
+      "R_Pressed" => IsKeyPressed(Keys.R),
+      "S" => Keyboard.GetState().IsKeyDown(Keys.S),
+      "S_Pressed" => IsKeyPressed(Keys.S),
+      "T" => Keyboard.GetState().IsKeyDown(Keys.T),
+      "T_Pressed" => IsKeyPressed(Keys.T),
+      "U" => Keyboard.GetState().IsKeyDown(Keys.U),
+      "U_Pressed" => IsKeyPressed(Keys.U),
+      "V" => Keyboard.GetState().IsKeyDown(Keys.V),
+      "V_Pressed" => IsKeyPressed(Keys.V),
+      "W" => Keyboard.GetState().IsKeyDown(Keys.W),
+      "W_Pressed" => IsKeyPressed(Keys.W),
+      "X" => Keyboard.GetState().IsKeyDown(Keys.X),
+      "X_Pressed" => IsKeyPressed(Keys.X),
+      "Y" => Keyboard.GetState().IsKeyDown(Keys.Y),
+      "Y_Pressed" => IsKeyPressed(Keys.Y),
+      "Z" => Keyboard.GetState().IsKeyDown(Keys.Z),
+      "Z_Pressed" => IsKeyPressed(Keys.Z),
+      "`_Pressed" => IsKeyPressed(Keys.OemTilde),
+      "Space" => Keyboard.GetState().IsKeyDown(Keys.Space),
+      "SpacePressed" => IsKeyPressed(Keys.Space),
+      "Enter" => Keyboard.GetState().IsKeyDown(Keys.Enter),
+      "EnterPressed" => IsKeyPressed(Keys.Enter),
+      "Escape" => Keyboard.GetState().IsKeyDown(Keys.Escape),
+      "EscapePressed" => IsKeyPressed(Keys.Escape),
+      "Left" => Keyboard.GetState().IsKeyDown(Keys.Left),
+      "LeftPressed" => IsKeyPressed(Keys.Left),
+      "Right" => Keyboard.GetState().IsKeyDown(Keys.Right),
+      "RightPressed" => IsKeyPressed(Keys.Right),
+      "Up" => Keyboard.GetState().IsKeyDown(Keys.Up),
+      "UpPressed" => IsKeyPressed(Keys.Up),
+      "Down" => Keyboard.GetState().IsKeyDown(Keys.Down),
+      "DownPressed" => IsKeyPressed(Keys.Down),
+      "MouseLeftPressed" => previousMouse.LeftButton == ButtonState.Pressed && mouse.LeftButton == ButtonState.Released,
+      "MouseLeftDown" => mouse.LeftButton == ButtonState.Pressed,
+      "MouseLeftUp" => mouse.LeftButton == ButtonState.Released,
+      "MouseLeftReleased" => previousMouse.LeftButton == ButtonState.Pressed && mouse.LeftButton != ButtonState.Pressed,
+      "MouseRightPressed" => previousMouse.RightButton == ButtonState.Pressed && mouse.RightButton == ButtonState.Released,
+      "MouseRightDown" => mouse.RightButton == ButtonState.Pressed,
+      "MouseRightUp" => mouse.RightButton == ButtonState.Released,
+      "MouseRightReleased" => previousMouse.RightButton == ButtonState.Pressed && mouse.RightButton != ButtonState.Pressed,
+      "StickLeftX-" => gamepad.IsConnected && gamepad.ThumbSticks.Left.X < -0.5f,
+      "StickLeftX+" => gamepad.IsConnected && gamepad.ThumbSticks.Left.X > 0.5f,
+      "StickLeftY-" => gamepad.IsConnected && gamepad.ThumbSticks.Left.Y < 0.5f,
+      "StickLeftY+" => gamepad.IsConnected && gamepad.ThumbSticks.Left.Y > 0.5f,
+      "StickRightX-" => gamepad.IsConnected && gamepad.ThumbSticks.Right.X < 0.5f,
+      "StickRightX+" => gamepad.IsConnected && gamepad.ThumbSticks.Right.X > 0.5f,
+      "StickRightY-" => gamepad.IsConnected && gamepad.ThumbSticks.Right.Y < 0.5f,
+      "StickRightY+" => gamepad.IsConnected && gamepad.ThumbSticks.Right.Y > 0.5f,
+      "ButtonAPressed" => gamepad.IsConnected && gamepad.Buttons.A == ButtonState.Pressed,
+      "ButtonBPressed" => gamepad.IsConnected && gamepad.Buttons.B == ButtonState.Pressed,
+      "ButtonXPressed" => gamepad.IsConnected && gamepad.Buttons.X == ButtonState.Pressed,
+      "ButtonYPressed" => gamepad.IsConnected && gamepad.Buttons.Y == ButtonState.Pressed,
+      _ => throw new NotImplementedException($"Key {key} not implemented"),
+    };
   }
 
-  private bool IsKeyPressed(Keys key)
+  public bool IsKeyPressed(Keys key)
   {
     return previousKeyboard.IsKeyDown(key) && Keyboard.GetState().IsKeyUp(key);
   }

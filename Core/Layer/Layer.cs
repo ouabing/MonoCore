@@ -13,17 +13,21 @@ public class Layer
 {
   public Def.Layer Name { get; }
   public int Z { get; }
+  public int Width { get; private set; } = Core.ScreenWidth;
+  public int Height { get; private set; } = Core.ScreenWidth;
   public Color BackgroundColor { get; set; } = Color.Transparent;
   private bool IsCameraFixed { get; }
   public List<Canvas> Canvases { get; private set; } = [];
   private readonly List<Component> components = [];
 
-  public Layer(Def.Layer name, int z, bool isCameraFixed)
+  public Layer(Def.Layer name, int z, bool isCameraFixed, int width, int height)
   {
     Name = name;
     Z = z;
     IsCameraFixed = isCameraFixed;
-    AddCanvas("Main", Core.ScreenWidth, Core.ScreenHeight);
+    Width = width;
+    Height = height;
+    AddCanvas("Main", Width, Height);
   }
 
   public void AddCanvas(string name, int width, int height)
@@ -43,6 +47,11 @@ public class Layer
       throw new ArgumentException($"Canvas with name {name} does not exist.");
     }
     Canvases.RemoveAt(index);
+  }
+
+  public Canvas? GetCanvas(string name)
+  {
+    return Canvases.Find(x => x.Name == name);
   }
 
   public void Add(Component component)

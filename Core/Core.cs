@@ -22,6 +22,7 @@ public static class Core
 
   public static ContainerManager Container { get; } = new();
   public static WindSim Wind { get; } = new WindSim();
+  public static bool Paused { get; set; }
 
   private static bool enableDebug;
   public static bool EnableDebug
@@ -64,6 +65,7 @@ public static class Core
   public static GRandom Random { get; } = new GRandom();
   public static AnimationManager Animation { get; } = new();
   public static Debugger Debugger { get; } = new();
+  public static GameConsole Console { get; } = new();
 
   private static bool contentLoaded;
   private static bool graphicsInitialized;
@@ -112,12 +114,18 @@ public static class Core
     Pb = new PrimitiveBatch(Graphics!.GraphicsDevice);
     Pd = new PrimitiveDrawing(Pb);
     Camera.LoadContent();
+    Console.LoadContent();
   }
 
   // Return true if the game is blocked
   public static bool Update(GameTime gameTime)
   {
+    Console.Update(gameTime);
     Input.Update(gameTime);
+    if (Paused)
+    {
+      return false;
+    }
     Timer.Update(gameTime);
 
     Wind.Update(gameTime);
@@ -140,11 +148,13 @@ public static class Core
 
   public static void PostUpdate(GameTime gameTime)
   {
+    Input.PostUpdate(gameTime);
     Container.PostUpdate(gameTime);
   }
 
   public static void Draw(GameTime gameTime)
   {
     Layer.Draw(gameTime);
+    Console.Draw(gameTime);
   }
 }

@@ -17,20 +17,40 @@ public class LayerManager(Color backgroundColor)
   public Color BackgroundColor { get; private set; } = backgroundColor;
   public Dictionary<Def.Layer, Layer> Layers { get; private set; } = [];
   public List<Effect> GlobalFXs { get; private set; } = [];
-  private List<RenderTarget2D> renderTargets { get; set; } = [];
+  private List<Dictionary<(int, int), RenderTarget2D>> renderTargets { get; set; } = [];
 
   public void Initialize()
   {
     foreach (Def.Layer layer in Enum.GetValues<Def.Layer>())
     {
-      var isCameraFixed = Def.LayerConfig.TryGetValue(layer, out var config) && config.TryGetValue("IsCameraFixed", out var isFixed) && (bool)isFixed;
-      CreateLayer(layer, isCameraFixed);
+      Def.LayerConfig.TryGetValue(layer, out var config);
+      var w = Core.ScreenWidth;
+      var h = Core.ScreenHeight;
+      if (config == null)
+      {
+        CreateLayer(layer, w, h, false);
+      }
+      else
+      {
+        var isCameraFixed = config.TryGetValue("IsCameraFixed", out var isFixed) && (bool)isFixed;
+        if (layer == Def.Layer.Debugger)
+        {
+          w = config.TryGetValue("Width", out var width) ? (int)width : Core.TargetScreenWidth;
+          h = config.TryGetValue("Height", out var height) ? (int)height : Core.TargetScreenHeight;
+        }
+        else
+        {
+          w = config.TryGetValue("Width", out var width) ? (int)width : Core.ScreenWidth;
+          h = config.TryGetValue("Height", out var height) ? (int)height : Core.ScreenHeight;
+        }
+        CreateLayer(layer, w, h, isCameraFixed);
+      }
     }
   }
 
-  public void CreateLayer(Def.Layer layer, bool isCameraFixed = false)
+  public void CreateLayer(Def.Layer layer, int width, int height, bool isCameraFixed = false)
   {
-    Layers[layer] = new Layer(layer, (int)layer, isCameraFixed);
+    Layers[layer] = new Layer(layer, (int)layer, isCameraFixed, width, height);
   }
 
   public void Add(Def.Layer toLayer, Component component)
@@ -57,14 +77,23 @@ public class LayerManager(Color backgroundColor)
 
   private void RecreateRenderTargets()
   {
-    for (int i = 0; i < renderTargets.Count; i++)
+    foreach (var renderTargetDict in renderTargets)
     {
-      renderTargets[i].Dispose();
+      foreach (var renderTarget in renderTargetDict.Values)
+      {
+        renderTarget.Dispose();
+      }
     }
     renderTargets.Clear();
     for (int i = 0; i < GlobalFXs.Count - 1; i++)
     {
-      renderTargets.Add(new RenderTarget2D(Core.Graphics!.GraphicsDevice, Core.ScreenWidth, Core.ScreenHeight));
+      Dictionary<(int, int), RenderTarget2D> dict = [];
+      renderTargets.Add(dict);
+
+      foreach (var layer in Layers.Values)
+      {
+        renderTargets[i][(layer.Width, layer.Height)] = new RenderTarget2D(Core.Graphics!.GraphicsDevice, layer.Width, layer.Height);
+      }
     }
   }
 
@@ -110,7 +139,8 @@ public class LayerManager(Color backgroundColor)
           for (int i = 0; i < GlobalFXs.Count - 1; i++)
           {
             var fx = GlobalFXs[i];
-            var renderTarget = renderTargets[i];
+            var renderTargetDict = renderTargets[i];
+            var renderTarget = renderTargetDict[(layer.Width, layer.Height)];
             Core.GraphicsDevice.SetRenderTarget(renderTarget);
             Core.Sb!.Begin(SpriteSortMode.Immediate, samplerState: SamplerState.PointClamp, effect: fx);
             Core.Sb.Draw(lastRenderTarget, new Rectangle(0, 0, canvas.Width, canvas.Height), Color.White);

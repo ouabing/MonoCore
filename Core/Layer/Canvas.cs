@@ -12,11 +12,19 @@ public class Canvas(
 ) : IDisposable
 {
   public string Name { get; } = name;
-  public int Width { get; } = width;
-  public int Height { get; } = height;
+  public int Width { get; private set; } = width;
+  public int Height { get; private set; } = height;
   public Color BackgroundColor { get; } = backgroundColor;
-  public RenderTarget2D RenderTarget { get; } = new RenderTarget2D(Core.Graphics!.GraphicsDevice, width, height);
+  public RenderTarget2D RenderTarget { get; private set; } = new RenderTarget2D(Core.Graphics!.GraphicsDevice, width, height);
   public Effect? FX { get; private set; }
+
+  public void Resize(int width, int height)
+  {
+    RenderTarget.Dispose();
+    Width = width;
+    Height = height;
+    RenderTarget = new RenderTarget2D(Core.Graphics!.GraphicsDevice, width, height);
+  }
 
   public void ApplyFX(Effect? fx)
   {
