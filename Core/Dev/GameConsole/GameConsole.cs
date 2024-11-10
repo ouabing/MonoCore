@@ -27,9 +27,10 @@ public class GameConsole
   public Color CursorColor { get; set; } = Palette.White;
   private readonly List<ConsoleLine> HistoryLines = [];
   private int CursorX { get; set; }
-  private static string Prompt => "> ";
+  private string Prompt => InEvalMode ? ">> " : "> ";
   private float PromptWidth => Core.Font.Get(FontSize).MeasureString(Prompt.ToString()).X;
   private readonly ConsoleKeyBuffer KeyBuffer = new();
+  private System.Threading.Tasks.Task? currentTask;
   public ConsoleLine CurrentInput { get; private set; }
   public string Completion { get; private set; } = "";
   public Color CompletionColor { get; set; } = Palette.Grey[4];
@@ -38,6 +39,8 @@ public class GameConsole
     "help: show all commands",
     "exit: close the console",
   ];
+
+  public bool InEvalMode { get; set; }
 
   public void LoadContent()
   {
@@ -48,6 +51,7 @@ public class GameConsole
     CurrentInput = StartNewInputLine();
     RegisterCommand(new ClearCommand());
     RegisterCommand(new DebugCommand());
+    RegisterCommand(new EvalCommand());
     RegisterCommand(new ExitCommand());
     RegisterCommand(new HelpCommand());
     RegisterCommand(new PauseCommand());
@@ -79,6 +83,11 @@ public class GameConsole
       }
     }
     if (!IsEnabled)
+    {
+      return;
+    }
+
+    if (InEvalMode && currentTask != null && currentTask.IsCompleted != true)
     {
       return;
     }
@@ -119,6 +128,16 @@ public class GameConsole
   public void Print(string text)
   {
     HistoryLines.Add(new ConsoleLine("", text, TextColor, Width - 2 * PaddingX, FontSize));
+  }
+
+  public void EnterEvalMode()
+  {
+    InEvalMode = true;
+  }
+
+  public void ExitEvalMode()
+  {
+    InEvalMode = false;
   }
 
   private void UpdateInput(GameTime gameTime)
@@ -202,6 +221,10 @@ public class GameConsole
 
   private void UpdateCompletion()
   {
+    if (InEvalMode)
+    {
+      return;
+    }
     var curText = CurrentInput.Text;
     var founds = Commands.Keys.Where((key) => key.StartsWith(curText));
     if (!founds.Any())
@@ -233,16 +256,24 @@ public class GameConsole
     }
 
     var parts = input.Split(' ');
-    var commandName = parts[0].Trim();
-    var command = Commands.GetValueOrDefault(commandName);
-    if (command == null)
+    if (InEvalMode)
     {
-      Print($"command not found: {commandName}", Palette.Red[4]);
+      EvalCommand? evalCommand = Commands["eval"] as EvalCommand;
+      currentTask = evalCommand?.Eval(this, input);
     }
     else
     {
-      var args = parts.Skip(1).Select(x => x.Trim()).Where(x => x.Length > 0).ToArray();
-      command.Execute(this, args);
+      var commandName = parts[0].Trim();
+      var command = Commands.GetValueOrDefault(commandName);
+      if (command == null)
+      {
+        Print($"command not found: {commandName}", Palette.Red[4]);
+      }
+      else
+      {
+        var args = parts.Skip(1).Select(x => x.Trim()).Where(x => x.Length > 0).ToArray();
+        command.Execute(this, args);
+      }
     }
 
     StartNewInputLine();
@@ -300,6 +331,10 @@ public class GameConsole
 
   private void DrawCompletion()
   {
+    if (InEvalMode)
+    {
+      return;
+    }
     var cursorPos = GetCursorPosition();
     // Only show completion when cursor is at the end
     if (CursorX != CurrentInput.Text.Length)
