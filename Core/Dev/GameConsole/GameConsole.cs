@@ -29,17 +29,27 @@ public class GameConsole
   private static string Prompt => "> ";
   private float PromptWidth => Core.Font.Get(FontSize).MeasureString(Prompt.ToString()).X;
   public ConsoleLine CurrentInput { get; private set; }
-  public string WelcomeMessage { get; set; } = "nihao :) use exit to quit";
+  public string Completion { get; private set; } = "";
+  public Color CompletionColor { get; set; } = Palette.Grey[4];
+  public string[] WelcomeMessages { get; set; } = [
+    "nihao :)",
+    "help: show all commands",
+    "exit: close the console",
+  ];
   private Keys[] previousKeys = [];
 
   public void LoadContent()
   {
-    HistoryLines.Add(new ConsoleLine("", WelcomeMessage, Palette.Green[4], Width - 2 * Padding, FontSize));
+    foreach (var message in WelcomeMessages)
+    {
+      HistoryLines.Add(new ConsoleLine("", message, Palette.Green[4], Width - 2 * Padding, FontSize));
+    }
     CurrentInput = StartNewInputLine();
+    RegisterCommand(new ClearCommand());
+    RegisterCommand(new ExitCommand());
     RegisterCommand(new HelpCommand());
     RegisterCommand(new PauseCommand());
     RegisterCommand(new ResumeCommand());
-    RegisterCommand(new ExitCommand());
   }
 
   public void RegisterCommand(ConsoleCommand command)
@@ -84,6 +94,11 @@ public class GameConsole
     DrawCursor(gameTime);
   }
 
+  public void Clear()
+  {
+    HistoryLines.Clear();
+  }
+
   public void PrintSuccess(string text)
   {
     Print(text, Palette.Green[4]);
@@ -115,6 +130,15 @@ public class GameConsole
       if (key == Keys.Enter)
       {
         ExecuteLine();
+      }
+      else if (key == Keys.Tab)
+      {
+        if (Completion.Length > 0)
+        {
+          var newText = CurrentInput.Text + Completion[CurrentInput.Text.Length..];
+          CurrentInput.UpdateText(newText);
+          CursorX = CurrentInput.Text.Length;
+        }
       }
       else if (key == Keys.Back)
       {
@@ -174,7 +198,30 @@ public class GameConsole
       CursorTimer = 0;
     }
 
+    UpdateCompletion();
+
     previousKeys = newKeys;
+  }
+
+  private void UpdateCompletion()
+  {
+    var curText = CurrentInput.Text;
+    var founds = Commands.Keys.Where((key) => key.StartsWith(curText));
+    if (!founds.Any())
+    {
+      Completion = "";
+      return;
+    }
+    var firstFound = founds.First();
+
+    if (firstFound == null)
+    {
+      Completion = "";
+    }
+    else
+    {
+      Completion = firstFound;
+    }
   }
 
   public void ExecuteLine()
@@ -233,7 +280,38 @@ public class GameConsole
       DrawLine(line, x, ref y);
     }
     DrawLine(CurrentInput, x, ref y);
+    DrawCompletion();
     Core.Sb.End();
+  }
+
+  private void DrawCompletion()
+  {
+    var cursorPos = GetCursorPosition();
+    // Only show completion when cursor is at the end
+    if (CursorX != CurrentInput.Text.Length)
+    {
+      return;
+    }
+
+    if (CurrentInput.Text.Length == 0 || Completion.Length == 0)
+    {
+      return;
+    }
+
+    if (!Completion.StartsWith(CurrentInput.Text))
+    {
+      return;
+    }
+
+    var diff = Completion[CurrentInput.Text.Length..];
+
+    if (diff.Length == 0)
+    {
+      return;
+    }
+
+    Core.Font.Get(FontSize).DrawText(Core.Sb, diff, new Vector2(cursorPos.X, cursorPos.Y), CompletionColor);
+
   }
 
   private void DrawLine(ConsoleLine line, int x, ref int y)
