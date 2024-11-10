@@ -28,6 +28,7 @@ public class GameConsole
   private int CursorX { get; set; }
   private static string Prompt => "> ";
   private float PromptWidth => Core.Font.Get(FontSize).MeasureString(Prompt.ToString()).X;
+  private ConsoleKeyBuffer KeyBuffer = new();
   public ConsoleLine CurrentInput { get; private set; }
   public string Completion { get; private set; } = "";
   public Color CompletionColor { get; set; } = Palette.Grey[4];
@@ -36,7 +37,6 @@ public class GameConsole
     "help: show all commands",
     "exit: close the console",
   ];
-  private Keys[] previousKeys = [];
 
   public void LoadContent()
   {
@@ -46,6 +46,7 @@ public class GameConsole
     }
     CurrentInput = StartNewInputLine();
     RegisterCommand(new ClearCommand());
+    RegisterCommand(new DebugCommand());
     RegisterCommand(new ExitCommand());
     RegisterCommand(new HelpCommand());
     RegisterCommand(new PauseCommand());
@@ -121,75 +122,72 @@ public class GameConsole
 
   private void UpdateInput(GameTime gameTime)
   {
-    var state = Keyboard.GetState();
-    var newKeys = state.GetPressedKeys();
-    var keys = newKeys.Except(previousKeys).ToList();
-    var resetCursorTimer = keys.Count > 0;
-    foreach (var key in keys)
+    var key = KeyBuffer.UpdateKeys(gameTime);
+    var resetCursorTimer = key != Keys.None;
+
+    if (key == Keys.Enter)
     {
-      if (key == Keys.Enter)
+      ExecuteLine();
+    }
+    else if (key == Keys.Tab)
+    {
+      if (Completion.Length > 0)
       {
-        ExecuteLine();
+        var newText = CurrentInput.Text + Completion[CurrentInput.Text.Length..];
+        CurrentInput.UpdateText(newText);
+        CursorX = CurrentInput.Text.Length;
       }
-      else if (key == Keys.Tab)
+    }
+    else if (key == Keys.Back)
+    {
+      if (CursorX > 0)
       {
-        if (Completion.Length > 0)
-        {
-          var newText = CurrentInput.Text + Completion[CurrentInput.Text.Length..];
-          CurrentInput.UpdateText(newText);
-          CursorX = CurrentInput.Text.Length;
-        }
+        CursorX--;
+        var text = CurrentInput.Text;
+        var newText = text.Remove(CursorX, 1);
+        CurrentInput.UpdateText(newText);
       }
-      else if (key == Keys.Back)
+    }
+    else if (key == Keys.Left)
+    {
+      if (CursorX > 0)
       {
-        if (CursorX > 0)
-        {
-          CursorX--;
-          var text = CurrentInput.Text;
-          var newText = text.Remove(CursorX, 1);
-          CurrentInput.UpdateText(newText);
-        }
+        CursorX--;
       }
-      else if (key == Keys.Left)
+    }
+    else if (key == Keys.Right)
+    {
+      if (CursorX < CurrentInput.Text.Length)
       {
-        if (CursorX > 0)
-        {
-          CursorX--;
-        }
+        CursorX++;
       }
-      else if (key == Keys.Right)
+    }
+    // else if (key == Keys.Up)
+    // {
+    //   if (CursorPos.Y > 0)
+    //   {
+    //     CursorPos.Y--;
+    //     CursorPos.X = Math.Min(CursorPos.X, Lines[CursorPos.Y].Length);
+    //   }
+    // }
+    // else if (key == Keys.Down)
+    // {
+    //   if (CursorPos.Y < Lines.Count - 1)
+    //   {
+    //     CursorPos.Y++;
+    //     CursorPos.X = Math.Min(CursorPos.X, Lines[CursorPos.Y].Length);
+    //   }
+    // }
+    else
+    {
+      resetCursorTimer = false;
+      var c = GetKeyChar(key);
+      if (c.Length == 1)
       {
-        if (CursorX < CurrentInput.Text.Length)
-        {
-          CursorX++;
-        }
-      }
-      // else if (key == Keys.Up)
-      // {
-      //   if (CursorPos.Y > 0)
-      //   {
-      //     CursorPos.Y--;
-      //     CursorPos.X = Math.Min(CursorPos.X, Lines[CursorPos.Y].Length);
-      //   }
-      // }
-      // else if (key == Keys.Down)
-      // {
-      //   if (CursorPos.Y < Lines.Count - 1)
-      //   {
-      //     CursorPos.Y++;
-      //     CursorPos.X = Math.Min(CursorPos.X, Lines[CursorPos.Y].Length);
-      //   }
-      // }
-      else
-      {
-        resetCursorTimer = false;
-        var c = GetKeyChar(key);
-        if (c.Length == 1)
-        {
-          var newText = CurrentInput.Text.Insert(CursorX, c);
-          CurrentInput.UpdateText(newText);
-          CursorX++;
-        }
+        resetCursorTimer = true;
+        var newText = CurrentInput.Text.Insert(CursorX, c);
+        CurrentInput.UpdateText(newText);
+        CursorX++;
       }
     }
 
@@ -199,8 +197,6 @@ public class GameConsole
     }
 
     UpdateCompletion();
-
-    previousKeys = newKeys;
   }
 
   private void UpdateCompletion()
@@ -360,7 +356,7 @@ public class GameConsole
 
     if (key >= Keys.D0 && key <= Keys.D9)
     {
-      string[] shiftNumbers = { ")", "!", "@", "#", "$", "%", "^", "&", "*", "(" };
+      string[] shiftNumbers = [")", "!", "@", "#", "$", "%", "^", "&", "*", "("];
       int number = key - Keys.D0;
       return isShiftPressed ? shiftNumbers[number] : number.ToString();
     }
