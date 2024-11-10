@@ -24,9 +24,9 @@ public class ConsoleKeyBuffer
 
     var currentTime = gameTime.TotalGameTime.TotalSeconds;
 
-    var keys = diffKeys.Length > 0 ? diffKeys : [Keys.None];
+    var keys = diffKeys.Length > 0 ? diffKeys : [];
 
-    if (pressedKeys.Contains(currentKey))
+    if (keys.Length == 0 && pressedKeys.Contains(currentKey))
     {
       keys = [currentKey];
     }

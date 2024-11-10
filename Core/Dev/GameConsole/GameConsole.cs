@@ -29,7 +29,7 @@ public class GameConsole
   private int CursorX { get; set; }
   private static string Prompt => "> ";
   private float PromptWidth => Core.Font.Get(FontSize).MeasureString(Prompt.ToString()).X;
-  private ConsoleKeyBuffer KeyBuffer = new();
+  private readonly ConsoleKeyBuffer KeyBuffer = new();
   public ConsoleLine CurrentInput { get; private set; }
   public string Completion { get; private set; } = "";
   public Color CompletionColor { get; set; } = Palette.Grey[4];
