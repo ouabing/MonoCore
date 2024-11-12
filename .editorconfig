@@ -168,6 +168,8 @@ remove_call_expression_list_finish_comma = false
 end_statement_with_semicolon = keep
 
 dotnet_diagnostic.IDE0005.severity = error
+dotnet_diagnostic.CA1304.severity = none
+dotnet_diagnostic.CA1311.severity = none
 dotnet_diagnostic.CA1852.severity = none
 dotnet_sort_system_directives_first = true
 

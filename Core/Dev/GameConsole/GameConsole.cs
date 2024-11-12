@@ -17,7 +17,9 @@ public class GameConsole
   public int FontSize { get; set; } = 20;
   public int LineHeight => Core.Font.Get(FontSize).LineHeight;
   private int LinesPerScreen => (Height - 2 * PaddingY) / (LineHeight + LineSpacing);
-  public bool IsEnabled { get; set; }
+  public const int MaxHistoryLines = 100;
+  public List<string> History { get; } = [];
+  public bool IsEnabled { get; private set; }
   public float CursorBlinkDuration { get; set; } = 0.5f;
   public Dictionary<string, ConsoleCommand> Commands { get; } = [];
   private float CursorTimer;
@@ -25,12 +27,6 @@ public class GameConsole
   public Color BackgroundColor { get; set; } = Palette.Black * 0.5f;
   public Vector2 CursorSize => new(4, LineHeight);
   public Color CursorColor { get; set; } = Palette.White;
-  private readonly List<ConsoleLine> HistoryLines = [];
-  private int CursorX { get; set; }
-  private string Prompt => InEvalMode ? ">> " : "> ";
-  private float PromptWidth => Core.Font.Get(FontSize).MeasureString(Prompt.ToString()).X;
-  private readonly ConsoleKeyBuffer KeyBuffer = new();
-  private System.Threading.Tasks.Task? currentTask;
   public ConsoleLine CurrentInput { get; private set; }
   public string Completion { get; private set; } = "";
   public Color CompletionColor { get; set; } = Palette.Grey[4];
@@ -39,8 +35,15 @@ public class GameConsole
     "help: show all commands",
     "exit: close the console",
   ];
-
   public bool InEvalMode { get; set; }
+  public bool IsLoading => currentTask != null && currentTask.IsCompleted != true;
+  private readonly List<ConsoleLine> HistoryLines = [];
+  private int CursorX { get; set; }
+  private string Prompt => InEvalMode ? ">> " : "> ";
+  private float PromptWidth => Core.Font.Get(FontSize).MeasureString(Prompt.ToString()).X;
+  private readonly ConsoleKeyBuffer KeyBuffer = new();
+  private System.Threading.Tasks.Task? currentTask;
+  private readonly ConsoleIndicator Indicator = new();
 
   public void LoadContent()
   {
@@ -49,6 +52,7 @@ public class GameConsole
       HistoryLines.Add(new ConsoleLine("", message, Palette.Green[4], Width - 2 * PaddingX, FontSize));
     }
     CurrentInput = StartNewInputLine();
+    Indicator.LoadContent();
     RegisterCommand(new ClearCommand());
     RegisterCommand(new DebugCommand());
     RegisterCommand(new EvalCommand());
@@ -71,15 +75,13 @@ public class GameConsole
   {
     if (Core.Input.IsKeyPressed(Keys.OemTilde))
     {
-      IsEnabled = !IsEnabled;
-
       if (IsEnabled)
       {
-        OnEnable();
+        Disable();
       }
       else
       {
-        OnDisable();
+        Enable();
       }
     }
     if (!IsEnabled)
@@ -87,8 +89,9 @@ public class GameConsole
       return;
     }
 
-    if (InEvalMode && currentTask != null && currentTask.IsCompleted != true)
+    if (IsLoading)
     {
+      Indicator.Update(gameTime);
       return;
     }
     UpdateInput(gameTime);
@@ -182,22 +185,14 @@ public class GameConsole
         CursorX++;
       }
     }
-    // else if (key == Keys.Up)
-    // {
-    //   if (CursorPos.Y > 0)
-    //   {
-    //     CursorPos.Y--;
-    //     CursorPos.X = Math.Min(CursorPos.X, Lines[CursorPos.Y].Length);
-    //   }
-    // }
-    // else if (key == Keys.Down)
-    // {
-    //   if (CursorPos.Y < Lines.Count - 1)
-    //   {
-    //     CursorPos.Y++;
-    //     CursorPos.X = Math.Min(CursorPos.X, Lines[CursorPos.Y].Length);
-    //   }
-    // }
+    else if (key == Keys.Up)
+    {
+      HistoryUp();
+    }
+    else if (key == Keys.Down)
+    {
+      HistoryDown();
+    }
     else
     {
       resetCursorTimer = false;
@@ -217,6 +212,54 @@ public class GameConsole
     }
 
     UpdateCompletion();
+  }
+
+  private void HistoryUp()
+  {
+    if (InEvalMode)
+    {
+      var command = Commands["eval"] as EvalCommand;
+      var text = command?.HistoryUp(CurrentInput.Text);
+      if (text != null)
+      {
+        CurrentInput.UpdateText(text);
+        CursorX = CurrentInput.Text.Length;
+      }
+      return;
+    }
+    else
+    {
+      var text = HistoryUp(CurrentInput.Text);
+      if (text != null)
+      {
+        CurrentInput.UpdateText(text);
+        CursorX = CurrentInput.Text.Length;
+      }
+    }
+  }
+
+  private void HistoryDown()
+  {
+    if (InEvalMode)
+    {
+      var command = Commands["eval"] as EvalCommand;
+      var text = command?.HistoryDown(CurrentInput.Text);
+      if (text != null)
+      {
+        CurrentInput.UpdateText(text);
+        CursorX = CurrentInput.Text.Length;
+      }
+      return;
+    }
+    else
+    {
+      var text = HistoryDown(CurrentInput.Text);
+      if (text != null)
+      {
+        CurrentInput.UpdateText(text);
+        CursorX = CurrentInput.Text.Length;
+      }
+    }
   }
 
   private void UpdateCompletion()
@@ -263,6 +306,7 @@ public class GameConsole
     }
     else
     {
+      AddHistory(input);
       var commandName = parts[0].Trim();
       var command = Commands.GetValueOrDefault(commandName);
       if (command == null)
@@ -276,16 +320,70 @@ public class GameConsole
       }
     }
 
+    if (IsLoading)
+    {
+      Indicator.Reset();
+    }
+
     StartNewInputLine();
   }
 
-  private static void OnEnable()
+  private void AddHistory(string expression)
   {
+    if (History.Count >= MaxHistoryLines)
+    {
+      History.RemoveAt(0);
+    }
+    History.Add(expression);
+  }
+
+  public string? HistoryUp(string current)
+  {
+    if (History.Count == 0)
+    {
+      return null;
+    }
+
+    var index = History.FindLastIndex(x => x == current);
+    if (index == 0)
+    {
+      return null;
+    }
+    if (index == -1)
+    {
+      return History[History.Count - 1];
+    }
+    return History[index - 1];
+  }
+
+  public string? HistoryDown(string current)
+  {
+    if (History.Count == 0)
+    {
+      return null;
+    }
+    var index = History.FindLastIndex(x => x == current);
+
+    if (index == -1)
+    {
+      return null;
+    }
+    if (index == History.Count - 1)
+    {
+      return "";
+    }
+    return History[index + 1];
+  }
+
+  public void Enable()
+  {
+    IsEnabled = true;
     Core.Input.Disable();
   }
 
-  private static void OnDisable()
+  public void Disable()
   {
+    IsEnabled = false;
     Core.Input.Enable();
   }
 
@@ -309,8 +407,16 @@ public class GameConsole
     {
       DrawLine(line, x, ref y);
     }
-    DrawLine(CurrentInput, x, ref y);
-    DrawCompletion();
+
+    if (IsLoading)
+    {
+      Indicator.Draw(gameTime, FontSize, x, y);
+    }
+    else
+    {
+      DrawLine(CurrentInput, x, ref y);
+      DrawCompletion();
+    }
     Core.Sb.End();
   }
 
@@ -374,6 +480,11 @@ public class GameConsole
 
   private void DrawCursor(GameTime gameTime)
   {
+    if (IsLoading)
+    {
+      return;
+    }
+
     CursorTimer += gameTime.GetElapsedSeconds();
     var show = true;
     if (CursorTimer > 2 * CursorBlinkDuration)

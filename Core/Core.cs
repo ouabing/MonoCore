@@ -65,6 +65,7 @@ public static class Core
   public static GRandom Random { get; } = new GRandom();
   public static AnimationManager Animation { get; } = new();
   public static Debugger Debugger { get; } = new();
+  public static Inspector Inspector { get; } = new();
   public static GameConsole Console { get; } = new();
 
   private static bool contentLoaded;
@@ -115,12 +116,14 @@ public static class Core
     Pd = new PrimitiveDrawing(Pb);
     Camera.LoadContent();
     Console.LoadContent();
+    Inspector.LoadContent();
   }
 
   // Return true if the game is blocked
   public static bool Update(GameTime gameTime)
   {
     Console.Update(gameTime);
+    Inspector.Update(gameTime);
     Input.Update(gameTime);
     if (Paused)
     {
@@ -155,6 +158,7 @@ public static class Core
   public static void Draw(GameTime gameTime)
   {
     Layer.Draw(gameTime);
+    Inspector.Draw(gameTime);
     Console.Draw(gameTime);
   }
 }

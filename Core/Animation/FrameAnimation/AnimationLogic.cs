@@ -53,6 +53,13 @@ public class AnimationLogic
     Actions = actions;
   }
 
+  public void Reset()
+  {
+    Frame = 0;
+    Timer = 0;
+    IsFinished = false;
+  }
+
   public void Update(GameTime gameTime)
   {
     var dt = gameTime.GetElapsedSeconds();

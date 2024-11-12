@@ -16,7 +16,7 @@ public class ExitCommand : ConsoleCommand
 
     if (args.Length == 0)
     {
-      console.IsEnabled = false;
+      console.Disable();
       return;
     }
     if (args[0] == "--help")

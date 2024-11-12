@@ -48,6 +48,12 @@ public class ConsoleLine
         lines.Add(currentLine.ToString());
         currentLine.Clear();
       }
+      else if (text[currentIndex] == '\n')
+      {
+        lines.Add(currentLine.ToString());
+        currentLine.Clear();
+        currentIndex++;
+      }
       else
       {
         currentLine.Append(text[currentIndex]);

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
@@ -8,8 +9,57 @@ namespace G;
 public class EvalCommand : ConsoleCommand
 {
   private ScriptState<object>? state;
-  public EvalCommand() : base("eval", "Evaluate any C# expression", "eval [expression]", [])
+  public const int MaxHistory = 100;
+  public List<string> History { get; } = [];
+  public EvalCommand() : base("eval", "Enter interactive mode or directly evaluate any C# expression", "eval [expression]", [])
   {
+  }
+
+  private void AddHistory(string expression)
+  {
+    if (History.Count >= MaxHistory)
+    {
+      History.RemoveAt(0);
+    }
+    History.Add(expression);
+  }
+
+  public string? HistoryUp(string current)
+  {
+    if (History.Count == 0)
+    {
+      return null;
+    }
+
+    var index = History.FindLastIndex(x => x == current);
+    if (index == 0)
+    {
+      return null;
+    }
+    if (index == -1)
+    {
+      return History[History.Count - 1];
+    }
+    return History[index - 1];
+  }
+
+  public string? HistoryDown(string current)
+  {
+    if (History.Count == 0)
+    {
+      return null;
+    }
+    var index = History.FindLastIndex(x => x == current);
+
+    if (index == -1)
+    {
+      return null;
+    }
+    if (index == History.Count - 1)
+    {
+      return "";
+    }
+    return History[index + 1];
   }
 
   public async System.Threading.Tasks.Task Eval(GameConsole console, string expression)
@@ -19,30 +69,53 @@ public class EvalCommand : ConsoleCommand
     {
       return;
     }
-    if (expression.ToLower() == "exit")
-    {
-      state = null;
-      console.ExitEvalMode();
-      return;
-    }
+    AddHistory(expression);
+
+    var parts = expression.Split(' ');
+    var first = parts[0].ToLower().Trim();
+    var rest = parts.Length > 1 ? string.Join(" ", parts[1..]) : "";
 
     try
     {
-      if (state == null)
+      switch (first)
       {
-        var assembly = await GetExecutingAssemblyAsync();
-        state = await CSharpScript.RunAsync(
-          expression,
-          ScriptOptions.Default
-                       .WithReferences(assembly)
-                       .WithImports("System", "G")
-        );
+        case "exit":
+          state = null;
+          console.ExitEvalMode();
+          return;
+        case "help":
+          console.Print("watch [component]                            Watch a component for inspection");
+          console.Print("watch+ HP (Component c) => (c as Enemy).HP   Add a custom field to the inspector, see InspectorRow");
+          console.Print("watch- HP                                    Remove a custom field from the inspector");
+          console.Print("exit                                         Exit interactive mode");
+          return;
+        case "watch":
+          await RunScript(console, rest);
+          if (state.ReturnValue is not Component)
+          {
+            console.PrintError("watch can only be used with Component types");
+          }
+          else
+          {
+            Core.Inspector.Watch(state.ReturnValue as Component);
+            console.Print($"start watching {state.ReturnValue.GetType().Name} in the inspector");
+          }
+          break;
+        case "watch+":
+          var name = rest.Split(' ')[0].Trim();
+          rest = rest.Substring(name.Length).Trim();
+          await RunScript(console, rest);
+          Core.Inspector.AddRow(new InspectorRow(name, state.ReturnValue as Func<Component, string>));
+          break;
+        case "watch-":
+          var nameToRemove = rest.Split(' ')[0].Trim();
+          Core.Inspector.RemoveRow(nameToRemove);
+          break;
+        default:
+          await RunScript(console, expression);
+          console.Print(state?.ReturnValue?.ToString() ?? "");
+          break;
       }
-      else
-      {
-        state = await state.ContinueWithAsync(expression);
-      }
-      console.Print(state?.ReturnValue?.ToString() ?? "");
     }
     catch (CompilationErrorException e)
     {
@@ -50,9 +123,39 @@ public class EvalCommand : ConsoleCommand
     }
   }
 
-  private async System.Threading.Tasks.Task<Assembly> GetExecutingAssemblyAsync()
+  private async System.Threading.Tasks.Task RunScript(GameConsole console, string expression)
+  {
+    if (state == null)
+    {
+      var options = await GetDefaultScriptOptionsAsync();
+      state = await CSharpScript.RunAsync(
+        expression,
+        options
+      );
+    }
+    else
+    {
+      state = await state.ContinueWithAsync(expression);
+    }
+  }
+
+  private static async System.Threading.Tasks.Task<Assembly> GetExecutingAssemblyAsync()
   {
     return await System.Threading.Tasks.Task.Run(() => Assembly.GetExecutingAssembly());
+  }
+
+  private static async System.Threading.Tasks.Task<ScriptOptions> GetDefaultScriptOptionsAsync()
+  {
+    var assembly = await GetExecutingAssemblyAsync();
+    return ScriptOptions.Default.WithReferences(assembly)
+                                .WithImports(
+                                  "System",
+                                  "G",
+                                  "Microsoft.Xna.Framework",
+                                  "MonoGame.Extended",
+                                  "System.Linq",
+                                  "System.Collections.Generic"
+                                );
   }
 
   public override async void Execute(GameConsole console, string[] args)
@@ -63,7 +166,7 @@ public class EvalCommand : ConsoleCommand
     if (expression.Length == 0)
     {
       // enter interactive mode
-      console.Print("entering interactive mode. type 'exit' to exit.");
+      console.Print("entering interactive mode. type 'help' to see available commands.");
       console.EnterEvalMode();
       return;
     }
@@ -74,11 +177,10 @@ public class EvalCommand : ConsoleCommand
     }
     try
     {
+      var options = await GetDefaultScriptOptionsAsync();
       var result = await CSharpScript.EvaluateAsync(
         expression,
-        ScriptOptions.Default
-                     .WithReferences(Assembly.GetExecutingAssembly())
-                     .WithImports("System", "G")
+        options
       );
       console.Print(result?.ToString() ?? "");
     }
