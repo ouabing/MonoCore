@@ -5,7 +5,7 @@ namespace G;
 
 public class HelpCommand : ConsoleCommand
 {
-  public HelpCommand() : base("help", "Displays a list of available commands", "help", [])
+  public HelpCommand() : base("help", "Display a list of available commands", "help", [])
   {
   }
 

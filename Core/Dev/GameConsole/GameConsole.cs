@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using FontStashSharp;
@@ -27,6 +28,7 @@ public class GameConsole
   public Color TextColor { get; set; } = Palette.White;
   public Color BackgroundColor { get; set; } = Palette.Black * 0.5f;
   public Vector2 CursorSize => new(4, LineHeight);
+  public Vector2 ViewCursorSize => new(FontSize, LineHeight);
   public Color CursorColor { get; set; } = Palette.White;
   public ConsoleLine CurrentInput { get; private set; }
   public string Completion { get; private set; } = "";
@@ -37,12 +39,15 @@ public class GameConsole
     "exit: close the console",
   ];
   public bool InEvalMode { get; set; }
+  public bool InViewMode { get; set; }
+  public Vector2 ViewCursorPos { get; set; }
   public bool IsLoading => currentTask != null && currentTask.IsCompleted != true;
   private readonly List<ConsoleLine> HistoryLines = [];
   private int CursorX { get; set; }
   private string Prompt => InEvalMode ? ">> " : "> ";
   private SpriteFontBase Font => Core.Font.Get("unscii8", FontSize);
   private float PromptWidth => Font.MeasureString(Prompt.ToString()).X;
+  private float FontWidth => Font.MeasureString("A").X;
   private readonly ConsoleKeyBuffer KeyBuffer = new();
   private System.Threading.Tasks.Task? currentTask;
   private readonly ConsoleIndicator Indicator = new();
@@ -96,7 +101,14 @@ public class GameConsole
       Indicator.Update(gameTime);
       return;
     }
-    UpdateInput(gameTime);
+    if (InViewMode)
+    {
+      UpdateViewModeInput(gameTime);
+    }
+    else
+    {
+      UpdateInput(gameTime);
+    }
   }
 
   public void Draw(GameTime gameTime)
@@ -108,6 +120,7 @@ public class GameConsole
     DrawBackground(gameTime);
     DrawText(gameTime);
     DrawCursor(gameTime);
+    DrawLabel(gameTime);
   }
 
   public void Clear()
@@ -143,6 +156,33 @@ public class GameConsole
   public void ExitEvalMode()
   {
     InEvalMode = false;
+  }
+
+  private void UpdateViewModeInput(GameTime gameTime)
+  {
+    var key = KeyBuffer.UpdateKeys(gameTime);
+    var c = GetKeyChar(key);
+    var cursorPos = GetCursorPosition();
+    if (key == Keys.Up || c == "k")
+    {
+      ViewCursorPos = new Vector2(ViewCursorPos.X, Math.Max(PaddingY, ViewCursorPos.Y - LineHeight - LineSpacing));
+    }
+    else if (key == Keys.Down || c == "j")
+    {
+      ViewCursorPos = new Vector2(ViewCursorPos.X, Math.Min(cursorPos.Y, ViewCursorPos.Y + LineHeight + LineSpacing));
+    }
+    else if (key == Keys.Right || c == "l")
+    {
+      ViewCursorPos = new Vector2(Math.Min(Width - PaddingX, ViewCursorPos.X + FontWidth), ViewCursorPos.Y);
+    }
+    else if (key == Keys.Left || c == "h")
+    {
+      ViewCursorPos = new Vector2(Math.Max(PaddingX, ViewCursorPos.X - FontWidth), ViewCursorPos.Y);
+    }
+    else if (c == "i")
+    {
+      InViewMode = false;
+    }
   }
 
   private void UpdateInput(GameTime gameTime)
@@ -195,12 +235,17 @@ public class GameConsole
     {
       HistoryDown();
     }
+    else if (key == Keys.Escape)
+    {
+      EnterViewMode();
+    }
     else
     {
       resetCursorTimer = false;
       var c = GetKeyChar(key);
       if (c.Length == 1)
       {
+
         resetCursorTimer = true;
         var newText = CurrentInput.Text.Insert(CursorX, c);
         CurrentInput.UpdateText(newText);
@@ -214,6 +259,12 @@ public class GameConsole
     }
 
     UpdateCompletion();
+  }
+
+  private void EnterViewMode()
+  {
+    InViewMode = true;
+    ViewCursorPos = GetCursorPosition();
   }
 
   private void HistoryUp()
@@ -434,6 +485,19 @@ public class GameConsole
     {
       offset = 0;
     }
+    if (InViewMode)
+    {
+      var cursorLineIndex = (int)ViewCursorPos.Y / (LineHeight + LineSpacing);
+
+      if (cursorLineIndex < offset)
+      {
+        offset = cursorLineIndex;
+      }
+      else if (cursorLineIndex >= offset + LinesPerScreen)
+      {
+        offset = cursorLineIndex - LinesPerScreen + 1;
+      }
+    }
     return offset;
   }
 
@@ -502,12 +566,27 @@ public class GameConsole
       return;
     }
 
-    var cursorPos = GetCursorPosition();
-    RectangleF cursorRect = new(cursorPos.X, cursorPos.Y, CursorSize.X, CursorSize.Y);
+    var cursorPos = InViewMode ? ViewCursorPos : GetCursorPosition();
+    var size = InViewMode ? ViewCursorSize : CursorSize;
+    RectangleF cursorRect = new(cursorPos.X, cursorPos.Y, size.X, size.Y);
     Core.Sb.Begin(samplerState: SamplerState.PointClamp);
     Core.Sb.FillRectangle(cursorRect, CursorColor);
     Core.Sb.End();
   }
+
+  private void DrawLabel(GameTime gameTime)
+  {
+    if (InViewMode)
+    {
+      Core.Sb.Begin(samplerState: SamplerState.PointClamp);
+      var label = "VIEW MODE";
+      var labelSize = Font.MeasureString(label);
+      Core.Sb.FillRectangle(new Rectangle(Width - PaddingX - (int)labelSize.X - 1, Height - PaddingY - LineHeight - 2, (int)labelSize.X + 2, LineHeight + 4), Palette.White);
+      Font.DrawText(Core.Sb, label, new Vector2(Width - PaddingX - labelSize.X, Height - PaddingY - LineHeight), Palette.Black);
+      Core.Sb.End();
+    }
+  }
+
 
   private static string GetKeyChar(Keys key)
   {
