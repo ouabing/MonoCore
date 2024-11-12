@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using FontStashSharp;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -14,8 +15,8 @@ public class GameConsole
   public int PaddingX { get; set; } = 20;
   public int PaddingY { get; set; } = 20;
   public int LineSpacing { get; set; } = 4;
-  public int FontSize { get; set; } = 20;
-  public int LineHeight => Core.Font.Get(FontSize).LineHeight;
+  public int FontSize { get; set; } = 16;
+  public int LineHeight => Font.LineHeight;
   private int LinesPerScreen => (Height - 2 * PaddingY) / (LineHeight + LineSpacing);
   public const int MaxHistoryLines = 100;
   public List<string> History { get; } = [];
@@ -40,7 +41,8 @@ public class GameConsole
   private readonly List<ConsoleLine> HistoryLines = [];
   private int CursorX { get; set; }
   private string Prompt => InEvalMode ? ">> " : "> ";
-  private float PromptWidth => Core.Font.Get(FontSize).MeasureString(Prompt.ToString()).X;
+  private SpriteFontBase Font => Core.Font.Get("unscii8", FontSize);
+  private float PromptWidth => Font.MeasureString(Prompt.ToString()).X;
   private readonly ConsoleKeyBuffer KeyBuffer = new();
   private System.Threading.Tasks.Task? currentTask;
   private readonly ConsoleIndicator Indicator = new();
@@ -49,7 +51,7 @@ public class GameConsole
   {
     foreach (var message in WelcomeMessages)
     {
-      HistoryLines.Add(new ConsoleLine("", message, Palette.Green[4], Width - 2 * PaddingX, FontSize));
+      HistoryLines.Add(new ConsoleLine("", message, Palette.Green[4], Width - 2 * PaddingX, Font));
     }
     CurrentInput = StartNewInputLine();
     Indicator.LoadContent();
@@ -125,12 +127,12 @@ public class GameConsole
 
   public void Print(string text, Color color)
   {
-    HistoryLines.Add(new ConsoleLine("", text, color, Width - 2 * PaddingX, FontSize));
+    HistoryLines.Add(new ConsoleLine("", text, color, Width - 2 * PaddingX, Font));
   }
 
   public void Print(string text)
   {
-    HistoryLines.Add(new ConsoleLine("", text, TextColor, Width - 2 * PaddingX, FontSize));
+    HistoryLines.Add(new ConsoleLine("", text, TextColor, Width - 2 * PaddingX, Font));
   }
 
   public void EnterEvalMode()
@@ -465,7 +467,7 @@ public class GameConsole
       return;
     }
 
-    Core.Font.Get(FontSize).DrawText(Core.Sb, diff, new Vector2(cursorPos.X, cursorPos.Y), CompletionColor);
+    Font.DrawText(Core.Sb, diff, new Vector2(cursorPos.X, cursorPos.Y), CompletionColor);
 
   }
 
@@ -473,7 +475,7 @@ public class GameConsole
   {
     foreach (var wrappedLine in line.WrappedLines)
     {
-      Core.Font.Get(FontSize).DrawText(Core.Sb, wrappedLine, new Vector2(x, y), line.Color);
+      Font.DrawText(Core.Sb, wrappedLine, new Vector2(x, y), line.Color);
       y += LineHeight + LineSpacing;
     }
   }
@@ -551,7 +553,7 @@ public class GameConsole
 
   private ConsoleLine StartNewInputLine()
   {
-    CurrentInput = new ConsoleLine(Prompt, "", TextColor, Width - 2 * PaddingX, FontSize);
+    CurrentInput = new ConsoleLine(Prompt, "", TextColor, Width - 2 * PaddingX, Font);
     CursorX = 0;
     return CurrentInput;
   }
@@ -575,7 +577,7 @@ public class GameConsole
     }
 
     y -= CalcScrollOffset();
-    x = PaddingX + (hasLineBreak ? 0 : PromptWidth) + x * Core.Font.Get(FontSize).MeasureString("A").X;
+    x = PaddingX + (hasLineBreak ? 0 : PromptWidth) + x * Font.MeasureString("A").X;
     y = PaddingY + y * (LineHeight + LineSpacing);
 
     return new Vector2(x, y);
