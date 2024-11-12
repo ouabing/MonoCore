@@ -84,10 +84,11 @@ public class EvalCommand : ConsoleCommand
           console.ExitEvalMode();
           return;
         case "help":
+          console.Print("exit                                         Exit interactive mode");
+          console.Print("print                                        Print expression result");
           console.Print("watch [component]                            Watch a component for inspection");
           console.Print("watch+ HP (Component c) => (c as Enemy).HP   Add a custom field to the inspector, see InspectorRow");
           console.Print("watch- HP                                    Remove a custom field from the inspector");
-          console.Print("exit                                         Exit interactive mode");
           return;
         case "watch":
           await RunScript(console, rest);
@@ -99,6 +100,15 @@ public class EvalCommand : ConsoleCommand
           {
             Core.Inspector.Watch(state.ReturnValue as Component);
             console.Print($"start watching {state.ReturnValue.GetType().Name} in the inspector");
+          }
+          break;
+        case "print":
+          await RunScript(console, rest);
+
+          var restResultString = state?.ReturnValue?.ToString();
+          if (restResultString != null)
+          {
+            console.Print(restResultString);
           }
           break;
         case "watch+":
@@ -113,7 +123,12 @@ public class EvalCommand : ConsoleCommand
           break;
         default:
           await RunScript(console, expression);
-          console.Print(state?.ReturnValue?.ToString() ?? "");
+
+          var resultString = state?.ReturnValue?.ToString();
+          if (resultString != null)
+          {
+            console.Print(resultString);
+          }
           break;
       }
     }
@@ -182,7 +197,11 @@ public class EvalCommand : ConsoleCommand
         expression,
         options
       );
-      console.Print(result?.ToString() ?? "");
+      var resultString = result?.ToString();
+      if (resultString != null)
+      {
+        console.Print(resultString);
+      }
     }
     catch (CompilationErrorException e)
     {

@@ -154,7 +154,7 @@ public class GameConsole
     }
     else if (key == Keys.Tab)
     {
-      if (Completion.Length > 0)
+      if (!InEvalMode && Completion.Length > 0)
       {
         var newText = CurrentInput.Text + Completion[CurrentInput.Text.Length..];
         CurrentInput.UpdateText(newText);

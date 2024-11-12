@@ -79,9 +79,10 @@ public class Inspector : Component
     var position = new Vector2(Core.TargetScreenWidth - Width, 0);
     Core.Sb.Begin(samplerState: SamplerState.PointClamp);
     Core.Sb.FillRectangle(new Rectangle((int)position.X, (int)position.Y, Width, Height), Palette.Black * Opacity);
+    font.DrawText(Core.Sb, "INSPECTOR", position + new Vector2(FontSize, FontSize), Palette.Green[4]);
     for (var i = 0; i < Rows.Count; i++)
     {
-      Rows[i].Draw(Watching, font, position + new Vector2(FontSize, (i + 1) * FontSize), Palette.White);
+      Rows[i].Draw(Watching, font, position + new Vector2(FontSize, (i + 3) * FontSize), Palette.Green[4]);
     }
     Core.Sb.End();
     base.Draw(gameTime);
