@@ -67,6 +67,7 @@ public class GameConsole
     RegisterCommand(new HelpCommand());
     RegisterCommand(new PauseCommand());
     RegisterCommand(new ResumeCommand());
+    RegisterCommand(new ScreenshotCommand());
   }
 
   public void RegisterCommand(ConsoleCommand command)
@@ -82,13 +83,17 @@ public class GameConsole
   {
     if (Core.Input.IsKeyPressed(Keys.OemTilde))
     {
-      if (IsEnabled)
+      var keyState = Keyboard.GetState();
+      if (!keyState.IsKeyDown(Keys.LeftShift) && !keyState.IsKeyDown(Keys.RightShift))
       {
-        Disable();
-      }
-      else
-      {
-        Enable();
+        if (IsEnabled)
+        {
+          Disable();
+        }
+        else
+        {
+          Enable();
+        }
       }
     }
     if (!IsEnabled)

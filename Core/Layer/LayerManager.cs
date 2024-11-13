@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -115,6 +116,34 @@ public class LayerManager(Color backgroundColor)
     }
 
     layer.Remove(component);
+  }
+
+  public string TakeScreenshot(string folder)
+  {
+    int w = Core.GraphicsDevice.PresentationParameters.BackBufferWidth;
+    int h = Core.GraphicsDevice.PresentationParameters.BackBufferHeight;
+    var gametime = new GameTime();
+    Draw(gametime);
+    int[] backBuffer = new int[w * h];
+    Core.GraphicsDevice.GetBackBufferData(backBuffer);
+
+    Texture2D texture = new(Core.GraphicsDevice, w, h, false, Core.GraphicsDevice.PresentationParameters.BackBufferFormat);
+    texture.SetData(backBuffer);
+
+    if (!Directory.Exists(folder))
+    {
+      Directory.CreateDirectory(folder);
+    }
+
+    var filename = FileHelper.ResolvePath(Path.Combine(folder, $"{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.png"));
+    Stream stream = File.OpenWrite(filename);
+
+    texture.SaveAsPng(stream, w, h);
+    stream.Close();
+    stream.Dispose();
+
+    texture.Dispose();
+    return filename;
   }
 
   public void Draw(GameTime gameTime)
