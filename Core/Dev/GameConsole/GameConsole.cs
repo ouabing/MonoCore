@@ -181,6 +181,14 @@ public class GameConsole
     }
     else if (c == "i")
     {
+      if (ViewCursorPos.Y == cursorPos.Y)
+      {
+        CursorX = ViewCursorPos.X < PaddingX + PromptWidth ? 0 : (int)((ViewCursorPos.X - PaddingX - PromptWidth) / FontWidth);
+        if (CursorX > CurrentInput.Text.Length)
+        {
+          CursorX = CurrentInput.Text.Length;
+        }
+      }
       InViewMode = false;
     }
   }
