@@ -457,7 +457,7 @@ public class GameConsole
   private void DrawBackground(GameTime gameTime)
   {
     Rectangle backgroundRect = new(0, 0, Width, Height);
-    Core.Sb.Begin(samplerState: SamplerState.PointClamp);
+    Core.Sb.Begin(samplerState: SamplerState.PointClamp, transformMatrix: Core.Screen.Transform);
     Core.Sb.DrawRectangle(backgroundRect, TextColor);
     Core.Sb.FillRectangle(backgroundRect, BackgroundColor);
     Core.Sb.End();
@@ -469,7 +469,7 @@ public class GameConsole
     var y = PaddingY;
     var offsetY = CalcScrollOffset();
     y -= offsetY * (LineHeight + LineSpacing);
-    Core.Sb.Begin(samplerState: SamplerState.PointClamp);
+    Core.Sb.Begin(samplerState: SamplerState.PointClamp, transformMatrix: Core.Screen.Transform);
     foreach (var line in HistoryLines)
     {
       DrawLine(line, x, ref y);
@@ -583,7 +583,7 @@ public class GameConsole
     var cursorPos = InViewMode ? ViewCursorPos : GetCursorPosition();
     var size = InViewMode ? ViewCursorSize : CursorSize;
     RectangleF cursorRect = new(cursorPos.X, cursorPos.Y, size.X, size.Y);
-    Core.Sb.Begin(samplerState: SamplerState.PointClamp);
+    Core.Sb.Begin(samplerState: SamplerState.PointClamp, transformMatrix: Core.Screen.Transform);
     Core.Sb.FillRectangle(cursorRect, CursorColor);
     Core.Sb.End();
   }
@@ -592,7 +592,7 @@ public class GameConsole
   {
     if (InViewMode)
     {
-      Core.Sb.Begin(samplerState: SamplerState.PointClamp);
+      Core.Sb.Begin(samplerState: SamplerState.PointClamp, transformMatrix: Core.Screen.Transform);
       var label = "VIEW MODE";
       var labelSize = Font.MeasureString(label);
       Core.Sb.FillRectangle(new Rectangle(Width - PaddingX - (int)labelSize.X - 1, Height - PaddingY - LineHeight - 2, (int)labelSize.X + 2, LineHeight + 4), Palette.White);

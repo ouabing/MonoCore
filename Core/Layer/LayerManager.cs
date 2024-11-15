@@ -159,8 +159,7 @@ public class LayerManager(Color backgroundColor)
     Core.Graphics!.GraphicsDevice.Clear(BackgroundColor);
 
     // Apply the viewport offsets
-    var offset = Core.Screen.Offset;
-    Matrix transform = Matrix.CreateTranslation(offset.X, offset.Y, 0);
+    var transform = Core.Screen.Transform;
 
     foreach (var layer in layers)
     {
