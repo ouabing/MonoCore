@@ -11,8 +11,8 @@ public static class Core
   #region  Customizable section
 
   // Resolution
-  public static int TargetScreenWidth { get; } = Def.Screen.TargetScreenWidth;
-  public static int TargetScreenHeight { get; } = Def.Screen.TargetScreenHeight;
+  // public static int TargetScreenWidth { get; } = Def.Screen.TargetScreenWidth;
+  // public static int TargetScreenHeight { get; } = Def.Screen.TargetScreenHeight;
   public static int ScreenWidth { get; } = Def.Screen.ScreenWidth;
   public static int ScreenHeight { get; } = Def.Screen.ScreenHeight;
 
@@ -23,6 +23,7 @@ public static class Core
   public static ContainerManager Container { get; } = new();
   public static WindSim Wind { get; } = new WindSim();
   public static bool Paused { get; set; }
+  public static Viewport Viewport { get; set; }
 
   private static bool enableDebug;
   public static bool EnableDebug
@@ -45,6 +46,8 @@ public static class Core
     }
   }
   public static bool EnablePositionDebug { get; set; }
+  public static GameWindow Window { get; private set; } = null!;
+  public static Screen Screen { get; private set; } = null!;
   public static PhysicsManager Physics { get; } = new();
   public static Camera Camera { get; } = new Camera();
   public static LayerManager Layer { get; } = new LayerManager(Def.Screen.BackgroundColor);
@@ -80,13 +83,14 @@ public static class Core
       PreferMultiSampling = false,
       GraphicsProfile = GraphicsProfile.HiDef
     };
+    Screen = new Screen(Graphics, ScreenWidth, ScreenHeight);
     Texture = new TextureManager(contentManager);
     Effect = new EffectManager(contentManager);
     Physics.CreateWorlds();
     Palette.SetTheme(Def.Screen.Theme);
   }
 
-  public static void InitializeGraphics()
+  public static void InitializeGraphics(GameWindow window)
   {
     if (graphicsInitialized)
     {
@@ -94,11 +98,9 @@ public static class Core
     }
     graphicsInitialized = true;
 
-    Graphics!.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
-    Graphics!.IsFullScreen = false;
-    Graphics.PreferredBackBufferWidth = TargetScreenWidth;
-    Graphics.PreferredBackBufferHeight = TargetScreenHeight;
-    Graphics.ApplyChanges();
+    Window = window;
+    Screen.Initialize(Window);
+    // UpdateViewport();
     Layer.Initialize();
   }
 
@@ -161,4 +163,44 @@ public static class Core
     Inspector.Draw(gameTime);
     Console.Draw(gameTime);
   }
+  // public static void UpdateViewport()
+  // {
+  //   int screenWidth = Graphics.PreferredBackBufferWidth;
+  //   int screenHeight = Graphics.PreferredBackBufferHeight;
+
+  //   int gameWidth = Def.Screen.TargetScreenWidth;
+  //   int gameHeight = Def.Screen.TargetScreenHeight;
+
+  //   float scaleX = (float)screenWidth / gameWidth;
+  //   float scaleY = (float)screenHeight / gameHeight;
+  //   float scale = Math.Min(scaleX, scaleY); // 保持比例缩放
+
+  //   int viewportWidth = (int)(gameWidth * scale);
+  //   int viewportHeight = (int)(gameHeight * scale);
+  //   int viewportX = (screenWidth - viewportWidth) / 2;
+  //   int viewportY = (screenHeight - viewportHeight) / 2;
+
+  //   Viewport = new Viewport(viewportX, viewportY, viewportWidth, viewportHeight);
+  // }
+
+  // public static void SetFullscreen()
+  // {
+  //   Graphics!.IsFullScreen = true;
+  //   var adapter = GraphicsAdapter.DefaultAdapter;
+  //   Graphics.PreferredBackBufferWidth = adapter.CurrentDisplayMode.Width;
+  //   Graphics.PreferredBackBufferHeight = adapter.CurrentDisplayMode.Height;
+
+  //   Graphics.ApplyChanges();
+  //   // UpdateViewport();
+  // }
+
+  // public static void SetWindow()
+  // {
+  //   Graphics!.IsFullScreen = false;
+  //   Graphics.PreferredBackBufferWidth = Def.Screen.TargetScreenWidth;
+  //   Graphics.PreferredBackBufferHeight = Def.Screen.TargetScreenHeight;
+
+  //   Graphics.ApplyChanges();
+  //   // UpdateViewport();
+  // }
 }

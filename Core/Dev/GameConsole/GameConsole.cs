@@ -11,8 +11,8 @@ namespace G;
 
 public class GameConsole
 {
-  public static int Width => Core.TargetScreenWidth;
-  public static int Height => Core.TargetScreenHeight;
+  public static int Width => Core.Screen.DisplayWidth;
+  public static int Height => Core.Screen.DisplayHeight;
   public int PaddingX { get; set; } = 20;
   public int PaddingY { get; set; } = 20;
   public int LineSpacing { get; set; } = 4;
@@ -64,6 +64,7 @@ public class GameConsole
     RegisterCommand(new DebugCommand());
     RegisterCommand(new EvalCommand());
     RegisterCommand(new ExitCommand());
+    RegisterCommand(new FullscreenCommand());
     RegisterCommand(new HelpCommand());
     RegisterCommand(new PauseCommand());
     RegisterCommand(new ResumeCommand());

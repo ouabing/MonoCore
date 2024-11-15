@@ -8,11 +8,12 @@ public class Inspector : Component
 {
   public const int FontSize = 10;
   private int Width { get; set; } = 240;
-  private int Height { get; set; } = Core.TargetScreenHeight;
+  private int Height { get; set; }
   public Component? Watching { get; private set; }
   public List<InspectorRow> Rows { get; } = [];
   public override void LoadContent()
   {
+    Height = Core.Screen.DisplayHeight;
     Opacity = 0.5f;
     base.LoadContent();
   }
@@ -76,7 +77,7 @@ public class Inspector : Component
       return;
     }
     var font = Core.Font.Get(FontSize);
-    var position = new Vector2(Core.TargetScreenWidth - Width, 0);
+    var position = new Vector2(Core.Screen.DisplayWidth - Width, 0);
     Core.Sb.Begin(samplerState: SamplerState.PointClamp);
     Core.Sb.FillRectangle(new Rectangle((int)position.X, (int)position.Y, Width, Height), Palette.Black * Opacity);
     font.DrawText(Core.Sb, "INSPECTOR", position + new Vector2(FontSize, FontSize), Palette.Green[4]);

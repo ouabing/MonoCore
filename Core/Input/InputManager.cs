@@ -273,7 +273,7 @@ public class InputManager
   {
     get
     {
-      var scale = Core.TargetScreenWidth / Core.ScreenWidth;
+      var scale = Core.Screen.DisplayWidth / Core.ScreenWidth;
       return Mouse.GetState().Position.ToVector2() / scale;
     }
   }

@@ -36,8 +36,8 @@ public class LayerManager(Color backgroundColor)
         var isCameraFixed = config.TryGetValue("IsCameraFixed", out var isFixed) && (bool)isFixed;
         if (layer == Def.Layer.Debugger)
         {
-          w = config.TryGetValue("Width", out var width) ? (int)width : Core.TargetScreenWidth;
-          h = config.TryGetValue("Height", out var height) ? (int)height : Core.TargetScreenHeight;
+          w = config.TryGetValue("Width", out var width) ? (int)width : Core.Screen.DisplayWidth;
+          h = config.TryGetValue("Height", out var height) ? (int)height : Core.Screen.DisplayHeight;
         }
         else
         {
@@ -158,6 +158,10 @@ public class LayerManager(Color backgroundColor)
     Core.Graphics!.GraphicsDevice.SetRenderTarget(null);
     Core.Graphics!.GraphicsDevice.Clear(BackgroundColor);
 
+    // Apply the viewport offsets
+    var offset = Core.Screen.Offset;
+    Matrix transform = Matrix.CreateTranslation(offset.X, offset.Y, 0);
+
     foreach (var layer in layers)
     {
       foreach (var canvas in layer.Canvases)
@@ -178,14 +182,14 @@ public class LayerManager(Color backgroundColor)
           }
 
           Core.GraphicsDevice.SetRenderTarget(null);
-          Core.Sb!.Begin(SpriteSortMode.Immediate, samplerState: SamplerState.PointClamp, effect: GlobalFXs.Last());
-          Core.Sb.Draw(lastRenderTarget, new Rectangle(0, 0, Core.TargetScreenWidth, Core.TargetScreenHeight), Color.White);
+          Core.Sb!.Begin(SpriteSortMode.Immediate, samplerState: SamplerState.PointClamp, effect: GlobalFXs.Last(), transformMatrix: transform);
+          Core.Sb.Draw(lastRenderTarget, new Rectangle(0, 0, Core.Screen.DisplayWidth, Core.Screen.DisplayHeight), Color.White);
           Core.Sb.End();
         }
         else
         {
-          Core.Sb!.Begin(SpriteSortMode.Immediate, samplerState: SamplerState.PointClamp);
-          Core.Sb.Draw(canvas.RenderTarget, new Rectangle(0, 0, Core.TargetScreenWidth, Core.TargetScreenHeight), Color.White);
+          Core.Sb!.Begin(SpriteSortMode.Immediate, samplerState: SamplerState.PointClamp, transformMatrix: transform);
+          Core.Sb.Draw(canvas.RenderTarget, new Rectangle(0, 0, Core.Screen.DisplayWidth, Core.Screen.DisplayHeight), Color.White);
           Core.Sb.End();
         }
 
