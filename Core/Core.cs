@@ -8,17 +8,6 @@ namespace G;
 
 public static class Core
 {
-  #region  Customizable section
-
-  // Resolution
-  // public static int TargetScreenWidth { get; } = Def.Screen.TargetScreenWidth;
-  // public static int TargetScreenHeight { get; } = Def.Screen.TargetScreenHeight;
-  public static int ScreenWidth { get; } = Def.Screen.ScreenWidth;
-  public static int ScreenHeight { get; } = Def.Screen.ScreenHeight;
-
-  #endregion  Customizable section
-
-  public static Vector2 ScreenCenter => new(ScreenWidth / 2, ScreenHeight / 2);
 
   public static ContainerManager Container { get; } = new();
   public static WindSim Wind { get; } = new WindSim();
@@ -83,7 +72,7 @@ public static class Core
       PreferMultiSampling = false,
       GraphicsProfile = GraphicsProfile.HiDef
     };
-    Screen = new Screen(Graphics, ScreenWidth, ScreenHeight);
+    Screen = new Screen(Graphics, Def.Screen.Width, Def.Screen.Height, Def.Screen.WindowedModeWidth, Def.Screen.WindowedModeHeight);
     Texture = new TextureManager(contentManager);
     Effect = new EffectManager(contentManager);
     Physics.CreateWorlds();

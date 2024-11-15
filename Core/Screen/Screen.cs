@@ -4,13 +4,16 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace G;
 
-public class Screen(GraphicsDeviceManager graphics, int width, int height)
+public class Screen(GraphicsDeviceManager graphics, int width, int height, int windowedModeWidth, int windowedModeHeight)
 {
   public GraphicsDeviceManager Graphics { get; private set; } = graphics;
 
   // The game's resolution
   public int Width { get; private set; } = width;
   public int Height { get; private set; } = height;
+  public Vector2 Center => new(Width / 2, Height / 2);
+  public int WindowedModeWidth { get; private set; } = windowedModeWidth;
+  public int WindowedModeHeight { get; private set; } = windowedModeHeight;
   public GameWindow Window { get; private set; }
 
   // The game's real display resolution, a multiple of the game's resolution
@@ -24,7 +27,7 @@ public class Screen(GraphicsDeviceManager graphics, int width, int height)
   public void Initialize(GameWindow window)
   {
     Window = window;
-    UpdateDisplaySize(Def.Screen.TargetScreenWidth, Def.Screen.TargetScreenHeight, false);
+    UpdateDisplaySize(WindowedModeWidth, WindowedModeHeight, false);
 
     Graphics!.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
     Graphics!.IsFullScreen = false;
@@ -36,7 +39,7 @@ public class Screen(GraphicsDeviceManager graphics, int width, int height)
 
   public void SetWindow()
   {
-    UpdateDisplaySize(Def.Screen.TargetScreenWidth, Def.Screen.TargetScreenHeight, false);
+    UpdateDisplaySize(Def.Screen.WindowedModeWidth, Def.Screen.WindowedModeHeight, false);
     Graphics.IsFullScreen = false;
     Graphics.PreferredBackBufferWidth = DisplayWidth;
     Graphics.PreferredBackBufferHeight = DisplayHeight;

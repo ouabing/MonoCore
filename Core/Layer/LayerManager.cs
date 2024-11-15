@@ -25,8 +25,8 @@ public class LayerManager(Color backgroundColor)
     foreach (Def.Layer layer in Enum.GetValues<Def.Layer>())
     {
       Def.LayerConfig.TryGetValue(layer, out var config);
-      var w = Core.ScreenWidth;
-      var h = Core.ScreenHeight;
+      var w = Core.Screen.Width;
+      var h = Core.Screen.Height;
       if (config == null)
       {
         CreateLayer(layer, w, h, false);
@@ -41,8 +41,8 @@ public class LayerManager(Color backgroundColor)
         }
         else
         {
-          w = config.TryGetValue("Width", out var width) ? (int)width : Core.ScreenWidth;
-          h = config.TryGetValue("Height", out var height) ? (int)height : Core.ScreenHeight;
+          w = config.TryGetValue("Width", out var width) ? (int)width : Core.Screen.Width;
+          h = config.TryGetValue("Height", out var height) ? (int)height : Core.Screen.Height;
         }
         CreateLayer(layer, w, h, isCameraFixed);
       }

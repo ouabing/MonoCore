@@ -15,8 +15,8 @@ public class Camera : Component
       {
         _position = Vector2.Clamp(
           value,
-          new Vector2(Bounds!.Left + Core.ScreenWidth / 2, Bounds.Top + Core.ScreenHeight / 2),
-          new Vector2(Bounds!.Right - Core.ScreenWidth / 2, Bounds.Bottom - Core.ScreenHeight / 2)
+          new Vector2(Bounds!.Left + Core.Screen.Width / 2, Bounds.Top + Core.Screen.Height / 2),
+          new Vector2(Bounds!.Right - Core.Screen.Width / 2, Bounds.Bottom - Core.Screen.Height / 2)
         );
       }
       else
@@ -52,7 +52,7 @@ public class Camera : Component
 
   public Vector2 ScreenToWorld(Vector2 screenPosition)
   {
-    return Position - new Vector2(Core.ScreenWidth, Core.ScreenHeight) * 0.5f + screenPosition;
+    return Position - new Vector2(Core.Screen.Width, Core.Screen.Height) * 0.5f + screenPosition;
   }
 
   public void Reset()
@@ -85,7 +85,7 @@ public class Camera : Component
     return Matrix.CreateTranslation(new Vector3(-Position + (Shaker?.Amount ?? Vector2.Zero), 0f)) *
            Matrix.CreateRotationZ(Rotation) *
            Matrix.CreateScale(new Vector3(Zoom, Zoom, 1f)) *
-           Matrix.CreateTranslation(new Vector3(Core.ScreenWidth * 0.5f, Core.ScreenHeight * 0.5f, 0f));
+           Matrix.CreateTranslation(new Vector3(Core.Screen.Width * 0.5f, Core.Screen.Height * 0.5f, 0f));
   }
 
   public override void Update(GameTime gameTime)

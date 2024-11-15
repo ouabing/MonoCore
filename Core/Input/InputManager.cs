@@ -268,12 +268,17 @@ public class InputManager
     return previousKeyboard.IsKeyDown(key) && Keyboard.GetState().IsKeyUp(key);
   }
 
+  public bool IsKeyDown(Keys key)
+  {
+    return Keyboard.GetState().IsKeyUp(key);
+  }
+
 #pragma warning disable CA1822 // Mark members as static
   public Vector2 CursorScreenPosition
   {
     get
     {
-      var scale = Core.Screen.DisplayWidth / Core.ScreenWidth;
+      var scale = Core.Screen.DisplayWidth / Core.Screen.Width;
       return Mouse.GetState().Position.ToVector2() / scale;
     }
   }
@@ -291,7 +296,7 @@ public class InputManager
   {
     get
     {
-      var scale = Core.GraphicsDevice.Viewport.Width / Core.ScreenWidth;
+      var scale = Core.GraphicsDevice.Viewport.Width / Core.Screen.Width;
       return previousMouse.Position.ToVector2() / scale;
     }
   }
@@ -307,7 +312,7 @@ public class InputManager
   public bool IsCursorValid()
   {
     var cp = CursorScreenPosition;
-    if (cp.X < 0 || cp.X > Core.ScreenWidth || cp.Y < 0 || cp.Y > Core.ScreenHeight)
+    if (cp.X < 0 || cp.X > Core.Screen.Width || cp.Y < 0 || cp.Y > Core.Screen.Height)
     {
       return false;
     }

@@ -253,6 +253,10 @@ public class GameConsole
     {
       EnterViewMode();
     }
+    else if (key == Keys.OemTilde)
+    {
+      // do nothing
+    }
     else
     {
       resetCursorTimer = false;

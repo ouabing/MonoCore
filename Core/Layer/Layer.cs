@@ -13,8 +13,8 @@ public class Layer
 {
   public Def.Layer Name { get; }
   public int Z { get; }
-  public int Width { get; private set; } = Core.ScreenWidth;
-  public int Height { get; private set; } = Core.ScreenWidth;
+  public int Width { get; private set; } = Core.Screen.Width;
+  public int Height { get; private set; } = Core.Screen.Width;
   public Color BackgroundColor { get; set; } = Color.Transparent;
   private bool IsCameraFixed { get; }
   public List<Canvas> Canvases { get; private set; } = [];
@@ -96,7 +96,7 @@ public class Layer
         if (component.EnablePrimitiveBatch)
         {
           FlushBatch(ref gameTime, ref inBatch, ref transformMatrix, canvas);
-          var matrix = Matrix.CreateOrthographicOffCenter(0, Core.ScreenWidth, Core.ScreenHeight, 0, 0, 1);
+          var matrix = Matrix.CreateOrthographicOffCenter(0, Core.Screen.Width, Core.Screen.Height, 0, 0, 1);
           var view = IsCameraFixed ? Matrix.Identity : Core.Camera.GetMatrix();
           // Each time a SpriteBatch is ended, the RasterizerState will be reset
           // For 2D game, we don't need to cull any face

@@ -30,8 +30,8 @@ public class PhysicsManager
     }
   }
 
-  // Query simpoe AABB, if you don't want to use the entire physics engine,
-  // you can simply use this function to check AABB collision by hand.
+  // Query simple AABB, if you don't want to use the entire physics engine,
+  // you can use this function to check AABB collision by hand.
   // This method returns all the overlapped AABBs
   //
   // Note: by the word AABB, the result is not precise if you have rotation on your body
