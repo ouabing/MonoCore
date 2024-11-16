@@ -11,27 +11,115 @@ public class ConsoleLine
   public Color Color { get; set; }
   public string Prompt { get; private set; }
   public string Text { get; private set; }
+  public Text? EffectText { get; private set; }
   public List<string> WrappedLines { get; private set; }
   public DateTime Timestamp { get; private set; }
   public SpriteFontBase Font { get; private set; }
   public float MaxLineWidth { get; private set; }
+  public bool AllowEffect { get; private set; }
+  public int LineHeight { get; private set; }
+  public int LineSpacing { get; private set; }
 
-  public ConsoleLine(string prompt, string text, Color color, float maxLineWidth, SpriteFontBase font)
+
+  public ConsoleLine(
+    string prompt,
+    string text,
+    Color color,
+    float maxLineWidth,
+    SpriteFontBase font,
+    bool allowEffect,
+    int lineHeight,
+    int lineSpacing
+  )
   {
     Prompt = prompt;
-    Text = text;
     Color = color;
     Timestamp = DateTime.Now;
     Font = font;
     MaxLineWidth = maxLineWidth;
+    AllowEffect = allowEffect;
+    LineHeight = lineHeight;
+    LineSpacing = lineSpacing;
 
-    WrappedLines = WrapText(prompt + text, maxLineWidth);
+    if (AllowEffect)
+    {
+      EffectText = new Text(
+        prompt + text,
+        font,
+        maxLineWidth,
+        heightMultiplier: (float)(LineHeight + LineSpacing) / LineHeight,
+        defaultColor: color
+      );
+      Text = EffectText.ToPlainText();
+    }
+    else
+    {
+      Text = text;
+    }
+
+    WrappedLines = WrapText(prompt + Text, maxLineWidth);
+  }
+
+  public void EnableEffect()
+  {
+    if (!AllowEffect)
+    {
+      AllowEffect = true;
+      EffectText = new Text(
+        Prompt + Text,
+        Font,
+        MaxLineWidth,
+        heightMultiplier: (float)(LineHeight + LineSpacing) / LineHeight,
+        defaultColor: Color
+      );
+      Text = EffectText.ToPlainText();
+      WrappedLines = WrapText(Prompt + Text, MaxLineWidth);
+    }
+  }
+
+  public void Update(GameTime gameTime)
+  {
+    if (AllowEffect)
+    {
+      EffectText?.Update(gameTime);
+    }
+  }
+
+  public void Draw(GameTime gameTime, int x, ref int y)
+  {
+    if (AllowEffect)
+    {
+      EffectText!.Draw(gameTime, new Vector2(x, y), OriginType.TopLeft);
+      y += (int)EffectText!.MeasuredSize.Y;
+    }
+    else
+    {
+      foreach (var wrappedLine in WrappedLines)
+      {
+        Font.DrawText(Core.Sb, wrappedLine, new Vector2(x, y), Color);
+        y += LineHeight + LineSpacing;
+      }
+    }
   }
 
   public void UpdateText(string text)
   {
-    Text = text;
-    WrappedLines = WrapText(Prompt + text, MaxLineWidth);
+    if (AllowEffect)
+    {
+      EffectText = new Text(
+        Prompt + text,
+        Font,
+        MaxLineWidth,
+        heightMultiplier: (float)(LineHeight + LineSpacing) / LineHeight,
+        defaultColor: Color
+      );
+      Text = EffectText.ToPlainText();
+    }
+    else
+    {
+      Text = text;
+    }
+    WrappedLines = WrapText(Prompt + Text, MaxLineWidth);
   }
 
   private List<string> WrapText(string text, float maxLineWidth)

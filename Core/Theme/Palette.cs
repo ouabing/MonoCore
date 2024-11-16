@@ -23,36 +23,36 @@ public class Palette
     {
       return Black;
     }
-    else if (name == "White")
+    else if (name.ToLower() == "white")
     {
       return White;
     }
-    else if (name.StartsWith("Blue"))
+    else if (name.ToLower().StartsWith("blue"))
     {
       var index = int.Parse(name[4..]);
       return Blue[index];
     }
-    else if (name.StartsWith("Green"))
+    else if (name.ToLower().StartsWith("green"))
     {
       var index = int.Parse(name[5..]);
       return Green[index];
     }
-    else if (name.StartsWith("Yellow"))
+    else if (name.ToLower().StartsWith("yellow"))
     {
       var index = int.Parse(name[6..]);
       return Yellow[index];
     }
-    else if (name.StartsWith("Red"))
+    else if (name.ToLower().StartsWith("red"))
     {
       var index = int.Parse(name[3..]);
       return Red[index];
     }
-    else if (name.StartsWith("Grey"))
+    else if (name.ToLower().StartsWith("grey"))
     {
       var index = int.Parse(name[4..]);
       return Grey[index];
     }
-    else if (name.StartsWith("Purple"))
+    else if (name.ToLower().StartsWith("purple"))
     {
       var index = int.Parse(name[6..]);
       return Purple[index];

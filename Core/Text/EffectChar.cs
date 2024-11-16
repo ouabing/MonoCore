@@ -6,7 +6,9 @@ namespace G;
 public enum CharEffectType
 {
   Color,
-  Shake
+  Shake,
+  Oscillate,
+  Gradient
 }
 
 public abstract class CharEffectArg(CharEffectType type)
@@ -26,13 +28,35 @@ public class EffectCharShakeArg(float intensity, float duration, int frequency) 
   public int Frequency { get; } = frequency;
 }
 
+public class EffectCharOscillateArg(float min, float max, float speed, float delay) : CharEffectArg(CharEffectType.Oscillate)
+{
+  public float Min { get; } = min;
+  public float Max { get; } = max;
+  public float Speed { get; } = speed;
+  public float Delay { get; } = delay;
+}
+
+public class EffectCharGradientArg(Color start, Color end, int startIndex, int endIndex) : CharEffectArg(CharEffectType.Gradient)
+{
+  public Color Start { get; } = start;
+  public Color End { get; } = end;
+  public int StartIndex { get; } = startIndex;
+  public int EndIndex { get; } = endIndex;
+}
+
 public class EffectChar(string c, List<CharEffectArg> args) : Component
 {
   public int Index { get; set; }
   public string C { get; set; } = c;
   public Color? Color { get; set; }
   public int Line { get; set; }
+  public Oscillator? Osc { get; set; }
   public List<CharEffectArg> Effects { get; } = args;
+
+  public void EnableOscillate(float min, float max, float speed, float delay)
+  {
+    Osc = new Oscillator(min, max, speed, delay);
+  }
 
   public override void Draw(GameTime gameTime)
   {

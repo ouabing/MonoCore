@@ -25,7 +25,7 @@ public enum TextAlignment { Left, Center, Right, Justify }
 public class Text
 {
   public static readonly TextEffects DefaultTextEffects = new();
-  private static readonly string Pattern = @"\[(.+)\]\((.+)\)";
+  private static readonly string Pattern = @"\[(.+?)\]\((.+?)\)";
   private static readonly string EffectPattern = @"(.*)\=(.*)";
 
   public TextEffects TextEffects { get; private set; }
@@ -40,6 +40,7 @@ public class Text
   private readonly float HeightMultiplier;
   private readonly int ShadowWidth;
   private readonly Color? ShadowColor;
+  private readonly Color? DefaultColor;
   public Text(
     string rawText,
     SpriteFontBase font,
@@ -49,7 +50,8 @@ public class Text
     Color? shadowColor = null,
     TextAlignment alignment = TextAlignment.Left,
     TextEffects? textEffects = null,
-    float heightMultiplier = 1f
+    float heightMultiplier = 1f,
+    Color? defaultColor = null
   )
   {
     RawText = rawText;
@@ -60,6 +62,7 @@ public class Text
     HeightMultiplier = heightMultiplier;
     ShadowWidth = shadowWidth;
     ShadowColor = shadowColor ?? Palette.Black;
+    DefaultColor = defaultColor ?? Palette.White;
     if (textEffects == null)
     {
       TextEffects = DefaultTextEffects;
@@ -71,6 +74,11 @@ public class Text
 
     Parse();
     FormatChars();
+  }
+
+  public string ToPlainText()
+  {
+    return string.Join("", Chars.Select(c => c.C));
   }
 
   private struct MatchedEffectText
@@ -99,6 +107,11 @@ public class Text
 
       var effectText = match.Groups[1].Value;
       var rawEffects = match.Groups[2].Value;
+
+      var textBlockStart = match.Index;
+      var textBlockEnd = match.Groups[1].Index + match.Groups[1].Length;
+      var effectBlockStart = match.Groups[2].Index - 1;
+      var effectBlockEnd = match.Index + match.Length;
       List<CharEffectArg> effects = [];
       foreach (string rawEffect in rawEffects.Split(";"))
       {
@@ -110,15 +123,15 @@ public class Text
           }
           var effectName = effectMatch.Groups[1].Value;
           var effectArgs = effectMatch.Groups[2].Value;
-          effects.Add(GenerateEffect(effectName, effectArgs.Split(",")));
+          effects.Add(GenerateEffect(effectName, effectArgs.Split(","), effectBlockStart, effectBlockEnd, textBlockStart, textBlockEnd));
         }
       }
       parsed.Add(new MatchedEffectText()
       {
-        TextBlockStart = match.Index,
-        TextBlockEnd = match.Groups[1].Index + match.Groups[1].Length,
-        EffectBlockStart = match.Groups[2].Index - 1,
-        EffectBlockEnd = match.Index + match.Length,
+        TextBlockStart = textBlockStart,
+        TextBlockEnd = textBlockEnd,
+        EffectBlockStart = effectBlockStart,
+        EffectBlockEnd = effectBlockEnd,
         Effects = effects
       });
     };
@@ -139,14 +152,14 @@ public class Text
         }
       }
 
-      // 检查是否是代理对的高位字符
+      // check for surrogate pair
       if (char.IsHighSurrogate(currentChar) && i + 1 < RawText.Length && char.IsLowSurrogate(RawText[i + 1]))
       {
         char highSurrogate = currentChar;
         char lowSurrogate = RawText[i + 1];
-        string fullCharacter = new(new char[] { highSurrogate, lowSurrogate });
+        string fullCharacter = new([highSurrogate, lowSurrogate]);
         c = fullCharacter;
-        i++; // 跳过低位代理字符
+        i++; // skip low surrogate
       }
       else
       {
@@ -157,7 +170,7 @@ public class Text
     }
   }
 
-  private static CharEffectArg GenerateEffect(string name, string[] args)
+  private static CharEffectArg GenerateEffect(string name, string[] args, int effectBlockStart, int effectBlockEnd, int textBlockStart, int textBlockEnd)
   {
     switch (name)
     {
@@ -168,6 +181,16 @@ public class Text
         var duration = args.Length > 1 ? float.Parse(args[1]) : 1;
         var frequency = args.Length > 2 ? int.Parse(args[2]) : 60;
         return new EffectCharShakeArg(intensity, duration, frequency);
+      case "osc":
+        var min = args.Length > 0 ? float.Parse(args[0]) : 0;
+        var max = args.Length > 1 ? float.Parse(args[1]) : 10;
+        var speed = args.Length > 2 ? float.Parse(args[2]) : 1;
+        var delay = args.Length > 3 ? float.Parse(args[3]) : 0.1f;
+        return new EffectCharOscillateArg(min, max, speed, delay);
+      case "grad":
+        var startColor = Palette.GetColor(args[0]);
+        var endColor = Palette.GetColor(args[1]);
+        return new EffectCharGradientArg(startColor, endColor, textBlockStart, textBlockEnd);
       default:
         throw new NotImplementedException("Effect not implemented.");
     }
@@ -353,6 +376,14 @@ public class Text
         {
           TextEffects.ColorUpdater(gameTime, this, c, (EffectCharColorArg)effect);
         }
+        else if (effect.Type == CharEffectType.Oscillate)
+        {
+          TextEffects.OscillateUpdater(gameTime, this, c, (EffectCharOscillateArg)effect);
+        }
+        else if (effect.Type == CharEffectType.Gradient)
+        {
+          TextEffects.GradientUpdater(gameTime, this, c, (EffectCharGradientArg)effect);
+        }
       }
     }
     if (IsFirstFrame)
@@ -365,7 +396,7 @@ public class Text
   {
     foreach (var c in Chars)
     {
-      var pos = Position + c.Position + (c.Shaker?.Amount ?? Vector2.Zero) - MeasuredSize / 2f;
+      var pos = Position + c.Position + (c.Shaker?.Amount ?? Vector2.Zero) + new Vector2(0, c.Osc?.Value ?? 0) - MeasuredSize / 2f;
 
       if (originType == OriginType.TopLeft)
       {
@@ -387,7 +418,7 @@ public class Text
         Core.Sb,
         c.C,
         pos,
-        c.Color ?? Palette.White
+        c.Color ?? DefaultColor ?? Palette.White
       );
     }
   }

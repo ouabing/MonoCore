@@ -34,7 +34,7 @@ public class GameConsole
   public string Completion { get; private set; } = "";
   public Color CompletionColor { get; set; } = Palette.Grey[4];
   public string[] WelcomeMessages { get; set; } = [
-    "nihao :)",
+    "[nihao :)](color=Green5;osc=-2,2,5)",
     "help: show all commands",
     "exit: close the console",
   ];
@@ -56,7 +56,7 @@ public class GameConsole
   {
     foreach (var message in WelcomeMessages)
     {
-      HistoryLines.Add(new ConsoleLine("", message, Palette.Green[4], Width - 2 * PaddingX, Font));
+      HistoryLines.Add(new ConsoleLine("", message, Palette.Green[4], Width - 2 * PaddingX, Font, true, LineHeight, LineSpacing));
     }
     CurrentInput = StartNewInputLine();
     Indicator.LoadContent();
@@ -100,6 +100,11 @@ public class GameConsole
     if (!IsEnabled)
     {
       return;
+    }
+
+    foreach (var line in HistoryLines)
+    {
+      line.Update(gameTime);
     }
 
     if (IsLoading)
@@ -146,12 +151,12 @@ public class GameConsole
 
   public void Print(string text, Color color)
   {
-    HistoryLines.Add(new ConsoleLine("", text, color, Width - 2 * PaddingX, Font));
+    HistoryLines.Add(new ConsoleLine("", text, color, Width - 2 * PaddingX, Font, true, LineHeight, LineSpacing));
   }
 
   public void Print(string text)
   {
-    HistoryLines.Add(new ConsoleLine("", text, TextColor, Width - 2 * PaddingX, Font));
+    HistoryLines.Add(new ConsoleLine("", text, TextColor, Width - 2 * PaddingX, Font, true, LineHeight, LineSpacing));
   }
 
   public void EnterEvalMode()
@@ -396,6 +401,8 @@ public class GameConsole
       Indicator.Reset();
     }
 
+    CurrentInput.EnableEffect();
+
     StartNewInputLine();
   }
 
@@ -476,7 +483,7 @@ public class GameConsole
     Core.Sb.Begin(samplerState: SamplerState.PointClamp, transformMatrix: Core.Screen.Transform);
     foreach (var line in HistoryLines)
     {
-      DrawLine(line, x, ref y);
+      DrawLine(gameTime, line, x, ref y);
     }
 
     if (IsLoading)
@@ -485,7 +492,7 @@ public class GameConsole
     }
     else
     {
-      DrawLine(CurrentInput, x, ref y);
+      DrawLine(gameTime, CurrentInput, x, ref y);
       DrawCompletion();
     }
     Core.Sb.End();
@@ -553,13 +560,9 @@ public class GameConsole
 
   }
 
-  private void DrawLine(ConsoleLine line, int x, ref int y)
+  private void DrawLine(GameTime gameTime, ConsoleLine line, int x, ref int y)
   {
-    foreach (var wrappedLine in line.WrappedLines)
-    {
-      Font.DrawText(Core.Sb, wrappedLine, new Vector2(x, y), line.Color);
-      y += LineHeight + LineSpacing;
-    }
+    line.Draw(gameTime, x, ref y);
   }
 
   private void DrawCursor(GameTime gameTime)
@@ -650,7 +653,7 @@ public class GameConsole
 
   private ConsoleLine StartNewInputLine()
   {
-    CurrentInput = new ConsoleLine(Prompt, "", TextColor, Width - 2 * PaddingX, Font);
+    CurrentInput = new ConsoleLine(Prompt, "", TextColor, Width - 2 * PaddingX, Font, false, LineHeight, LineSpacing);
     CursorX = 0;
     return CurrentInput;
   }

@@ -133,13 +133,16 @@ public abstract class Component
   public bool EnableShake
   {
     get { return _enableShake; }
-    protected set
+    set
     {
       _enableShake = value;
       if (value)
       {
-        Shaker = new();
-        Core.Animation.AddShakable(this);
+        if (Shaker == null)
+        {
+          Shaker = new();
+          Core.Animation.AddShakable(this);
+        }
       }
       else
       {
