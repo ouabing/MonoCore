@@ -5,7 +5,7 @@ using Microsoft.Xna.Framework.Graphics;
 namespace G;
 
 /**
-  *  基于 SpriteSheet 的帧动画
+  * Frame animation based on a sprite sheet.
  */
 public class Animator
 {

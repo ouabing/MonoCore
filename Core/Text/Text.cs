@@ -191,6 +191,10 @@ public class Text
         var startColor = Palette.GetColor(args[0]);
         var endColor = Palette.GetColor(args[1]);
         return new EffectCharGradientArg(startColor, endColor, textBlockStart, textBlockEnd);
+      case "blink":
+        var blinkInterval = args.Length > 0 ? float.Parse(args[0]) : 0.1f;
+        var blinkDuration = args.Length > 1 ? float.Parse(args[1]) : 2f;
+        return new EffectCharBlinkArg(blinkInterval, blinkDuration);
       default:
         throw new NotImplementedException("Effect not implemented.");
     }
@@ -368,21 +372,23 @@ public class Text
     {
       foreach (var effect in c.Effects)
       {
-        if (effect.Type == CharEffectType.Shake)
+        switch (effect.Type)
         {
-          TextEffects.ShakeUpdater(gameTime, this, c, (EffectCharShakeArg)effect);
-        }
-        else if (effect.Type == CharEffectType.Color)
-        {
-          TextEffects.ColorUpdater(gameTime, this, c, (EffectCharColorArg)effect);
-        }
-        else if (effect.Type == CharEffectType.Oscillate)
-        {
-          TextEffects.OscillateUpdater(gameTime, this, c, (EffectCharOscillateArg)effect);
-        }
-        else if (effect.Type == CharEffectType.Gradient)
-        {
-          TextEffects.GradientUpdater(gameTime, this, c, (EffectCharGradientArg)effect);
+          case CharEffectType.Shake:
+            TextEffects.ShakeUpdater(gameTime, this, c, (EffectCharShakeArg)effect);
+            break;
+          case CharEffectType.Color:
+            TextEffects.ColorUpdater(gameTime, this, c, (EffectCharColorArg)effect);
+            break;
+          case CharEffectType.Oscillate:
+            TextEffects.OscillateUpdater(gameTime, this, c, (EffectCharOscillateArg)effect);
+            break;
+          case CharEffectType.Gradient:
+            TextEffects.GradientUpdater(gameTime, this, c, (EffectCharGradientArg)effect);
+            break;
+          case CharEffectType.Blink:
+            TextEffects.BlinkUpdater(gameTime, this, c, (EffectCharBlinkArg)effect);
+            break;
         }
       }
     }
@@ -410,7 +416,7 @@ public class Text
             Core.Sb,
             c.C,
             pos + new Vector2(i),
-            ShadowColor ?? Palette.Black
+            (ShadowColor ?? Palette.Black) * c.Opacity
           );
         }
       }
@@ -418,7 +424,7 @@ public class Text
         Core.Sb,
         c.C,
         pos,
-        c.Color ?? DefaultColor ?? Palette.White
+        (c.Color ?? DefaultColor ?? Palette.White) * c.Opacity
       );
     }
   }

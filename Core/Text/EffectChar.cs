@@ -8,7 +8,8 @@ public enum CharEffectType
   Color,
   Shake,
   Oscillate,
-  Gradient
+  Gradient,
+  Blink
 }
 
 public abstract class CharEffectArg(CharEffectType type)
@@ -44,6 +45,12 @@ public class EffectCharGradientArg(Color start, Color end, int startIndex, int e
   public int EndIndex { get; } = endIndex;
 }
 
+public class EffectCharBlinkArg(float interval, float duration) : CharEffectArg(CharEffectType.Blink)
+{
+  public float Interval { get; } = interval;
+  public float Duration { get; } = duration;
+}
+
 public class EffectChar(string c, List<CharEffectArg> args) : Component
 {
   public int Index { get; set; }
@@ -52,6 +59,7 @@ public class EffectChar(string c, List<CharEffectArg> args) : Component
   public int Line { get; set; }
   public Oscillator? Osc { get; set; }
   public List<CharEffectArg> Effects { get; } = args;
+  public float BlinkTimer { get; set; }
 
   public void EnableOscillate(float min, float max, float speed, float delay)
   {
