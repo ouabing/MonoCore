@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using FontStashSharp;
 using Microsoft.Xna.Framework;
+using MonoGame.Extended;
 
 namespace G;
 
@@ -20,7 +21,7 @@ public enum TextAlignment { Left, Center, Right, Justify }
   * B: Plain text
   * C: Blue color
   *
-  * The color is what you defined in the Palette class.
+  * The color is what you defined in the Palette class, or specified by theme
   */
 public class Text
 {
@@ -42,6 +43,7 @@ public class Text
   private readonly Color? ShadowColor;
   private readonly Color? DefaultColor;
   private readonly bool WrapWords;
+  private readonly ITheme Theme;
   public Text(
     string rawText,
     SpriteFontBase font,
@@ -53,7 +55,8 @@ public class Text
     TextEffects? textEffects = null,
     float heightMultiplier = 1f,
     Color? defaultColor = null,
-    bool wrapWords = true
+    bool wrapWords = true,
+    ITheme? theme = null
   )
   {
     RawText = rawText;
@@ -63,8 +66,9 @@ public class Text
     Height = height;
     HeightMultiplier = heightMultiplier;
     ShadowWidth = shadowWidth;
-    ShadowColor = shadowColor ?? Palette.Black;
-    DefaultColor = defaultColor ?? Palette.White;
+    Theme = theme ?? Palette.Theme;
+    ShadowColor = shadowColor ?? Theme.Black;
+    DefaultColor = defaultColor ?? Theme.White;
     WrapWords = wrapWords;
     if (textEffects == null)
     {
@@ -173,12 +177,14 @@ public class Text
     }
   }
 
-  private static CharEffectArg GenerateEffect(string name, string[] args, int effectBlockStart, int effectBlockEnd, int textBlockStart, int textBlockEnd)
+  private CharEffectArg GenerateEffect(string name, string[] args, int effectBlockStart, int effectBlockEnd, int textBlockStart, int textBlockEnd)
   {
     switch (name)
     {
+      case "bgcolor":
+        return new EffectCharBackgroundColorArg(Palette.GetColor(Theme, args[0]));
       case "color":
-        return new EffectCharColorArg(Palette.GetColor(args[0]));
+        return new EffectCharColorArg(Palette.GetColor(Theme, args[0]));
       case "shake":
         var intensity = args.Length > 0 ? float.Parse(args[0]) : 10;
         var duration = args.Length > 1 ? float.Parse(args[1]) : 1;
@@ -191,8 +197,8 @@ public class Text
         var delay = args.Length > 3 ? float.Parse(args[3]) : 0.1f;
         return new EffectCharOscillateArg(min, max, speed, delay);
       case "grad":
-        var startColor = Palette.GetColor(args[0]);
-        var endColor = Palette.GetColor(args[1]);
+        var startColor = Palette.GetColor(Theme, args[0]);
+        var endColor = Palette.GetColor(Theme, args[1]);
         return new EffectCharGradientArg(startColor, endColor, textBlockStart, textBlockEnd);
       case "blink":
         var blinkInterval = args.Length > 0 ? float.Parse(args[0]) : 0.1f;
@@ -257,7 +263,6 @@ public class Text
           c.Line = line;
           c.Size = Font.MeasureString(c.C);
 
-          cx += c.Size.X;
           if (cx > Width)
           {
             cx = 0;
@@ -300,7 +305,9 @@ public class Text
     var textWidth = 0f;
     List<float> lineWidths = [];
 
-    for (int i = 0; i <= Chars.Last().Line; i++)
+    var lastChar = Chars.Count > 0 ? Chars.Last() : null;
+
+    for (int i = 0; i <= lastChar?.Line; i++)
     {
       var lineChars = Chars.Where(c => c.Line == i);
       var lineWidth = lineChars.Sum(c => c.Size.X);
@@ -310,7 +317,7 @@ public class Text
         textWidth = lineWidth;
       }
     }
-    MeasuredSize = new Vector2(textWidth, Chars.Last().Position.Y + lineHeight);
+    MeasuredSize = new Vector2(textWidth, (lastChar?.Position.Y ?? 0) + lineHeight);
     if (Height == 0)
     {
       Height = MeasuredSize.Y;
@@ -319,7 +326,7 @@ public class Text
     // Sets x of each character to match the given .text_alignment, unchanged if it is 'left'
     if (Alignment != TextAlignment.Left)
     {
-      for (int i = 0; i <= Chars.Last().Line; i++)
+      for (int i = 0; i <= lastChar?.Line; i++)
       {
         var lineWidth = lineWidths[i];
         var leftoverWidth = MeasuredSize.X - lineWidth;
@@ -377,6 +384,9 @@ public class Text
       {
         switch (effect.Type)
         {
+          case CharEffectType.BackgroundColor:
+            TextEffects.BackgroundColorUpdater(gameTime, this, c, (EffectCharBackgroundColorArg)effect);
+            break;
           case CharEffectType.Shake:
             TextEffects.ShakeUpdater(gameTime, this, c, (EffectCharShakeArg)effect);
             break;
@@ -419,15 +429,27 @@ public class Text
             Core.Sb,
             c.C,
             pos + new Vector2(i),
-            (ShadowColor ?? Palette.Black) * c.Opacity
+            (ShadowColor ?? Theme.Black) * c.Opacity
           );
         }
+      }
+      if (c.BackgroundColor != null)
+      {
+        Core.Sb.FillRectangle(
+          new Rectangle(
+            (int)pos.X,
+            (int)pos.Y,
+            (int)c.Size.X,
+            (int)c.Size.Y
+          ),
+          c.BackgroundColor.Value * c.Opacity
+        );
       }
       Font.DrawText(
         Core.Sb,
         c.C,
         pos,
-        (c.Color ?? DefaultColor ?? Palette.White) * c.Opacity
+        (c.Color ?? DefaultColor ?? Theme.White) * c.Opacity
       );
     }
   }

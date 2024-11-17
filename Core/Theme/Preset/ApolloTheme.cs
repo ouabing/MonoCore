@@ -5,6 +5,7 @@ namespace G;
 
 public class ApolloTheme : ITheme
 {
+  public string Name { get; } = "Apollo";
 
   public Color White { get; } = Palette.FromRgba("#ebede9");
   public Color Black { get; } = Palette.FromRgba("#090a14");

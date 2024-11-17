@@ -5,6 +5,7 @@ namespace G;
 
 public enum CharEffectType
 {
+  BackgroundColor,
   Color,
   Shake,
   Oscillate,
@@ -18,6 +19,10 @@ public abstract class CharEffectArg(CharEffectType type)
 }
 
 public class EffectCharColorArg(Color color) : CharEffectArg(CharEffectType.Color)
+{
+  public Color Color { get; } = color;
+}
+public class EffectCharBackgroundColorArg(Color color) : CharEffectArg(CharEffectType.BackgroundColor)
 {
   public Color Color { get; } = color;
 }
@@ -55,6 +60,7 @@ public class EffectChar(string c, List<CharEffectArg> args) : Component
 {
   public int Index { get; set; }
   public string C { get; set; } = c;
+  public Color? BackgroundColor { get; set; }
   public Color? Color { get; set; }
   public int Line { get; set; }
   public Oscillator? Osc { get; set; }

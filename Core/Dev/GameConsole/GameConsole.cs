@@ -25,16 +25,16 @@ public class GameConsole
   public float CursorBlinkDuration { get; set; } = 0.5f;
   public Dictionary<string, ConsoleCommand> Commands { get; } = [];
   private float CursorTimer;
-  public Color TextColor { get; set; } = Palette.White;
-  public Color BackgroundColor { get; set; } = Palette.Black * 0.5f;
+  public Color TextColor { get; set; } = Palette.ConsoleTheme.White;
+  public Color BackgroundColor { get; set; } = Palette.ConsoleTheme.Black * 0.5f;
   public Vector2 CursorSize => new(4, LineHeight);
   public Vector2 ViewCursorSize => new(FontSize, LineHeight);
-  public Color CursorColor { get; set; } = Palette.White;
+  public Color CursorColor { get; set; } = Palette.ConsoleTheme.White;
   public ConsoleLine CurrentInput { get; private set; }
   public string Completion { get; private set; } = "";
-  public Color CompletionColor { get; set; } = Palette.Grey[4];
+  public Color CompletionColor { get; set; } = Palette.ConsoleTheme.Grey[4];
   public string[] WelcomeMessages { get; set; } = [
-    "[nihao :)](color=Green5;osc=-2,2,5)",
+    "[nihao :)](grad=red3,green3;bgcolor=purple1;osc=-2,2,5)",
     "help: show all commands",
     "exit: close the console",
   ];
@@ -56,7 +56,7 @@ public class GameConsole
   {
     foreach (var message in WelcomeMessages)
     {
-      HistoryLines.Add(new ConsoleLine("", message, Palette.Green[4], Width - 2 * PaddingX, Font, true, LineHeight, LineSpacing));
+      HistoryLines.Add(new ConsoleLine("", message, Palette.ConsoleTheme.Green[4], Width - 2 * PaddingX, Font, true, LineHeight, LineSpacing));
     }
     CurrentInput = StartNewInputLine();
     Indicator.LoadContent();
@@ -67,6 +67,7 @@ public class GameConsole
     RegisterCommand(new FullscreenCommand());
     RegisterCommand(new HelpCommand());
     RegisterCommand(new PauseCommand());
+    RegisterCommand(new PaletteCommand());
     RegisterCommand(new ResumeCommand());
     RegisterCommand(new ScreenshotCommand());
   }
@@ -141,12 +142,12 @@ public class GameConsole
 
   public void PrintSuccess(string text)
   {
-    Print(text, Palette.Green[4]);
+    Print(text, Palette.ConsoleTheme.Green[4]);
   }
 
   public void PrintError(string text)
   {
-    Print(text, Palette.Red[4]);
+    Print(text, Palette.ConsoleTheme.Red[4]);
   }
 
   public void Print(string text, Color color)
@@ -387,7 +388,7 @@ public class GameConsole
       var command = Commands.GetValueOrDefault(commandName);
       if (command == null)
       {
-        Print($"command not found: {commandName}", Palette.Red[4]);
+        Print($"command not found: {commandName}", Palette.ConsoleTheme.Red[4]);
       }
       else
       {
@@ -602,8 +603,8 @@ public class GameConsole
       Core.Sb.Begin(samplerState: SamplerState.PointClamp, transformMatrix: Core.Screen.Transform);
       var label = "VIEW MODE";
       var labelSize = Font.MeasureString(label);
-      Core.Sb.FillRectangle(new Rectangle(Width - PaddingX - (int)labelSize.X - 1, Height - PaddingY - LineHeight - 2, (int)labelSize.X + 2, LineHeight + 4), Palette.White);
-      Font.DrawText(Core.Sb, label, new Vector2(Width - PaddingX - labelSize.X, Height - PaddingY - LineHeight), Palette.Black);
+      Core.Sb.FillRectangle(new Rectangle(Width - PaddingX - (int)labelSize.X - 1, Height - PaddingY - LineHeight - 2, (int)labelSize.X + 2, LineHeight + 4), Palette.ConsoleTheme.White);
+      Font.DrawText(Core.Sb, label, new Vector2(Width - PaddingX - labelSize.X, Height - PaddingY - LineHeight), Palette.ConsoleTheme.Black);
       Core.Sb.End();
     }
   }

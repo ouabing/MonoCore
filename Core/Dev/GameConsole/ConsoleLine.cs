@@ -49,7 +49,8 @@ public class ConsoleLine
         maxLineWidth,
         heightMultiplier: (float)(LineHeight + LineSpacing) / LineHeight,
         defaultColor: color,
-        wrapWords: false
+        wrapWords: false,
+        theme: Palette.ConsoleTheme
       );
       Text = EffectText.ToPlainText();
     }
@@ -72,7 +73,8 @@ public class ConsoleLine
         MaxLineWidth,
         heightMultiplier: (float)(LineHeight + LineSpacing) / LineHeight,
         defaultColor: Color,
-        wrapWords: false
+        wrapWords: false,
+        theme: Palette.ConsoleTheme
       );
       Text = EffectText.ToPlainText();
       WrappedLines = WrapText(Prompt + Text, MaxLineWidth);
@@ -114,7 +116,8 @@ public class ConsoleLine
         MaxLineWidth,
         heightMultiplier: (float)(LineHeight + LineSpacing) / LineHeight,
         defaultColor: Color,
-        wrapWords: false
+        wrapWords: false,
+        theme: Palette.ConsoleTheme
       );
       Text = EffectText.ToPlainText();
     }

@@ -5,6 +5,7 @@ namespace G;
 
 public interface ITheme
 {
+  public abstract string Name { get; }
   public abstract Color Black { get; }
   public abstract Color White { get; }
   public abstract List<Color> Grey { get; }

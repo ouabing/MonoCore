@@ -1,13 +1,17 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Text.RegularExpressions;
 using Microsoft.Xna.Framework;
 
 namespace G;
 
-public class Palette
+public partial class Palette
 {
+  [GeneratedRegex(@"^#([A-Fa-f0-9]{6})|([A-Fa-f0-9]{8})$")]
+  private static partial Regex HexRegex();
   public static ITheme Theme { get; set; } = new ApolloTheme();
+  public static ITheme ConsoleTheme { get; set; } = new CGATheme();
   public static Color Black => Theme.Black;
   public static Color White => Theme.White;
   public static List<Color> Blue => Theme.Blue;
@@ -19,43 +23,52 @@ public class Palette
 
   public static Color GetColor(string name)
   {
-    if (name == "Black")
+    return GetColor(Theme, name);
+  }
+
+  public static Color GetColor(ITheme theme, string name)
+  {
+    if (name.ToLower() == "black")
     {
-      return Black;
+      return theme.Black;
     }
     else if (name.ToLower() == "white")
     {
-      return White;
+      return theme.White;
     }
     else if (name.ToLower().StartsWith("blue"))
     {
       var index = int.Parse(name[4..]);
-      return Blue[index];
+      return theme.Blue[index];
     }
     else if (name.ToLower().StartsWith("green"))
     {
       var index = int.Parse(name[5..]);
-      return Green[index];
+      return theme.Green[index];
     }
     else if (name.ToLower().StartsWith("yellow"))
     {
       var index = int.Parse(name[6..]);
-      return Yellow[index];
+      return theme.Yellow[index];
     }
     else if (name.ToLower().StartsWith("red"))
     {
       var index = int.Parse(name[3..]);
-      return Red[index];
+      return theme.Red[index];
     }
     else if (name.ToLower().StartsWith("grey"))
     {
       var index = int.Parse(name[4..]);
-      return Grey[index];
+      return theme.Grey[index];
     }
     else if (name.ToLower().StartsWith("purple"))
     {
       var index = int.Parse(name[6..]);
-      return Purple[index];
+      return theme.Purple[index];
+    }
+    else if (HexRegex().IsMatch(name))
+    {
+      return FromRgba(name);
     }
     throw new ArgumentException($"Color {name} not found");
   }
