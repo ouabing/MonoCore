@@ -41,6 +41,7 @@ public class Text
   private readonly int ShadowWidth;
   private readonly Color? ShadowColor;
   private readonly Color? DefaultColor;
+  private readonly bool WrapWords;
   public Text(
     string rawText,
     SpriteFontBase font,
@@ -51,7 +52,8 @@ public class Text
     TextAlignment alignment = TextAlignment.Left,
     TextEffects? textEffects = null,
     float heightMultiplier = 1f,
-    Color? defaultColor = null
+    Color? defaultColor = null,
+    bool wrapWords = true
   )
   {
     RawText = rawText;
@@ -63,6 +65,7 @@ public class Text
     ShadowWidth = shadowWidth;
     ShadowColor = shadowColor ?? Palette.Black;
     DefaultColor = defaultColor ?? Palette.White;
+    WrapWords = wrapWords;
     if (textEffects == null)
     {
       TextEffects = DefaultTextEffects;
@@ -216,7 +219,7 @@ public class Text
         cy += lineHeight;
         line += 1;
       }
-      else if (c.C == " ")
+      else if (c.C == " " && WrapWords)
       {
         var wrapped = false;
         // only check for wrapping if this space is not inside effect delimiters
