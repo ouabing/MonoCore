@@ -20,13 +20,13 @@ public class HelpCommand : ConsoleCommand
     if (args.Length == 0)
     {
       console.Print("");
-      console.Print("Commands:", Palette.Yellow[5]);
+      console.Print("[Commands:](color=white)");
       var longestName = console.Commands.Keys.Max(x => x.Length);
       var nameLength = longestName + 4;
       foreach (var c in console.Commands.Values)
       {
         var blanks = new string(' ', nameLength - c.Name.Length);
-        console.Print($"  {c.Name}{blanks}{c.Description}", Palette.Yellow[5]);
+        console.Print($"  [{c.Name}](color=white;bgcolor=blue1){blanks}[{c.Description}](color=white)");
       }
       console.Print("");
       return;

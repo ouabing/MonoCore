@@ -182,7 +182,9 @@ public class Text
     switch (name)
     {
       case "bgcolor":
-        return new EffectCharBackgroundColorArg(Palette.GetColor(Theme, args[0]));
+        var color = Palette.GetColor(Theme, args[0]);
+        var paddingVertical = args.Length > 1 ? int.Parse(args[1]) : 0;
+        return new EffectCharBackgroundColorArg(color, paddingVertical);
       case "color":
         return new EffectCharColorArg(Palette.GetColor(Theme, args[0]));
       case "shake":
@@ -438,9 +440,9 @@ public class Text
         Core.Sb.FillRectangle(
           new Rectangle(
             (int)pos.X,
-            (int)pos.Y,
+            (int)pos.Y - c.BackgroundPaddingVertical,
             (int)c.Size.X,
-            (int)c.Size.Y
+            (int)c.Size.Y + c.BackgroundPaddingVertical * 2
           ),
           c.BackgroundColor.Value * c.Opacity
         );

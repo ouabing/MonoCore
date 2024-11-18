@@ -22,9 +22,10 @@ public class EffectCharColorArg(Color color) : CharEffectArg(CharEffectType.Colo
 {
   public Color Color { get; } = color;
 }
-public class EffectCharBackgroundColorArg(Color color) : CharEffectArg(CharEffectType.BackgroundColor)
+public class EffectCharBackgroundColorArg(Color color, int paddingVertical) : CharEffectArg(CharEffectType.BackgroundColor)
 {
   public Color Color { get; } = color;
+  public int PaddingVertical { get; } = paddingVertical;
 }
 
 public class EffectCharShakeArg(float intensity, float duration, int frequency) : CharEffectArg(CharEffectType.Shake)
@@ -61,6 +62,7 @@ public class EffectChar(string c, List<CharEffectArg> args) : Component
   public int Index { get; set; }
   public string C { get; set; } = c;
   public Color? BackgroundColor { get; set; }
+  public int BackgroundPaddingVertical { get; set; }
   public Color? Color { get; set; }
   public int Line { get; set; }
   public Oscillator? Osc { get; set; }

@@ -35,8 +35,8 @@ public class GameConsole
   public Color CompletionColor { get; set; } = Palette.ConsoleTheme.Grey[4];
   public string[] WelcomeMessages { get; set; } = [
     "[nihao :)](grad=red3,green3;bgcolor=purple1;osc=-2,2,5)",
-    "help: show all commands",
-    "exit: close the console",
+    "[help](bgcolor=blue1)   show all commands",
+    "[exit](bgcolor=blue1)   close the console",
   ];
   public bool InEvalMode { get; set; }
   public bool InViewMode { get; set; }
@@ -56,7 +56,7 @@ public class GameConsole
   {
     foreach (var message in WelcomeMessages)
     {
-      HistoryLines.Add(new ConsoleLine("", message, Palette.ConsoleTheme.Green[4], Width - 2 * PaddingX, Font, true, LineHeight, LineSpacing));
+      HistoryLines.Add(new ConsoleLine("", message, Palette.ConsoleTheme.White, Width - 2 * PaddingX, Font, true, LineHeight, LineSpacing));
     }
     CurrentInput = StartNewInputLine();
     Indicator.LoadContent();

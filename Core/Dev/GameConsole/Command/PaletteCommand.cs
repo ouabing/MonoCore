@@ -1,3 +1,4 @@
+using System;
 using FontStashSharp.RichText;
 
 namespace G;
@@ -26,55 +27,116 @@ public class PaletteCommand : ConsoleCommand
       PrintHelp(console);
       return;
     }
-    PrintArgumentError(console, args[0]);
+
+    switch (args[0].ToLower())
+    {
+      case "apollo":
+        PrintTheme(console, new ApolloTheme());
+        return;
+      case "cga":
+        PrintTheme(console, new CGATheme());
+        return;
+      default:
+        PrintArgumentError(console, args[0]);
+        return;
+    }
   }
 
-  private void PrintTheme(GameConsole console, ITheme theme)
+  private static void PrintTheme(GameConsole console, ITheme theme)
   {
-    console.Print($"{theme.Name}");
-    console.Print($"White:  {ToEffectText(theme.White.ToHexString())}");
-    console.Print($"Black:  {ToEffectText(theme.Black.ToHexString())}");
-    var line = "Grey:   ";
-    for (int i = 0; i < theme.Grey.Count; i++)
+    console.Print($"  {theme.Name}");
+    console.Print("");
+    console.Print($"  White   Black   Grey    Red     Yellow  Green   Blue    Purple");
+    console.Print("");
+
+    var max = Math.Max(theme.Grey.Count, Math.Max(theme.Red.Count, Math.Max(theme.Yellow.Count, Math.Max(theme.Green.Count, theme.Blue.Count))));
+
+    for (int i = 0; i < max; i++)
     {
-      line += ToEffectText(theme.Grey[i].ToHexString()) + " ";
+      var line = "";
+      var colorLine = "";
+      if (i == 0)
+      {
+        colorLine = $" {ToEffectText(theme.White.ToHexString(), true, console.LineSpacing)} {ToEffectText(theme.Black.ToHexString(), true, console.LineSpacing)} ";
+        line = $" {ToEffectText(theme.White.ToHexString(), false, console.LineSpacing)} {ToEffectText(theme.Black.ToHexString(), false, console.LineSpacing)} ";
+      }
+      else
+      {
+        line = "                 ";
+        colorLine = "                 ";
+      }
+      if (i < theme.Grey.Count)
+      {
+        colorLine += ToEffectText(theme.Grey[i].ToHexString(), true, console.LineSpacing) + " ";
+        line += ToEffectText(theme.Grey[i].ToHexString(), false, console.LineSpacing) + " ";
+      }
+      else
+      {
+        line += "       ";
+        colorLine += "       ";
+      }
+      if (i < theme.Red.Count)
+      {
+        colorLine += ToEffectText(theme.Red[i].ToHexString(), true, console.LineSpacing) + " ";
+        line += ToEffectText(theme.Red[i].ToHexString(), false, console.LineSpacing) + " ";
+      }
+      else
+      {
+        line += "       ";
+        colorLine += "       ";
+      }
+      if (i < theme.Yellow.Count)
+      {
+        line += ToEffectText(theme.Yellow[i].ToHexString(), false, console.LineSpacing) + " ";
+        colorLine += ToEffectText(theme.Yellow[i].ToHexString(), true, console.LineSpacing) + " ";
+      }
+      else
+      {
+        line += "       ";
+        colorLine += "       ";
+      }
+      if (i < theme.Green.Count)
+      {
+        line += ToEffectText(theme.Green[i].ToHexString(), false, console.LineSpacing) + " ";
+        colorLine += ToEffectText(theme.Green[i].ToHexString(), true, console.LineSpacing) + " ";
+      }
+      else
+      {
+        line += "       ";
+        colorLine += "       ";
+      }
+      if (i < theme.Blue.Count)
+      {
+        line += ToEffectText(theme.Blue[i].ToHexString(), false, console.LineSpacing) + " ";
+        colorLine += ToEffectText(theme.Blue[i].ToHexString(), true, console.LineSpacing) + " ";
+      }
+      else
+      {
+        line += "       ";
+        colorLine += "       ";
+      }
+      if (i < theme.Purple.Count)
+      {
+        line += ToEffectText(theme.Purple[i].ToHexString(), false, console.LineSpacing);
+        colorLine += ToEffectText(theme.Purple[i].ToHexString(), true, console.LineSpacing);
+      }
+      console.Print(colorLine);
+      console.Print(line);
+      console.Print(colorLine);
     }
-    console.Print(line);
-    line = "Red:    ";
-    for (int i = 0; i < theme.Red.Count; i++)
-    {
-      line += ToEffectText(theme.Red[i].ToHexString()) + " ";
-    }
-    console.Print(line);
-    line = "Yellow: ";
-    for (int i = 0; i < theme.Yellow.Count; i++)
-    {
-      line += ToEffectText(theme.Yellow[i].ToHexString()) + " ";
-    }
-    console.Print(line);
-    line = "Green:  ";
-    for (int i = 0; i < theme.Green.Count; i++)
-    {
-      line += ToEffectText(theme.Green[i].ToHexString()) + " ";
-    }
-    console.Print(line);
-    line = "Blue:   ";
-    for (int i = 0; i < theme.Blue.Count; i++)
-    {
-      line += ToEffectText(theme.Blue[i].ToHexString()) + " ";
-    }
-    console.Print(line);
-    line = "Purple: ";
-    for (int i = 0; i < theme.Purple.Count; i++)
-    {
-      line += ToEffectText(theme.Purple[i].ToHexString()) + " ";
-    }
-    console.Print(line);
   }
 
-  private static string ToEffectText(string hex)
+  private static string ToEffectText(string hex, bool pureColor, int lineSpacing)
   {
-    var colorWithoutAlpha = hex[..7];
-    return $"[{colorWithoutAlpha}](bgcolor={colorWithoutAlpha};color=white)";
+    var colorWithoutAlpha = hex[0..7];
+    if (pureColor)
+    {
+      return $"[        ](bgcolor={colorWithoutAlpha},{lineSpacing};color=white)";
+    }
+    else
+    {
+      var colorPureHex = hex[1..7];
+      return $"[ {colorPureHex} ](bgcolor={colorWithoutAlpha},{lineSpacing};color=white)";
+    }
   }
 }
