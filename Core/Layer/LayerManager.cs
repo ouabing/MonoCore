@@ -48,7 +48,16 @@ public class LayerManager(Color backgroundColor)
         CreateLayer(layer, w, h, isCameraFixed);
       }
     }
-    screenRenderTarget = new RenderTarget2D(Core.Graphics!.GraphicsDevice, Core.Screen.Width, Core.Screen.Height);
+    screenRenderTarget = new RenderTarget2D(
+      Core.Graphics!.GraphicsDevice,
+      Core.Screen.Width,
+      Core.Screen.Height,
+      false,
+      SurfaceFormat.Color,
+      DepthFormat.None,
+      0,
+      RenderTargetUsage.PreserveContents
+    );
   }
 
   public void CreateLayer(Def.Layer layer, int width, int height, bool isCameraFixed = false)

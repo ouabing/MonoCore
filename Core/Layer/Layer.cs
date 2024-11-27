@@ -15,7 +15,16 @@ public class Layer
   public int Z { get; }
   public int Width { get; private set; } = Core.Screen.Width;
   public int Height { get; private set; } = Core.Screen.Width;
-  public RenderTarget2D RenderTarget { get; private set; } = new RenderTarget2D(Core.Graphics!.GraphicsDevice, Core.Screen.Width, Core.Screen.Height);
+  public RenderTarget2D RenderTarget { get; private set; } = new RenderTarget2D(
+    Core.Graphics!.GraphicsDevice,
+    Core.Screen.Width,
+    Core.Screen.Height,
+    false,
+    SurfaceFormat.Color,
+    DepthFormat.None,
+    0,
+    RenderTargetUsage.PreserveContents
+  );
   public Color BackgroundColor { get; set; } = Color.Transparent;
   private bool IsCameraFixed { get; }
   public List<Canvas> Canvases { get; private set; } = [];

@@ -42,16 +42,20 @@ float Divergence(float2 uv)
     float B = SampleVelocity(vb).y;
 
     float2 C = SampleVelocity(uv).xy;
-    if (vl.x < 0.0) { L = -C.x; }
-    if (vr.x > 1.0) { R = -C.x; }
-    if (vt.y > 1.0) { T = -C.y; }
-    if (vb.y < 0.0) { B = -C.y; }
+    // if (vl.x < 0.0 || vl.x > 1.0) { L = -C.x; }
+    // if (vr.x < 0.0 || vr.x > 1.0) { R = -C.x; }
+    // if (vt.y < 0.0 || vt.y > 1.0) { T = -C.y; }
+    // if (vb.y < 0.0 || vb.y > 1.0) { B = -C.y; }
 
     return 0.5 * (R - L + T - B);
 }
 
 float4 Pressure(float2 uv : TEXCOORD0) : COLOR0
 {
+    // if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0)
+    // {
+    //     return float4(0, 0, 0, 1); // clamp to border
+    // }
     float L = SamplePressure(vL(uv)).x;
     float R = SamplePressure(vR(uv)).x;
     float T = SamplePressure(vT(uv)).x;

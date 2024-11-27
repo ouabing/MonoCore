@@ -28,8 +28,9 @@ public class FluidSim : Component, IDisposable
   private RenderTarget2D dyeField;
   public bool LinearFiltering { get; set; }
 
+  // Radius in pixel
   public float SplatRadius { get; set; } = 0.25f;
-  public float TexelSize { get; set; } = 2.0f;
+  public float TexelSize { get; set; } = 1.0f;
   // 0 ~ 0.4f
   public float VelocityDissipation { get; set; } = 0.2f;
   // 0 ~ 4.0f
@@ -40,7 +41,10 @@ public class FluidSim : Component, IDisposable
   // 0 ~ 50
   public float CurlAmount { get; set; } = 30f;
   public float SplatDuration { get; set; } = 10.0f / 60;
+  public float MaxDensity { get; set; } = 1.0f;
   public bool Debug { get; set; }
+  public int FramesPerStep { get; set; } = 1;
+  private int FramesCounter { get; set; }
   private float splatTimer;
 
   public override void LoadContent()
@@ -55,32 +59,40 @@ public class FluidSim : Component, IDisposable
       width,
       height,
       false,
-      SurfaceFormat.Vector4,
-      DepthFormat.None
+      SurfaceFormat.HalfVector4,
+      DepthFormat.None,
+      0,
+      RenderTargetUsage.PreserveContents
     );
     pressureField = new RenderTarget2D(
       Core.GraphicsDevice,
       width,
       height,
       false,
-      SurfaceFormat.Vector4,
-      DepthFormat.None
+      SurfaceFormat.HalfVector4,
+      DepthFormat.None,
+      0,
+      RenderTargetUsage.PreserveContents
     );
     tempField = new RenderTarget2D(
       Core.GraphicsDevice,
       width,
       height,
       false,
-      SurfaceFormat.Vector4,
-      DepthFormat.None
+      SurfaceFormat.HalfVector4,
+      DepthFormat.None,
+      0,
+      RenderTargetUsage.PreserveContents
     );
     dyeField = new RenderTarget2D(
       Core.GraphicsDevice,
       width,
       height,
       false,
-      SurfaceFormat.Vector4,
-      DepthFormat.None
+      SurfaceFormat.HalfVector4,
+      DepthFormat.None,
+      0,
+      RenderTargetUsage.PreserveContents
     );
 
     Core.GraphicsDevice.SetRenderTarget(dyeField);
@@ -106,7 +118,7 @@ public class FluidSim : Component, IDisposable
         if (splatTimer <= 0)
         {
           var rand = new GRandom();
-          Splat(
+          SplatOnScreenPosition(
             new Vector2((float)mouseState.X / Core.Screen.DisplayWidth, (float)mouseState.Y / Core.Screen.DisplayHeight),
             GenerateSplatVelocity(),
             new Color(rand.NextSingle() * 0.15f, 0.15f, 0.15f, 1.0f)
@@ -129,8 +141,24 @@ public class FluidSim : Component, IDisposable
 
   public override void Draw(GameTime gameTime)
   {
+    FramesCounter++;
+    if (FramesCounter >= FramesPerStep)
+    {
+      FramesCounter = 0;
+      Simulate(gameTime);
+    }
+    DrawResult(dyeField);
+
+    base.Draw(gameTime);
+  }
+
+  private void Simulate(GameTime gameTime)
+  {
     float dt = gameTime.GetElapsedSeconds();
-    var texelVec = new Vector2(TexelSize / velocityField.Width, TexelSize / velocityField.Height);
+    var texelVec = new Vector2(
+      TexelSize / velocityField.Width,
+      TexelSize / velocityField.Height
+    );
 
     // Vorticity
     ApplyEffect(vorticityEffect, velocityField, tempField, parameters =>
@@ -193,17 +221,22 @@ public class FluidSim : Component, IDisposable
       parameters["VelocitySampler"].SetValue(velocityField);
     });
     Swap(ref dyeField, ref tempField);
+  }
 
+  private void DrawResult(RenderTarget2D texture)
+  {
+    var previousRenderTargets = Core.GraphicsDevice.GetRenderTargets();
+    RenderTarget2D? previousRenderTarget = previousRenderTargets.Length > 0 ? (RenderTarget2D)previousRenderTargets[0].RenderTarget : null;
+    var width = previousRenderTarget?.Width ?? Core.Screen.DisplayWidth;
+    var height = previousRenderTarget?.Height ?? Core.Screen.DisplayHeight;
     // Render Result
     Core.Sb.Begin(
       SpriteSortMode.Immediate,
       BlendState.AlphaBlend,
-      samplerState: SamplerState.PointClamp
+      samplerState: SamplerState.LinearClamp
     );
-    Core.Sb.Draw(dyeField, new Rectangle(0, 0, Core.Screen.DisplayWidth, Core.Screen.DisplayHeight), Color.White);
+    Core.Sb.Draw(texture, new Rectangle(0, 0, width, height), Color.White * MaxDensity);
     Core.Sb.End();
-
-    base.Draw(gameTime);
   }
 
   private static Vector2 GetTextureScale(Texture2D texture)
@@ -238,14 +271,28 @@ public class FluidSim : Component, IDisposable
     (b, a) = (a, b);
   }
 
-  public void Splat(Vector2 pos, Vector2 velocity, Color color)
+  public void Splat(Vector2 position, Vector2 velocity, Color color, bool followCamera)
   {
+    var pos = followCamera ? position - Core.Camera.Position : position;
+    SplatOnScreenPosition(
+      new Vector2(pos.X / Core.Screen.Width, pos.Y / Core.Screen.Height),
+      velocity,
+      color
+    );
+  }
+
+  public void SplatByTexture(Texture2D texture, Vector2 position, Vector2 velocity, Color color, bool followCamera)
+  {
+    var pos = followCamera ? position - Core.Camera.Position : position;
+    var scale = GetTextureScale(texture);
     ApplyEffect(splatEffect, velocityField, tempField, parameters =>
     {
-      parameters["position"].SetValue(pos);
+      parameters["position"].SetValue(new Vector2(pos.X / Core.Screen.Width, pos.Y / Core.Screen.Height));
       parameters["color"].SetValue(new Vector4(velocity.X, velocity.Y, 0.0f, 1.0f));
       parameters["aspectRatio"].SetValue((float)Core.Screen.Width / Core.Screen.Height);
-      parameters["radius"].SetValue(CorrectRadius(SplatRadius / 100.0f));
+      parameters["radius"].SetValue(CorrectRadius(SplatRadius / 100));
+      parameters["splatByTexture"].SetValue(1.0f);
+      parameters["TextureSampler"].SetValue(texture);
     });
 
     Swap(ref velocityField, ref tempField);
@@ -253,8 +300,28 @@ public class FluidSim : Component, IDisposable
     ApplyEffect(splatEffect, dyeField, tempField, parameters =>
     {
       parameters["color"].SetValue(color.ToVector4());
+    });
+
+    Swap(ref dyeField, ref tempField);
+  }
+
+  public void SplatOnScreenPosition(Vector2 pos, Vector2 velocity, Color color)
+  {
+    ApplyEffect(splatEffect, velocityField, tempField, parameters =>
+    {
+      parameters["position"].SetValue(pos);
+      parameters["color"].SetValue(new Vector4(velocity.X, velocity.Y, 0.0f, 1.0f));
       parameters["aspectRatio"].SetValue((float)Core.Screen.Width / Core.Screen.Height);
-      parameters["radius"].SetValue(CorrectRadius(SplatRadius / 100.0f));
+      parameters["radius"].SetValue(CorrectRadius(SplatRadius / 100));
+      parameters["splatByTexture"].SetValue(0.0f);
+    });
+
+    Swap(ref velocityField, ref tempField);
+
+    ApplyEffect(splatEffect, dyeField, tempField, parameters =>
+    {
+      parameters["color"].SetValue(color.ToVector4());
+      parameters["splatByTexture"].SetValue(0.0f);
     });
 
     Swap(ref dyeField, ref tempField);
@@ -264,7 +331,9 @@ public class FluidSim : Component, IDisposable
   {
     var aspectRatio = (float)Core.Screen.Width / Core.Screen.Height;
     if (aspectRatio > 1)
+    {
       radius *= aspectRatio;
+    }
     return radius;
   }
 

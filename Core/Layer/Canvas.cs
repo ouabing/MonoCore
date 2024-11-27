@@ -15,7 +15,16 @@ public class Canvas(
   public int Width { get; private set; } = width;
   public int Height { get; private set; } = height;
   public Color BackgroundColor { get; } = backgroundColor ?? Color.Transparent;
-  public RenderTarget2D RenderTarget { get; private set; } = new RenderTarget2D(Core.Graphics!.GraphicsDevice, width, height);
+  public RenderTarget2D RenderTarget { get; private set; } = new RenderTarget2D(
+    Core.Graphics!.GraphicsDevice,
+    width,
+    height,
+    false,
+    SurfaceFormat.Color,
+    DepthFormat.None,
+    0,
+    RenderTargetUsage.PreserveContents
+  );
   public Effect? FX { get; private set; }
 
   public void Resize(int width, int height)
@@ -23,7 +32,16 @@ public class Canvas(
     RenderTarget.Dispose();
     Width = width;
     Height = height;
-    RenderTarget = new RenderTarget2D(Core.Graphics!.GraphicsDevice, width, height);
+    RenderTarget = new RenderTarget2D(
+      Core.Graphics!.GraphicsDevice,
+      width,
+      height,
+      false,
+      SurfaceFormat.Color,
+      DepthFormat.None,
+      0,
+      RenderTargetUsage.PreserveContents
+    );
   }
 
   public void ApplyFX(Effect? fx)

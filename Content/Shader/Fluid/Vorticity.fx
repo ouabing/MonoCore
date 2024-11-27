@@ -28,12 +28,15 @@ float2 vB(float2 uv) {
 }
 
 float Curl(float2 uv) {
+    // if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0)
+    // {
+    //     return 0.0; // clamp to border
+    // }
     float l = SampleVelocity(vL(uv)).y;
     float r = SampleVelocity(vR(uv)).y;
     float t = SampleVelocity(vT(uv)).x;
     float b = SampleVelocity(vB(uv)).x;
-    float curl = (r - l) - (t - b);
-    return 0.5 * curl;
+    return 0.5 * ((r - l) - (t - b));
 }
 
 float4 Vorticity(float2 uv: TEXCOORD0) : COLOR0
@@ -45,8 +48,12 @@ float4 Vorticity(float2 uv: TEXCOORD0) : COLOR0
     float curlC = Curl(uv);
 
     float2 force = 0.5 * float2(abs(curlT) - abs(curlB), abs(curlR) - abs(curlL));
-    force = force / length(force + 0.0001);
-    force = curlAmount * curlC;
+    if (length(force) < 0.0001) {
+        force = float2(0, 0);
+    } else {
+        force = force / length(force + 0.0001);
+    }
+    force *= curlAmount * curlC;
     force.y = -force.y;
     float2 velocity = SampleVelocity(uv).xy;
     velocity += force * dt;
