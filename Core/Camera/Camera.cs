@@ -55,6 +55,11 @@ public class Camera : Component
     return Position - new Vector2(Core.Screen.Width, Core.Screen.Height) * 0.5f + screenPosition;
   }
 
+  public Vector2 WorldToScreen(Vector2 worldPosition)
+  {
+    return worldPosition - Position + new Vector2(Core.Screen.Width, Core.Screen.Height) * 0.5f;
+  }
+
   public void Reset()
   {
     Position = new(0, 0);

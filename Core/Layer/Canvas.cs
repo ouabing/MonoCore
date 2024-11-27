@@ -8,13 +8,13 @@ public class Canvas(
   string name,
   int width,
   int height,
-  Color backgroundColor
+  Color? backgroundColor = null
 ) : IDisposable
 {
   public string Name { get; } = name;
   public int Width { get; private set; } = width;
   public int Height { get; private set; } = height;
-  public Color BackgroundColor { get; } = backgroundColor;
+  public Color BackgroundColor { get; } = backgroundColor ?? Color.Transparent;
   public RenderTarget2D RenderTarget { get; private set; } = new RenderTarget2D(Core.Graphics!.GraphicsDevice, width, height);
   public Effect? FX { get; private set; }
 
@@ -34,7 +34,7 @@ public class Canvas(
   public void Begin()
   {
     Core.Graphics!.GraphicsDevice.SetRenderTarget(RenderTarget);
-    Core.Graphics.GraphicsDevice.Clear(BackgroundColor);
+    Core.Graphics.GraphicsDevice.Clear(Color.Transparent);
   }
 
 #pragma warning disable CA1822 // Mark members as static

@@ -11,6 +11,7 @@ public class Screen(GraphicsDeviceManager graphics, int width, int height, int w
   // The game's resolution
   public int Width { get; private set; } = width;
   public int Height { get; private set; } = height;
+  public float AspectRatio => (float)Width / Height;
   public Vector2 Center => new(Width / 2, Height / 2);
   public int WindowedModeWidth { get; private set; } = windowedModeWidth;
   public int WindowedModeHeight { get; private set; } = windowedModeHeight;
@@ -30,6 +31,7 @@ public class Screen(GraphicsDeviceManager graphics, int width, int height, int w
     UpdateDisplaySize(WindowedModeWidth, WindowedModeHeight, false);
 
     Graphics!.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
+    Graphics!.GraphicsDevice.BlendState = BlendState.AlphaBlend;
     Graphics!.IsFullScreen = false;
     Graphics.PreferredBackBufferWidth = DisplayWidth;
     Graphics.PreferredBackBufferHeight = DisplayHeight;
@@ -44,6 +46,7 @@ public class Screen(GraphicsDeviceManager graphics, int width, int height, int w
     Graphics.PreferredBackBufferWidth = DisplayWidth;
     Graphics.PreferredBackBufferHeight = DisplayHeight;
     Graphics.ApplyChanges();
+    Core.Layer.RecreateRenderTargets();
   }
 
   public void SetFullscreen()
@@ -53,6 +56,7 @@ public class Screen(GraphicsDeviceManager graphics, int width, int height, int w
     Graphics.PreferredBackBufferHeight = DisplayHeight;
     Graphics.IsFullScreen = true;
     Graphics.ApplyChanges();
+    Core.Layer.RecreateRenderTargets();
   }
 
   private void UpdateDisplaySize(int windowWidth, int windowHeight, bool isFullScreen)

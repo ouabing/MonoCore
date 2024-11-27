@@ -18,7 +18,8 @@ public class LayerManager(Color backgroundColor)
   public Color BackgroundColor { get; private set; } = backgroundColor;
   public Dictionary<Def.Layer, Layer> Layers { get; private set; } = [];
   public List<Effect> GlobalFXs { get; private set; } = [];
-  private List<Dictionary<(int, int), RenderTarget2D>> renderTargets { get; set; } = [];
+  private List<RenderTarget2D> renderTargets { get; set; } = [];
+  private RenderTarget2D screenRenderTarget { get; set; }
 
   public void Initialize()
   {
@@ -47,6 +48,7 @@ public class LayerManager(Color backgroundColor)
         CreateLayer(layer, w, h, isCameraFixed);
       }
     }
+    screenRenderTarget = new RenderTarget2D(Core.Graphics!.GraphicsDevice, Core.Screen.Width, Core.Screen.Height);
   }
 
   public void CreateLayer(Def.Layer layer, int width, int height, bool isCameraFixed = false)
@@ -70,32 +72,50 @@ public class LayerManager(Color backgroundColor)
     RecreateRenderTargets();
   }
 
+  public void PostUpdate(GameTime gameTime)
+  {
+    foreach (var layer in Layers.Values)
+    {
+      layer.PostUpdate(gameTime);
+    }
+  }
+
   public void RemoveGlobalFX(Effect effect)
   {
     GlobalFXs.Remove(effect);
     RecreateRenderTargets();
   }
 
-  private void RecreateRenderTargets()
+  public void RecreateRenderTargets()
   {
-    foreach (var renderTargetDict in renderTargets)
+    foreach (var renderTarget in renderTargets)
     {
-      foreach (var renderTarget in renderTargetDict.Values)
-      {
-        renderTarget.Dispose();
-      }
+      renderTarget.Dispose();
     }
     renderTargets.Clear();
     for (int i = 0; i < GlobalFXs.Count - 1; i++)
     {
-      Dictionary<(int, int), RenderTarget2D> dict = [];
-      renderTargets.Add(dict);
-
-      foreach (var layer in Layers.Values)
-      {
-        renderTargets[i][(layer.Width, layer.Height)] = new RenderTarget2D(Core.Graphics!.GraphicsDevice, layer.Width, layer.Height);
-      }
+      renderTargets.Add(new RenderTarget2D(
+        Core.Graphics!.GraphicsDevice,
+        Core.Screen.DisplayWidth,
+        Core.Screen.DisplayHeight,
+        false,
+        SurfaceFormat.Color,
+        DepthFormat.None,
+        0,
+        RenderTargetUsage.PreserveContents
+      ));
     }
+    screenRenderTarget = new RenderTarget2D(
+      Core.Graphics!.GraphicsDevice,
+      Core.Screen.Width,
+      Core.Screen.Height,
+      false,
+      SurfaceFormat.Color,
+      DepthFormat.None,
+      0,
+      RenderTargetUsage.PreserveContents
+    );
   }
 
   public void ApplyFX(Def.Layer toLayer, Effect effect, string canvas = "Main")
@@ -148,7 +168,7 @@ public class LayerManager(Color backgroundColor)
 
   public void Draw(GameTime gameTime)
   {
-    var layers = Layers.Values.OrderBy(layer => layer.Z).Reverse();
+    var layers = Layers.Values.OrderBy(layer => -layer.Z);
 
     foreach (var layer in layers)
     {
@@ -161,39 +181,76 @@ public class LayerManager(Color backgroundColor)
     // Apply the viewport offsets
     var transform = Core.Screen.Transform;
 
+    // Draw each layer into individual render targets
     foreach (var layer in layers)
     {
+      layer.Begin();
       foreach (var canvas in layer.Canvases)
       {
-        var lastRenderTarget = canvas.RenderTarget;
-        if (GlobalFXs.Count > 0)
-        {
-          for (int i = 0; i < GlobalFXs.Count - 1; i++)
-          {
-            var fx = GlobalFXs[i];
-            var renderTargetDict = renderTargets[i];
-            var renderTarget = renderTargetDict[(layer.Width, layer.Height)];
-            Core.GraphicsDevice.SetRenderTarget(renderTarget);
-            Core.Sb!.Begin(SpriteSortMode.Immediate, samplerState: SamplerState.PointClamp, effect: fx);
-            Core.Sb.Draw(lastRenderTarget, new Rectangle(0, 0, canvas.Width, canvas.Height), Color.White);
-            Core.Sb.End();
-            lastRenderTarget = renderTarget;
-          }
+        Core.Sb!.Begin(SpriteSortMode.Immediate, samplerState: SamplerState.PointClamp);
+        Core.Sb.Draw(canvas.RenderTarget, new Rectangle(0, 0, canvas.Width, canvas.Height), Color.White);
+        Core.Sb.End();
+      }
+      layer.End();
+    }
 
+    // Merge all the layers into a single render target
+    Core.GraphicsDevice.SetRenderTarget(screenRenderTarget);
+    Core.GraphicsDevice.Clear(Color.Transparent);
+
+    int lastZ = int.MaxValue;
+
+    foreach (var layer in layers)
+    {
+      // TODO -- Draw normal maps to a single render target
+
+      Core.Light.DrawLightBetweenZ(gameTime, screenRenderTarget, layer.Z, lastZ);
+      lastZ = layer.Z;
+      Core.Sb!.Begin(SpriteSortMode.Immediate, samplerState: SamplerState.PointClamp);
+      Core.Sb.Draw(layer.RenderTarget, new Rectangle(0, 0, Core.Screen.Width, Core.Screen.Height), Color.White);
+      Core.Sb.End();
+    }
+
+    // Apply global effects and merge them if any exists
+    RenderTarget2D? lastRenderTarget = screenRenderTarget;
+    if (GlobalFXs.Count > 0)
+    {
+      for (int i = 0; i < GlobalFXs.Count; i++)
+      {
+        var fx = GlobalFXs[i];
+        RenderTarget2D? renderTarget = null;
+        if (i == GlobalFXs.Count - 1)
+        {
           Core.GraphicsDevice.SetRenderTarget(null);
-          Core.Sb!.Begin(SpriteSortMode.Immediate, samplerState: SamplerState.PointClamp, effect: GlobalFXs.Last(), transformMatrix: transform);
-          Core.Sb.Draw(lastRenderTarget, new Rectangle(0, 0, Core.Screen.DisplayWidth, Core.Screen.DisplayHeight), Color.White);
-          Core.Sb.End();
         }
         else
         {
-          Core.Sb!.Begin(SpriteSortMode.Immediate, samplerState: SamplerState.PointClamp, transformMatrix: transform);
-          Core.Sb.Draw(canvas.RenderTarget, new Rectangle(0, 0, Core.Screen.DisplayWidth, Core.Screen.DisplayHeight), Color.White);
-          Core.Sb.End();
+          renderTarget = renderTargets[i];
+          Core.GraphicsDevice.SetRenderTarget(renderTarget);
+          Core.GraphicsDevice.Clear(Color.Transparent);
         }
-
+        Core.Sb!.Begin(
+          SpriteSortMode.Immediate,
+          samplerState: SamplerState.PointClamp,
+          blendState: BlendState.AlphaBlend,
+          effect: fx,
+          transformMatrix: i == GlobalFXs.Count - 1 ? transform : Matrix.Identity
+        );
+        Core.Sb.Draw(
+          lastRenderTarget,
+          new Rectangle(0, 0, Core.Screen.DisplayWidth, Core.Screen.DisplayHeight),
+          Color.White
+        );
+        Core.Sb.End();
+        lastRenderTarget = renderTarget;
       }
-      layer.ClearDead();
+    }
+    else
+    {
+      Core.GraphicsDevice.SetRenderTarget(null);
+      Core.Sb!.Begin(SpriteSortMode.Immediate, samplerState: SamplerState.PointClamp, transformMatrix: transform);
+      Core.Sb.Draw(lastRenderTarget, new Rectangle(0, 0, Core.Screen.DisplayWidth, Core.Screen.DisplayHeight), Color.White);
+      Core.Sb.End();
     }
   }
 }

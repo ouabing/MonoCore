@@ -154,7 +154,7 @@ public abstract class Component
   public Shaker? Shaker { get; set; }
   public HitFX? HitFX { get; protected set; }
 
-  private bool contentLoaded;
+  public bool ContentLoaded;
   private Vector2 customOrigin;
 
   public Vector2 Origin
@@ -297,11 +297,11 @@ public abstract class Component
 
   public virtual void LoadContent()
   {
-    if (contentLoaded)
+    if (ContentLoaded)
     {
       return;
     }
-    contentLoaded = true;
+    ContentLoaded = true;
   }
 
   public abstract void Update(GameTime gameTime);

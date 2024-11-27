@@ -26,7 +26,7 @@ public class GameConsole
   public Dictionary<string, ConsoleCommand> Commands { get; } = [];
   private float CursorTimer;
   public Color TextColor { get; set; } = Palette.ConsoleTheme.White;
-  public Color BackgroundColor { get; set; } = Palette.ConsoleTheme.Black * 0.5f;
+  public Color BackgroundColor { get; set; } = Palette.ConsoleTheme.Black * 0.6f;
   public Vector2 CursorSize => new(4, LineHeight);
   public Vector2 ViewCursorSize => new(FontSize, LineHeight);
   public Color CursorColor { get; set; } = Palette.ConsoleTheme.White;
@@ -470,7 +470,6 @@ public class GameConsole
   {
     Rectangle backgroundRect = new(0, 0, Width, Height);
     Core.Sb.Begin(samplerState: SamplerState.PointClamp, transformMatrix: Core.Screen.Transform);
-    Core.Sb.DrawRectangle(backgroundRect, TextColor);
     Core.Sb.FillRectangle(backgroundRect, BackgroundColor);
     Core.Sb.End();
   }

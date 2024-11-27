@@ -7,9 +7,16 @@ namespace G;
 
 public class TextureManager(ContentManager contentManager)
 {
+  public Texture2D PixelTexture { get; private set; }
   private ContentManager ContentManager { get; } = contentManager;
   private Dictionary<string, Texture2D> TextureCache { get; } = [];
   private Dictionary<string, Texture2D> BorderedTextureCache { get; } = [];
+
+  public void LoadContent()
+  {
+    PixelTexture = new Texture2D(Core.Graphics!.GraphicsDevice, 1, 1);
+    PixelTexture.SetData([Color.White]);
+  }
   public Texture2D LoadTexture(string path)
   {
     if (TextureCache.TryGetValue(path, out Texture2D? value))

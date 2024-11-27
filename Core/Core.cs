@@ -43,6 +43,7 @@ public static class Core
   public static Timer Timer { get; } = new Timer();
   public static InputManager Input { get; } = new InputManager();
   public static FontManager Font { get; } = new FontManager();
+  public static LightManager Light { get; } = new LightManager();
   public static TaskSystem Task { get; } = new TaskSystem();
   public static GraphicsDeviceManager? Graphics { get; private set; }
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
@@ -72,6 +73,11 @@ public static class Core
       PreferMultiSampling = false,
       GraphicsProfile = GraphicsProfile.HiDef
     };
+    // Set the default render target preserve contents
+    Graphics.PreparingDeviceSettings += (sender, e) =>
+    {
+      e.GraphicsDeviceInformation.PresentationParameters.RenderTargetUsage = RenderTargetUsage.PreserveContents;
+    };
     Screen = new Screen(Graphics, Def.Screen.Width, Def.Screen.Height, Def.Screen.WindowedModeWidth, Def.Screen.WindowedModeHeight);
     Texture = new TextureManager(contentManager);
     Effect = new EffectManager(contentManager);
@@ -100,6 +106,8 @@ public static class Core
       throw new InvalidOperationException("Content already loaded");
     }
     contentLoaded = true;
+    Texture.LoadContent();
+    Light.LoadContent();
     Input.LoadContent();
     Font.LoadContent();
     Sb = new SpriteBatch(Graphics!.GraphicsDevice);
@@ -144,6 +152,8 @@ public static class Core
   {
     Input.PostUpdate(gameTime);
     Container.PostUpdate(gameTime);
+    Layer.PostUpdate(gameTime);
+    Light.PostUpdate(gameTime);
   }
 
   public static void Draw(GameTime gameTime)
@@ -152,44 +162,4 @@ public static class Core
     Inspector.Draw(gameTime);
     Console.Draw(gameTime);
   }
-  // public static void UpdateViewport()
-  // {
-  //   int screenWidth = Graphics.PreferredBackBufferWidth;
-  //   int screenHeight = Graphics.PreferredBackBufferHeight;
-
-  //   int gameWidth = Def.Screen.TargetScreenWidth;
-  //   int gameHeight = Def.Screen.TargetScreenHeight;
-
-  //   float scaleX = (float)screenWidth / gameWidth;
-  //   float scaleY = (float)screenHeight / gameHeight;
-  //   float scale = Math.Min(scaleX, scaleY); // 保持比例缩放
-
-  //   int viewportWidth = (int)(gameWidth * scale);
-  //   int viewportHeight = (int)(gameHeight * scale);
-  //   int viewportX = (screenWidth - viewportWidth) / 2;
-  //   int viewportY = (screenHeight - viewportHeight) / 2;
-
-  //   Viewport = new Viewport(viewportX, viewportY, viewportWidth, viewportHeight);
-  // }
-
-  // public static void SetFullscreen()
-  // {
-  //   Graphics!.IsFullScreen = true;
-  //   var adapter = GraphicsAdapter.DefaultAdapter;
-  //   Graphics.PreferredBackBufferWidth = adapter.CurrentDisplayMode.Width;
-  //   Graphics.PreferredBackBufferHeight = adapter.CurrentDisplayMode.Height;
-
-  //   Graphics.ApplyChanges();
-  //   // UpdateViewport();
-  // }
-
-  // public static void SetWindow()
-  // {
-  //   Graphics!.IsFullScreen = false;
-  //   Graphics.PreferredBackBufferWidth = Def.Screen.TargetScreenWidth;
-  //   Graphics.PreferredBackBufferHeight = Def.Screen.TargetScreenHeight;
-
-  //   Graphics.ApplyChanges();
-  //   // UpdateViewport();
-  // }
 }

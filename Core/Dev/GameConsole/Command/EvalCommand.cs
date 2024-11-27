@@ -181,7 +181,7 @@ public class EvalCommand : ConsoleCommand
     if (expression.Length == 0)
     {
       // enter interactive mode
-      console.Print("entering interactive mode. type [help](bgcolor=blue1) to see available commands.", Palette.ConsoleTheme.Yellow[5]);
+      console.Print("entering interactive mode. type [help](bgcolor=blue1)  to see available commands.", Palette.ConsoleTheme.Yellow[5]);
       console.EnterEvalMode();
       return;
     }

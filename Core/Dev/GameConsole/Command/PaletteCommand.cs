@@ -46,7 +46,7 @@ public class PaletteCommand : ConsoleCommand
   {
     console.Print($"  {theme.Name}");
     console.Print("");
-    console.Print($"  White   Black   Grey    Red     Yellow  Green   Blue    Purple");
+    console.Print($"  white   black   grey    red     yellow  green   blue    purple");
     console.Print("");
 
     var max = Math.Max(theme.Grey.Count, Math.Max(theme.Red.Count, Math.Max(theme.Yellow.Count, Math.Max(theme.Green.Count, theme.Blue.Count))));

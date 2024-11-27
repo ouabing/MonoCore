@@ -15,6 +15,7 @@ public class Layer
   public int Z { get; }
   public int Width { get; private set; } = Core.Screen.Width;
   public int Height { get; private set; } = Core.Screen.Width;
+  public RenderTarget2D RenderTarget { get; private set; } = new RenderTarget2D(Core.Graphics!.GraphicsDevice, Core.Screen.Width, Core.Screen.Height);
   public Color BackgroundColor { get; set; } = Color.Transparent;
   private bool IsCameraFixed { get; }
   public List<Canvas> Canvases { get; private set; } = [];
@@ -30,13 +31,26 @@ public class Layer
     AddCanvas("Main", Width, Height);
   }
 
+  public void Begin()
+  {
+    Core.Graphics!.GraphicsDevice.SetRenderTarget(RenderTarget);
+    Core.Graphics.GraphicsDevice.Clear(Color.Transparent);
+  }
+
+#pragma warning disable CA1822 // Mark members as static
+  public void End()
+  {
+    Core.Graphics!.GraphicsDevice.SetRenderTarget(null);
+  }
+#pragma warning restore CA1822 // Mark members as static
+
   public void AddCanvas(string name, int width, int height)
   {
     if (Canvases.FindIndex(x => x.Name == name) != -1)
     {
       throw new ArgumentException($"Canvas with name {name} already exists.");
     }
-    Canvases.Add(new Canvas(name, width, height, BackgroundColor));
+    Canvases.Add(new Canvas(name, width, height));
   }
 
   public void RemoveCanvas(string name)
@@ -117,7 +131,12 @@ public class Layer
           else
           {
             // Component.CurrentEffect will override the canvas's default effect
-            Core.Sb!.Begin(samplerState: SamplerState.PointClamp, effect: component.CurrentFX, transformMatrix: transformMatrix);
+            Core.Sb!.Begin(
+              samplerState: SamplerState.PointClamp,
+              effect: component.CurrentFX,
+              transformMatrix: transformMatrix,
+              blendState: BlendState.AlphaBlend
+            );
             component.Draw(gameTime);
             Core.Sb.End();
           }
@@ -163,7 +182,12 @@ public class Layer
   {
     if (inBatch.Count != 0)
     {
-      Core.Sb!.Begin(samplerState: SamplerState.PointClamp, transformMatrix: transformMatrix, effect: canvas.FX);
+      Core.Sb!.Begin(
+        samplerState: SamplerState.PointClamp,
+        transformMatrix: transformMatrix,
+        effect: canvas.FX,
+        blendState: BlendState.AlphaBlend
+      );
       foreach (var component in inBatch)
       {
         component.Draw(gameTime);
@@ -171,6 +195,11 @@ public class Layer
       Core.Sb.End();
       inBatch.Clear();
     }
+  }
+
+  public void PostUpdate(GameTime gameTime)
+  {
+    ClearDead();
   }
 
   public void ClearDead()
