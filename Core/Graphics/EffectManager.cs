@@ -20,4 +20,19 @@ public class EffectManager(ContentManager contentManager)
     EffectCache[path] = effect;
     return effect;
   }
+
+  public void EnableVHS(
+    float blurAmount,
+    float scanlineIntensity,
+    float chromaticAberrationAmount,
+    float noiseIntensity
+  )
+  {
+    var effect = LoadEffect("MonoCore/Shader/VHS");
+    effect.Parameters["blurAmount"].SetValue(blurAmount);
+    effect.Parameters["scanlineIntensity"].SetValue(scanlineIntensity);
+    effect.Parameters["chromaticAberrationAmount"].SetValue(chromaticAberrationAmount);
+    effect.Parameters["noiseIntensity"].SetValue(noiseIntensity);
+    Core.Layer.ApplyGlobalFX(effect);
+  }
 }
