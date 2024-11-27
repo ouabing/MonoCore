@@ -50,7 +50,7 @@ public class Light2D(
 
   public override void LoadContent()
   {
-    CurrentFX = Core.Effect.LoadEffect("MonoCore/Shader/Light2D").Clone();
+    CurrentFX = Core.Effect.LoadEffect("MonoCore/Shader/Light/Light2D").Clone();
     UpdateParams(null);
     base.LoadContent();
   }

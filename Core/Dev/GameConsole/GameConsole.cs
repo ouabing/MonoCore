@@ -62,6 +62,7 @@ public class GameConsole
     Indicator.LoadContent();
     RegisterCommand(new ClearCommand());
     RegisterCommand(new DebugCommand());
+    RegisterCommand(new EffectCommand());
     RegisterCommand(new EvalCommand());
     RegisterCommand(new ExitCommand());
     RegisterCommand(new FullscreenCommand());

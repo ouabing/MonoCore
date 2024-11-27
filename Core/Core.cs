@@ -106,6 +106,7 @@ public static class Core
       throw new InvalidOperationException("Content already loaded");
     }
     contentLoaded = true;
+    Effect.LoadContent();
     Texture.LoadContent();
     Light.LoadContent();
     Input.LoadContent();
@@ -132,6 +133,7 @@ public static class Core
 
     Wind.Update(gameTime);
     Animation.Update(gameTime);
+    Effect.Update(gameTime);
 
     Camera.Update(gameTime);
 

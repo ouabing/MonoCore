@@ -14,7 +14,7 @@ public class LightManager
 
   public void LoadContent()
   {
-    AmbientFX = Core.Content.Load<Effect>("MonoCore/Shader/AmbientLight");
+    AmbientFX = Core.Content.Load<Effect>("MonoCore/Shader/Light/AmbientLight");
     AmbientFX.Parameters["ambientColor"].SetValue(AmbientColor.ToVector4());
     AmbientFX.Parameters["intensity"].SetValue(AmbientIntensity);
   }
