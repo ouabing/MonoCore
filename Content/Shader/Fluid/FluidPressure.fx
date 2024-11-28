@@ -1,6 +1,8 @@
 sampler PressureSampler : register(s0);
 sampler VelocitySampler : register(s1);
+sampler BoundarySampler : register(s2);
 float2 texelSize;
+float enableBoundary = 0.0;
 
 float4 SampleVelocity(float2 uv)
 {
@@ -10,6 +12,11 @@ float4 SampleVelocity(float2 uv)
 float4 SamplePressure(float2 uv)
 {
     return tex2D(PressureSampler, uv);
+}
+
+float4 SampleBoundary(float2 uv)
+{
+    return tex2D(BoundarySampler, uv);
 }
 
 float2 vL(float2 uv)
@@ -42,6 +49,20 @@ float Divergence(float2 uv)
     float B = SampleVelocity(vb).y;
 
     float2 C = SampleVelocity(uv).xy;
+
+    if (enableBoundary > 0.5)
+    {
+        float bL = SampleBoundary(vl).a;
+        float bR = SampleBoundary(vr).a;
+        float bT = SampleBoundary(vt).a;
+        float bB = SampleBoundary(vb).a;
+
+        if (bL > 0.5) { L = -C.x; }
+        if (bR > 0.5) { R = -C.x; }
+        if (bT > 0.5) { T = -C.y; }
+        if (bB > 0.5) { B = -C.y; }
+    }
+
     // if (vl.x < 0.0 || vl.x > 1.0) { L = -C.x; }
     // if (vr.x < 0.0 || vr.x > 1.0) { R = -C.x; }
     // if (vt.y < 0.0 || vt.y > 1.0) { T = -C.y; }

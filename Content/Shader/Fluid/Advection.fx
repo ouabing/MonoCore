@@ -1,10 +1,12 @@
 sampler SourceSampler : register(s0);
 sampler VelocitySampler : register(s1);
+sampler BoundarySampler : register(s2);
 float2 texelSize;
 float2 dyeTexelSize;
 float dt;
 float dissipation;
 float linearFiltering;
+float enableBoundary;
 
 float4 SampleVelocity(float2 uv)
 {
@@ -50,6 +52,10 @@ float4 Advect(float2 uv : TEXCOORD0) : COLOR0
 {
   float2 coord;
   float4 result;
+  if (enableBoundary > 0.5 && tex2D(BoundarySampler, uv).a > 0.5)
+  {
+    return float4(0.0, 0.0, 0.0, 0.0);
+  }
   if (linearFiltering > 0.5) {
     coord = uv - dt * bilerp(VelocitySampler, uv, texelSize).xy * texelSize;
     result = bilerp(SourceSampler, coord, dyeTexelSize);

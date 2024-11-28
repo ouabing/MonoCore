@@ -1,14 +1,20 @@
 sampler TargetSampler: register(s0);
 sampler TextureSampler: register(s1);
+sampler BoundarySampler: register(s2);
 float2 texelSize;
 float aspectRatio;
 float2 position;
 float4 color;
 float radius;
 float splatByTexture = 0.0;
+float enableBoundary = 0.0;
 
 float4 Splat(float2 uv : TEXCOORD0) : COLOR0
 {
+  if (enableBoundary > 0.5 && tex2D(BoundarySampler, uv).a > 0.5)
+  {
+    return float4(0, 0, 0, 0);
+  }
   float2 p = uv - position.xy;
   p.x *= aspectRatio;
   float e = exp(-dot(p, p) / radius);

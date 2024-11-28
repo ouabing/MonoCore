@@ -16,6 +16,8 @@ public enum FluidDiffuseType
 
 public class FluidSim : Component, IDisposable
 {
+  public Texture2D? BoundaryTexture { get; set; }
+
   private Effect advectionEffect;
   private Effect vorticityEffect;
   private Effect clearEffect;
@@ -121,7 +123,7 @@ public class FluidSim : Component, IDisposable
           SplatOnScreenPosition(
             new Vector2((float)mouseState.X / Core.Screen.DisplayWidth, (float)mouseState.Y / Core.Screen.DisplayHeight),
             GenerateSplatVelocity(),
-            new Color(rand.NextSingle() * 0.15f, 0.15f, 0.15f, 1.0f)
+            new Color(rand.NextSingle() * 0.3f, 0.3f, 0.3f, 1.0f)
           );
           splatTimer = SplatDuration;
         }
@@ -136,7 +138,7 @@ public class FluidSim : Component, IDisposable
   private static Vector2 GenerateSplatVelocity()
   {
     var rand = new GRandom();
-    return new Vector2(rand.NextSingle(-1, 1), rand.NextSingle(-1, 1)) * 100f;
+    return new Vector2(rand.NextSingle(-1, 1), rand.NextSingle(-1, 1)) * 400f;
   }
 
   public override void Draw(GameTime gameTime)
@@ -166,6 +168,15 @@ public class FluidSim : Component, IDisposable
       parameters["dt"].SetValue(dt);
       parameters["texelSize"].SetValue(texelVec);
       parameters["curlAmount"].SetValue(CurlAmount);
+      if (BoundaryTexture != null)
+      {
+        parameters["BoundarySampler"].SetValue(BoundaryTexture);
+        parameters["enableBoundary"].SetValue(1.0f);
+      }
+      else
+      {
+        parameters["enableBoundary"].SetValue(0.0f);
+      }
     });
     Swap(ref velocityField, ref tempField);
 
@@ -181,6 +192,15 @@ public class FluidSim : Component, IDisposable
     {
       ApplyEffect(pressureEffect, pressureField, tempField, parameters =>
       {
+        if (BoundaryTexture != null)
+        {
+          parameters["BoundarySampler"].SetValue(BoundaryTexture);
+          parameters["enableBoundary"].SetValue(1.0f);
+        }
+        else
+        {
+          parameters["enableBoundary"].SetValue(0.0f);
+        }
         parameters["texelSize"].SetValue(texelVec);
         parameters["VelocitySampler"].SetValue(velocityField);
       });
@@ -206,6 +226,16 @@ public class FluidSim : Component, IDisposable
       parameters["linearFiltering"].SetValue(LinearFiltering ? 1.0f : 0.0f);
       parameters["SourceSampler"].SetValue(velocityField);
       parameters["VelocitySampler"].SetValue(velocityField);
+
+      if (BoundaryTexture != null)
+      {
+        parameters["BoundarySampler"].SetValue(BoundaryTexture);
+        parameters["enableBoundary"].SetValue(1.0f);
+      }
+      else
+      {
+        parameters["enableBoundary"].SetValue(0.0f);
+      }
     });
     Swap(ref velocityField, ref tempField);
 
@@ -219,6 +249,15 @@ public class FluidSim : Component, IDisposable
       parameters["linearFiltering"].SetValue(LinearFiltering ? 1.0f : 0.0f);
       parameters["SourceSampler"].SetValue(dyeField);
       parameters["VelocitySampler"].SetValue(velocityField);
+      if (BoundaryTexture != null)
+      {
+        parameters["BoundarySampler"].SetValue(BoundaryTexture);
+        parameters["enableBoundary"].SetValue(1.0f);
+      }
+      else
+      {
+        parameters["enableBoundary"].SetValue(0.0f);
+      }
     });
     Swap(ref dyeField, ref tempField);
   }
@@ -293,6 +332,15 @@ public class FluidSim : Component, IDisposable
       parameters["radius"].SetValue(CorrectRadius(SplatRadius / 100));
       parameters["splatByTexture"].SetValue(1.0f);
       parameters["TextureSampler"].SetValue(texture);
+      if (BoundaryTexture != null)
+      {
+        parameters["BoundarySampler"].SetValue(BoundaryTexture);
+        parameters["enableBoundary"].SetValue(1.0f);
+      }
+      else
+      {
+        parameters["enableBoundary"].SetValue(0.0f);
+      }
     });
 
     Swap(ref velocityField, ref tempField);
@@ -314,6 +362,15 @@ public class FluidSim : Component, IDisposable
       parameters["aspectRatio"].SetValue((float)Core.Screen.Width / Core.Screen.Height);
       parameters["radius"].SetValue(CorrectRadius(SplatRadius / 100));
       parameters["splatByTexture"].SetValue(0.0f);
+      if (BoundaryTexture != null)
+      {
+        parameters["BoundarySampler"].SetValue(BoundaryTexture);
+        parameters["enableBoundary"].SetValue(1.0f);
+      }
+      else
+      {
+        parameters["enableBoundary"].SetValue(0.0f);
+      }
     });
 
     Swap(ref velocityField, ref tempField);

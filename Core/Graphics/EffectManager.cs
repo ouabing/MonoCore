@@ -89,6 +89,15 @@ public class EffectManager(ContentManager contentManager)
     {
       UpdatePixelation(gameTime);
     }
+    if (IsVHSEffectActive)
+    {
+      UpdateVHS(gameTime);
+    }
+  }
+
+  private void UpdateVHS(GameTime gameTime)
+  {
+    VHSEffect?.Parameters["time"].SetValue((float)gameTime.TotalGameTime.TotalSeconds);
   }
 
   private static Vector2 GetNormalizedTexelSizeVec(float texelSize)

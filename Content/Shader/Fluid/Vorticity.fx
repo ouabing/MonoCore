@@ -1,8 +1,10 @@
 sampler VelocitySampler : register(s0);
+sampler BoundarySampler : register(s1);
 
 float dt;
 float curlAmount;
 float2 texelSize;
+float enableBoundary = 0.0;
 
 float4 SampleVelocity(float2 uv)
 {
@@ -32,6 +34,19 @@ float Curl(float2 uv) {
     // {
     //     return 0.0; // clamp to border
     // }
+    if (enableBoundary > 0.5)
+    {
+        float bC = tex2D(BoundarySampler, uv).a;
+        if (bC > 0.5) { return 0.0; }
+        float bL = tex2D(BoundarySampler, vL(uv)).a;
+        if (bL > 0.5) { return 0.0; }
+        float bR = tex2D(BoundarySampler, vR(uv)).a;
+        if (bR > 0.5) { return 0.0; }
+        float bT = tex2D(BoundarySampler, vT(uv)).a;
+        if (bT > 0.5) { return 0.0; }
+        float bB = tex2D(BoundarySampler, vB(uv)).a;
+        if (bB > 0.5) { return 0.0; }
+    }
     float l = SampleVelocity(vL(uv)).y;
     float r = SampleVelocity(vR(uv)).y;
     float t = SampleVelocity(vT(uv)).x;
