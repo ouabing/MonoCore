@@ -1,28 +1,11 @@
+#include "Fluid.fxh"
+
 sampler2D uTexture : register(s0);
 sampler2D uBloom : register(s1);
 sampler2D uSunrays : register(s2);
 sampler2D uDithering : register(s3);
 
 float2 ditherScale;
-float2 texelSize;
-
-float2 vL(float2 uv)
-{
-    return uv - float2(texelSize.x, 0);
-}
-
-float2 vR(float2 uv)
-{
-    return uv + float2(texelSize.x, 0);
-}
-
-float2 vT(float2 uv) {
-    return uv + float2(0, texelSize.y);
-}
-
-float2 vB(float2 uv) {
-    return uv - float2(0, texelSize.y);
-}
 
 // Pixel shader main function
 float4 Display(float2 uv : TEXCOORD0) : COLOR0

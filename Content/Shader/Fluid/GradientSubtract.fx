@@ -1,6 +1,7 @@
+#include "Fluid.fxh"
+
 sampler VelocitySampler : register(s0);
 sampler PressureSampler : register(s1);
-float2 texelSize;
 
 float4 SampleVelocity(float2 uv)
 {
@@ -10,24 +11,6 @@ float4 SampleVelocity(float2 uv)
 float4 SamplePressure(float2 uv)
 {
     return tex2D(PressureSampler, uv);
-}
-
-float2 vL(float2 uv)
-{
-    return uv - float2(texelSize.x, 0);
-}
-
-float2 vR(float2 uv)
-{
-    return uv + float2(texelSize.x, 0);
-}
-
-float2 vT(float2 uv) {
-    return uv + float2(0, texelSize.y);
-}
-
-float2 vB(float2 uv) {
-    return uv - float2(0, texelSize.y);
 }
 
 float4 SubtractGradient(float2 uv : TEXCOORD0) : COLOR0

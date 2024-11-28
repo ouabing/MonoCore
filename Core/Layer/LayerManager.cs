@@ -18,7 +18,7 @@ public class LayerManager(Color backgroundColor)
   public Color BackgroundColor { get; private set; } = backgroundColor;
   public Dictionary<Def.Layer, Layer> Layers { get; private set; } = [];
   public List<Effect> GlobalFXs { get; private set; } = [];
-  private List<RenderTarget2D> renderTargets { get; set; } = [];
+  private List<RenderTarget2D> RenderTargets { get; set; } = [];
   private RenderTarget2D screenRenderTarget { get; set; }
 
   public void Initialize()
@@ -97,14 +97,14 @@ public class LayerManager(Color backgroundColor)
 
   public void RecreateRenderTargets()
   {
-    foreach (var renderTarget in renderTargets)
+    foreach (var renderTarget in RenderTargets)
     {
       renderTarget.Dispose();
     }
-    renderTargets.Clear();
+    RenderTargets.Clear();
     for (int i = 0; i < GlobalFXs.Count - 1; i++)
     {
-      renderTargets.Add(new RenderTarget2D(
+      RenderTargets.Add(new RenderTarget2D(
         Core.Graphics!.GraphicsDevice,
         Core.Screen.DisplayWidth,
         Core.Screen.DisplayHeight,
@@ -234,7 +234,7 @@ public class LayerManager(Color backgroundColor)
         }
         else
         {
-          renderTarget = renderTargets[i];
+          renderTarget = RenderTargets[i];
           Core.GraphicsDevice.SetRenderTarget(renderTarget);
           Core.GraphicsDevice.Clear(Color.Transparent);
         }

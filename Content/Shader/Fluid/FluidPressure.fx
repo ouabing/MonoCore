@@ -1,7 +1,8 @@
+#include "Fluid.fxh"
+
 sampler PressureSampler : register(s0);
 sampler VelocitySampler : register(s1);
 sampler BoundarySampler : register(s2);
-float2 texelSize;
 float enableBoundary = 0.0;
 
 float4 SampleVelocity(float2 uv)
@@ -17,24 +18,6 @@ float4 SamplePressure(float2 uv)
 float4 SampleBoundary(float2 uv)
 {
     return tex2D(BoundarySampler, uv);
-}
-
-float2 vL(float2 uv)
-{
-    return uv - float2(texelSize.x, 0);
-}
-
-float2 vR(float2 uv)
-{
-    return uv + float2(texelSize.x, 0);
-}
-
-float2 vT(float2 uv) {
-    return uv + float2(0, texelSize.y);
-}
-
-float2 vB(float2 uv) {
-    return uv - float2(0, texelSize.y);
 }
 
 float Divergence(float2 uv)

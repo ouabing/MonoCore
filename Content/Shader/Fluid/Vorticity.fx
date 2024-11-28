@@ -1,32 +1,15 @@
+#include "Fluid.fxh"
+
 sampler VelocitySampler : register(s0);
 sampler BoundarySampler : register(s1);
 
 float dt;
 float curlAmount;
-float2 texelSize;
 float enableBoundary = 0.0;
 
 float4 SampleVelocity(float2 uv)
 {
     return tex2D(VelocitySampler, uv);
-}
-
-float2 vL(float2 uv)
-{
-    return uv - float2(texelSize.x, 0);
-}
-
-float2 vR(float2 uv)
-{
-    return uv + float2(texelSize.x, 0);
-}
-
-float2 vT(float2 uv) {
-    return uv + float2(0, texelSize.y);
-}
-
-float2 vB(float2 uv) {
-    return uv - float2(0, texelSize.y);
 }
 
 float Curl(float2 uv) {

@@ -1,7 +1,8 @@
+#include "Fluid.fxh"
+
 sampler SourceSampler : register(s0);
 sampler VelocitySampler : register(s1);
 sampler BoundarySampler : register(s2);
-float2 texelSize;
 float2 dyeTexelSize;
 float dt;
 float dissipation;
@@ -16,24 +17,6 @@ float4 SampleVelocity(float2 uv)
 float4 SampleSource(float2 uv)
 {
     return tex2D(SourceSampler, uv);
-}
-
-float2 vL(float2 uv)
-{
-    return uv - float2(texelSize.x, 0);
-}
-
-float2 vR(float2 uv)
-{
-    return uv + float2(texelSize.x, 0);
-}
-
-float2 vT(float2 uv) {
-    return uv + float2(0, texelSize.y);
-}
-
-float2 vB(float2 uv) {
-    return uv - float2(0, texelSize.y);
 }
 
 float4 bilerp(sampler sam, float2 uv, float2 tsize) {

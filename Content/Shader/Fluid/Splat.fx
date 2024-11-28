@@ -1,7 +1,6 @@
 sampler TargetSampler: register(s0);
 sampler TextureSampler: register(s1);
 sampler BoundarySampler: register(s2);
-float2 texelSize;
 float aspectRatio;
 float2 position;
 float4 color;
