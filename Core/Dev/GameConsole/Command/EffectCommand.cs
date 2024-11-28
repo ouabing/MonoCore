@@ -6,8 +6,9 @@ public class EffectCommand : ConsoleCommand
     "effect",
     "Run onetime effect\n\n" +
     "available effects:\n" +
-    "  vhs: toggle VHS shader\n" +
-    "  pixelation: run pixelation shader animation\n\n",
+    "  pixelation: run pixelation shader animation\n" +
+    "  sine: run sine shader animation\n" +
+    "  vhs: toggle VHS shader\n\n",
     "effect pixelation [-q | --quit]",
     []
   )
@@ -56,6 +57,9 @@ public class EffectCommand : ConsoleCommand
         {
           Core.Effect.EnableVHS();
         }
+        return;
+      case "sine":
+        Core.Effect.Sine();
         return;
       case "pixelation":
         Core.Effect.Pixelate();

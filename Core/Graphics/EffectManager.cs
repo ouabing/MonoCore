@@ -10,14 +10,20 @@ public class EffectManager(ContentManager contentManager)
 {
   private ContentManager ContentManager { get; } = contentManager;
   private Dictionary<string, Effect> EffectCache { get; } = [];
+  private Effect SineEffect { get; set; }
   private Effect PixelationEffect { get; set; }
   private Effect VHSEffect { get; set; }
   public bool IsPixelationEffectActive { get; set; }
   public bool IsVHSEffectActive { get; set; }
+  public bool IsSineEffectActive { get; set; }
   private float originalPixelationTexelSize;
   private float pixelationTexelSize;
   private float pixelationDuration;
   private float pixelationTimer;
+  private float sineTimer;
+  private float sineDuration;
+  private float sineAmplitude;
+  private float sineFrequency;
 
   public Effect LoadEffect(string path)
   {
@@ -36,6 +42,7 @@ public class EffectManager(ContentManager contentManager)
     // Preload VHS effect
     VHSEffect = LoadEffect("MonoCore/Shader/Effect/VHS");
     PixelationEffect = LoadEffect("MonoCore/Shader/Effect/Pixelation");
+    SineEffect = LoadEffect("MonoCore/Shader/Effect/Sine");
   }
 
   public void EnableVHS(
@@ -83,6 +90,20 @@ public class EffectManager(ContentManager contentManager)
     Core.Layer.ApplyGlobalFX(PixelationEffect);
   }
 
+  public void Sine(float frequency = 60.0f, float amplitude = 0.05f, float duration = 1f)
+  {
+    if (IsSineEffectActive)
+    {
+      return;
+    }
+    IsSineEffectActive = true;
+    sineAmplitude = amplitude;
+    sineFrequency = frequency;
+    sineTimer = 0;
+    sineDuration = duration;
+    Core.Layer.ApplyGlobalFX(SineEffect);
+  }
+
   public void Update(GameTime gameTime)
   {
     if (IsPixelationEffectActive)
@@ -93,6 +114,24 @@ public class EffectManager(ContentManager contentManager)
     {
       UpdateVHS(gameTime);
     }
+    if (IsSineEffectActive)
+    {
+      UpdateSine(gameTime);
+    }
+  }
+
+  private void UpdateSine(GameTime gameTime)
+  {
+    if (sineTimer >= sineDuration)
+    {
+      IsSineEffectActive = false;
+      Core.Layer.RemoveGlobalFX(SineEffect);
+      return;
+    }
+    SineEffect.Parameters["frequency"].SetValue(sineFrequency);
+    SineEffect.Parameters["time"].SetValue(sineTimer * 10);
+    SineEffect.Parameters["amplitude"].SetValue((sineDuration - sineTimer) / sineDuration * sineAmplitude);
+    sineTimer += gameTime.GetElapsedSeconds();
   }
 
   private void UpdateVHS(GameTime gameTime)
