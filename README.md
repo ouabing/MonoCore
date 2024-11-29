@@ -7,6 +7,20 @@ A simple game engine based on [MonoGame](https://monogame.net/)
 - Mono.Extended>=4.0.0
 - FontStashSharp.MonoGame
 
+### Features
+
+- Simple AABB collision detection, and a complete physics engine integretion by [Aether.Physics2D](https://github.com/nkast/Aether.Physics2D)
+- Simple task system you can schedule async game logic on the fly, there's also TweenTask if you want to throw a tween animation
+- In game debug console with interactive C# runner, component inspector, and custom command support
+- Animated text using just markdown-like syntax
+- Smooth fluid simulation
+- Layers for ordered drawing, Containers for managing component updating 
+- Input action mapping
+- Frame animation, Shaking, Spring and other useful 2D animations
+- Simple GOAP for AI logic
+- 2D lighting (WIP)
+- Other utilities like Camera, Grid Map Generator, Color Palette and bunch of effects driven by shaders
+
 ### Game Specific Configs
 
 ```c#
