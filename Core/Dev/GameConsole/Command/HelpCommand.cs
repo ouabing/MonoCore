@@ -26,7 +26,8 @@ public class HelpCommand : ConsoleCommand
       foreach (var c in console.Commands.Values)
       {
         var blanks = new string(' ', nameLength - c.Name.Length);
-        console.Print($"  [{c.Name}](color=white;bgcolor=blue1){blanks}[{c.Description}](color=white)");
+        var shortDesc = c.Description.Split("\n").First();
+        console.Print($"  [{c.Name}](color=white;bgcolor=blue1){blanks}[{shortDesc}](color=white)");
       }
       console.Print("");
       return;
