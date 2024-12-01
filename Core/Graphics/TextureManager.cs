@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.IO;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -17,6 +18,19 @@ public class TextureManager(ContentManager contentManager)
     PixelTexture = new Texture2D(Core.Graphics!.GraphicsDevice, 1, 1);
     PixelTexture.SetData([Color.White]);
   }
+
+  public Texture2D LoadTextureFromStream(string path)
+  {
+    if (TextureCache.TryGetValue(path, out Texture2D? value))
+    {
+      return value;
+    }
+    using var fileStream = new FileStream(path, FileMode.Open);
+    var texture = Texture2D.FromStream(Core.GraphicsDevice, fileStream);
+    TextureCache[path] = texture;
+    return texture;
+  }
+
   public Texture2D LoadTexture(string path)
   {
     if (TextureCache.TryGetValue(path, out Texture2D? value))

@@ -1,15 +1,15 @@
 namespace G;
 
-public class EffectCommand : ConsoleCommand
+public class FxCommand : ConsoleCommand
 {
-  public EffectCommand() : base(
-    "effect",
+  public FxCommand() : base(
+    "fx",
     "Run onetime effect\n\n" +
     "available effects:\n" +
     "  pixelation: run pixelation shader animation\n" +
     "  sine: run sine shader animation\n" +
     "  vhs: toggle VHS shader\n\n",
-    "effect pixelation [-q | --quit]",
+    "fx pixelation [-q | --quit]",
     []
   )
   {

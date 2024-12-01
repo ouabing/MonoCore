@@ -46,6 +46,7 @@ public class GameConsole
   private int CursorX { get; set; }
   private string Prompt => InEvalMode ? ">> " : "> ";
   private SpriteFontBase Font => Core.Font.Get("unscii8", FontSize);
+  // private SpriteFontBase Font => Core.Font.Get("fusion8", FontSize);
   private float PromptWidth => Font.MeasureString(Prompt.ToString()).X;
   private float FontWidth => Font.MeasureString("A").X;
   private readonly ConsoleKeyBuffer KeyBuffer = new();
@@ -62,11 +63,12 @@ public class GameConsole
     Indicator.LoadContent();
     RegisterCommand(new ClearCommand());
     RegisterCommand(new DebugCommand());
-    RegisterCommand(new EffectCommand());
+    RegisterCommand(new FxCommand());
     RegisterCommand(new EvalCommand());
     RegisterCommand(new ExitCommand());
     RegisterCommand(new FullscreenCommand());
     RegisterCommand(new HelpCommand());
+    RegisterCommand(new ImageCommand());
     RegisterCommand(new PauseCommand());
     RegisterCommand(new PaletteCommand());
     RegisterCommand(new ResumeCommand());
@@ -169,6 +171,24 @@ public class GameConsole
   public void ExitEvalMode()
   {
     InEvalMode = false;
+  }
+
+  public void OnFileDrop(object? sender, FileDropEventArgs e)
+  {
+    if (!IsEnabled)
+    {
+      return;
+    }
+    foreach (var file in e.Files)
+    {
+      if (file != null)
+      {
+        var newText = CurrentInput.Text.Insert(CursorX, file);
+        CurrentInput.UpdateText(newText);
+        CursorX += file.Length;
+      }
+    }
+
   }
 
   private void UpdateViewModeInput(GameTime gameTime)

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -60,6 +61,7 @@ public static class Core
   public static Debugger Debugger { get; } = new();
   public static Inspector Inspector { get; } = new();
   public static GameConsole Console { get; } = new();
+  public static List<Component> StandaloneComponents { get; private set; } = [];
 
   private static bool contentLoaded;
   private static bool graphicsInitialized;
@@ -83,6 +85,8 @@ public static class Core
     Effect = new EffectManager(contentManager);
     Physics.CreateWorlds();
     Palette.SetTheme(Def.Screen.Theme);
+
+    gameRoot.Window.FileDrop += Console.OnFileDrop;
   }
 
   public static void InitializeGraphics(GameWindow window)
@@ -136,6 +140,8 @@ public static class Core
     Effect.Update(gameTime);
 
     Camera.Update(gameTime);
+    StandaloneComponents.ForEach(c => c.Update(gameTime));
+    StandaloneComponents.RemoveAll(c => c.IsDead);
 
     if (Task.Update(gameTime))
     {
@@ -156,11 +162,13 @@ public static class Core
     Container.PostUpdate(gameTime);
     Layer.PostUpdate(gameTime);
     Light.PostUpdate(gameTime);
+    StandaloneComponents.ForEach(c => c.PostUpdate(gameTime));
   }
 
   public static void Draw(GameTime gameTime)
   {
     Layer.Draw(gameTime);
+    StandaloneComponents.ForEach(c => c.Draw(gameTime));
     Inspector.Draw(gameTime);
     Console.Draw(gameTime);
   }
