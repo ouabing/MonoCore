@@ -68,6 +68,8 @@ public static class Core
 
   public static void Init(ContentManager contentManager, Game gameRoot)
   {
+    gameRoot.IsFixedTimeStep = true;
+    gameRoot.IsMouseVisible = true;
     Content = contentManager;
     Content.RootDirectory = "Content";
     Graphics = new GraphicsDeviceManager(gameRoot)
