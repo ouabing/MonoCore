@@ -30,7 +30,9 @@ public class GameConsole
   public Vector2 CursorSize => new(4, LineHeight);
   public Vector2 ViewCursorSize => new(FontSize, LineHeight);
   public Color CursorColor { get; set; } = Palette.ConsoleTheme.White;
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
   public ConsoleLine CurrentInput { get; private set; }
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
   public string Completion { get; private set; } = "";
   public Color CompletionColor { get; set; } = Palette.ConsoleTheme.Grey[4];
   public string[] WelcomeMessages { get; set; } = [
@@ -581,7 +583,7 @@ public class GameConsole
 
   }
 
-  private void DrawLine(GameTime gameTime, ConsoleLine line, int x, ref int y)
+  private static void DrawLine(GameTime gameTime, ConsoleLine line, int x, ref int y)
   {
     line.Draw(gameTime, x, ref y);
   }

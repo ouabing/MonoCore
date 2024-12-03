@@ -3,7 +3,11 @@ using System.Text;
 
 
 namespace G;
+#pragma warning disable CS0661
+#pragma warning disable CS0659
 public struct GOAPWorldState(GOAPActionPlanner planner, long values, long dontcare) : IEquatable<GOAPWorldState>
+#pragma warning restore CS0659
+#pragma warning restore CS0661
 {
   // Bitmask for conditions that are true
   public long Values { get; set; } = values;

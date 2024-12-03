@@ -5,7 +5,6 @@ namespace G;
 public class ConsoleIndicator : Component
 {
   private AnimationLogic animation;
-  private Texture2D Pixel;
 
   public ConsoleIndicator()
   {
@@ -53,8 +52,6 @@ public class ConsoleIndicator : Component
   public override void LoadContent()
   {
     Size = new Vector2(1, 1);
-    Pixel = new Texture2D(Core.GraphicsDevice, 1, 1);
-    Pixel.SetData([Color.White]);
     base.LoadContent();
   }
 
@@ -65,7 +62,7 @@ public class ConsoleIndicator : Component
 
   public void Draw(GameTime gameTime, int size, int x, int y)
   {
-    Core.Sb.Draw(Pixel, new(x + size / 4f, y + size / 2f), null, Palette.ConsoleTheme.White, Rotation, Origin, new Vector2(Scale.X * 2, Scale.Y * size), SpriteEffects.None, 0);
+    Core.Sb.Draw(Core.Texture.PixelTexture, new(x + size / 4f, y + size / 2f), null, Palette.ConsoleTheme.White, Rotation, Origin, new Vector2(Scale.X * 2, Scale.Y * size), SpriteEffects.None, 0);
     base.Draw(gameTime);
   }
 }

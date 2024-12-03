@@ -1,5 +1,7 @@
 using nkast.Aether.Physics2D.Dynamics;
 
+namespace G;
+
 public static class CategoryExtensions
 {
 

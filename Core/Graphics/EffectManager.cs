@@ -10,11 +10,17 @@ public class EffectManager(ContentManager contentManager)
 {
   private ContentManager ContentManager { get; } = contentManager;
   private Dictionary<string, Effect> EffectCache { get; } = [];
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
   private Effect SineEffect { get; set; }
   private Effect PixelationEffect { get; set; }
+  private Effect PaletteCyclingEffect { get; set; }
   private Effect VHSEffect { get; set; }
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
+  private Vector3[] PaletteColors { get; set; } = [];
+  private int PaletteColorsCount { get; set; }
   public bool IsPixelationEffectActive { get; set; }
   public bool IsVHSEffectActive { get; set; }
+  public bool IsPaletteCyclingActive { get; set; }
   public bool IsSineEffectActive { get; set; }
   private float originalPixelationTexelSize;
   private float pixelationTexelSize;
@@ -24,6 +30,8 @@ public class EffectManager(ContentManager contentManager)
   private float sineDuration;
   private float sineAmplitude;
   private float sineFrequency;
+  private float paletteCyclingTimer;
+  private float paletteCyclingSpeed;
 
   public Effect LoadEffect(string path)
   {
@@ -39,10 +47,10 @@ public class EffectManager(ContentManager contentManager)
 
   public void LoadContent()
   {
-    // Preload VHS effect
     VHSEffect = LoadEffect("MonoCore/Shader/Effect/VHS");
     PixelationEffect = LoadEffect("MonoCore/Shader/Effect/Pixelation");
     SineEffect = LoadEffect("MonoCore/Shader/Effect/Sine");
+    PaletteCyclingEffect = LoadEffect("MonoCore/Shader/Effect/PaletteCycling");
   }
 
   public void EnableVHS(
@@ -64,6 +72,83 @@ public class EffectManager(ContentManager contentManager)
     IsVHSEffectActive = true;
   }
 
+  public void EnablePaletteCycling(float speed = 6f / 60f)
+  {
+    if (IsPaletteCyclingActive)
+    {
+      return;
+    }
+    var total = 64;
+    Vector3[] colors = new Vector3[total];
+    var index = 0;
+    colors[index] = Palette.Black.ToVector3();
+    index++;
+    foreach (var color in Palette.Grey)
+    {
+      colors[index] = color.ToVector3();
+      index++;
+    }
+    colors[index] = Palette.White.ToVector3();
+    index++;
+
+    foreach (var color in Palette.Red)
+    {
+      colors[index] = color.ToVector3();
+      index++;
+    }
+
+    foreach (var color in Palette.Yellow)
+    {
+      colors[index] = color.ToVector3();
+      index++;
+    }
+
+    foreach (var color in Palette.Blue)
+    {
+      colors[index] = color.ToVector3();
+      index++;
+    }
+
+    foreach (var color in Palette.Purple)
+    {
+      colors[index] = color.ToVector3();
+      index++;
+    }
+
+    foreach (var color in Palette.Green)
+    {
+      colors[index] = color.ToVector3();
+      index++;
+    }
+
+    PaletteColorsCount = index;
+    while (index < total)
+    {
+      colors[index] = new Vector3(0.0f, 0.0f, 0.0f);
+      index++;
+    }
+    PaletteColors = colors;
+    PaletteCyclingEffect.Parameters["colors"].SetValue(colors);
+    PaletteCyclingEffect.Parameters["colorCount"].SetValue(PaletteColorsCount);
+    PaletteCyclingEffect.Parameters["time"].SetValue(0f);
+    PaletteCyclingEffect.Parameters["speed"].SetValue(paletteCyclingSpeed);
+    paletteCyclingTimer = 0;
+    paletteCyclingSpeed = speed;
+    Core.Layer.ApplyGlobalFX(PaletteCyclingEffect);
+    IsPaletteCyclingActive = true;
+  }
+
+  public void DisablePaletteCycling()
+  {
+    if (!IsPaletteCyclingActive)
+    {
+      return;
+    }
+    Core.Layer.RemoveGlobalFX(PaletteCyclingEffect);
+    PaletteColors = [];
+    IsPaletteCyclingActive = false;
+  }
+
   public void DisableVHS()
   {
     if (!IsVHSEffectActive)
@@ -73,7 +158,6 @@ public class EffectManager(ContentManager contentManager)
     Core.Layer.RemoveGlobalFX(VHSEffect);
     IsVHSEffectActive = false;
   }
-
 
   public void Pixelate(float texelSize = 32.0f, float duration = 0.5f)
   {
@@ -118,6 +202,19 @@ public class EffectManager(ContentManager contentManager)
     {
       UpdateSine(gameTime);
     }
+    if (IsPaletteCyclingActive)
+    {
+      UpdatePaletteCycling(gameTime);
+    }
+  }
+
+  private void UpdatePaletteCycling(GameTime gameTime)
+  {
+    PaletteCyclingEffect.Parameters["colors"].SetValue(PaletteColors);
+    PaletteCyclingEffect.Parameters["colorCount"].SetValue(PaletteColorsCount);
+    PaletteCyclingEffect.Parameters["time"].SetValue(paletteCyclingTimer);
+    PaletteCyclingEffect.Parameters["speed"].SetValue(paletteCyclingSpeed);
+    paletteCyclingTimer += gameTime.GetElapsedSeconds();
   }
 
   private void UpdateSine(GameTime gameTime)
