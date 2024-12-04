@@ -14,6 +14,7 @@ A simple game engine based on [MonoGame](https://monogame.net/)
 - In game debug console with interactive C# runner, component inspector, and custom command support
 - Animated text using just markdown-like syntax
 - Smooth fluid simulation
+- Global shader effects like Bloom Filter, Pixelation, VHS
 - Layers for ordered drawing, Containers for managing component updating 
 - Input action mapping
 - Frame animation, Shaking, Spring and other useful 2D animations
