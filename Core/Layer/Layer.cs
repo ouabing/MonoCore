@@ -9,7 +9,7 @@ using nkast.Aether.Physics2D.Collision.Shapes;
 
 namespace G;
 
-public class Layer
+public class Layer : IDisposable
 {
   public Def.Layer Name { get; }
   public int Z { get; }
@@ -27,6 +27,7 @@ public class Layer
   );
   public Color BackgroundColor { get; set; } = Color.Transparent;
   private bool IsCameraFixed { get; }
+  public BloomFilter? Bloom { get; private set; }
   public List<Canvas> Canvases { get; private set; } = [];
   private readonly List<Component> components = [];
 
@@ -40,10 +41,34 @@ public class Layer
     AddCanvas("Main", Width, Height);
   }
 
-  public void Begin()
+  public void Begin(bool clear = true)
   {
     Core.Graphics!.GraphicsDevice.SetRenderTarget(RenderTarget);
-    Core.Graphics.GraphicsDevice.Clear(Color.Transparent);
+    if (clear)
+    {
+      Core.Graphics.GraphicsDevice.Clear(Color.Transparent);
+    }
+  }
+
+  public void EnableBloom(BloomFilter.BloomPresets preset, float threshold, float clampTo = 1.0f)
+  {
+    if (Bloom == null)
+    {
+      Bloom = new();
+      Bloom.LoadContent(Width, Height);
+    }
+    Bloom.BloomPreset = preset;
+    Bloom.BloomThreshold = threshold;
+    Bloom.BloomClampTo = clampTo;
+  }
+
+  public void DisableBloom()
+  {
+    if (Bloom != null)
+    {
+      Bloom.Dispose();
+      Bloom = null;
+    }
   }
 
 #pragma warning disable CA1822 // Mark members as static
@@ -206,6 +231,15 @@ public class Layer
     }
   }
 
+  public Texture2D? DrawBloom()
+  {
+    if (Bloom == null)
+    {
+      return null;
+    }
+    return Bloom.Draw(RenderTarget, Width, Height);
+  }
+
   public void PostUpdate(GameTime gameTime)
   {
     ClearDead();
@@ -248,5 +282,11 @@ public class Layer
         Core.Sb.DrawCircle(new CircleF(center.ToPixelVector2(), circle.Radius), 16, Color.Red, 1);
       }
     }
+  }
+
+  public void Dispose()
+  {
+    Bloom?.Dispose();
+    GC.SuppressFinalize(this);
   }
 }

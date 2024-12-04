@@ -13,13 +13,14 @@ namespace G;
  *   Layer -- Logically defined layer, draws all the components to Canvas
  *     Canvas -- The actual RenderTarget
  */
-public class LayerManager(Color backgroundColor)
+public class LayerManager(Color backgroundColor) : IDisposable
 {
   public Color BackgroundColor { get; private set; } = backgroundColor;
   public Dictionary<Def.Layer, Layer> Layers { get; private set; } = [];
   public List<Effect> GlobalFXs { get; private set; } = [];
   private List<RenderTarget2D> RenderTargets { get; set; } = [];
   private RenderTarget2D screenRenderTarget { get; set; }
+  private BloomFilter? bloom { get; set; }
 
   public void Initialize()
   {
@@ -60,6 +61,27 @@ public class LayerManager(Color backgroundColor)
     );
   }
 
+  public void EnableBloom(BloomFilter.BloomPresets preset, float threshold, float clampTo = 1.0f)
+  {
+    if (bloom == null)
+    {
+      bloom = new();
+      bloom.LoadContent(Core.Screen.Width, Core.Screen.Height);
+    }
+    bloom.BloomPreset = preset;
+    bloom.BloomThreshold = threshold;
+    bloom.BloomClampTo = clampTo;
+  }
+
+  public void DisableBloom()
+  {
+    if (bloom != null)
+    {
+      bloom.Dispose();
+      bloom = null;
+    }
+  }
+
   public void CreateLayer(Def.Layer layer, int width, int height, bool isCameraFixed = false)
   {
     Layers[layer] = new Layer(layer, (int)layer, isCameraFixed, width, height);
@@ -73,6 +95,15 @@ public class LayerManager(Color backgroundColor)
     }
 
     layer.Add(component);
+  }
+
+  public Layer Get(Def.Layer layer)
+  {
+    if (!Layers.TryGetValue(layer, out Layer? value))
+    {
+      throw new KeyNotFoundException($"Layer {layer} not found.");
+    }
+    return value;
   }
 
   public void ApplyGlobalFX(Effect effect)
@@ -196,11 +227,20 @@ public class LayerManager(Color backgroundColor)
       layer.Begin();
       foreach (var canvas in layer.Canvases)
       {
-        Core.Sb!.Begin(SpriteSortMode.Immediate, samplerState: SamplerState.PointClamp);
+        Core.Sb!.Begin(SpriteSortMode.Immediate, samplerState: SamplerState.PointClamp, blendState: BlendState.AlphaBlend);
         Core.Sb.Draw(canvas.RenderTarget, new Rectangle(0, 0, canvas.Width, canvas.Height), Color.White);
         Core.Sb.End();
       }
       layer.End();
+      var bloomLayerTexture = layer.DrawBloom();
+      if (bloomLayerTexture != null)
+      {
+        layer.Begin(false);
+        Core.Sb.Begin(SpriteSortMode.Immediate, blendState: BlendState.Additive, samplerState: SamplerState.PointClamp);
+        Core.Sb.Draw(bloomLayerTexture, new Rectangle(0, 0, layer.Width, layer.Height), Color.White);
+        Core.Sb.End();
+        layer.End();
+      }
     }
 
     // Merge all the layers into a single render target
@@ -217,6 +257,17 @@ public class LayerManager(Color backgroundColor)
       lastZ = layer.Z;
       Core.Sb!.Begin(SpriteSortMode.Immediate, samplerState: SamplerState.PointClamp);
       Core.Sb.Draw(layer.RenderTarget, new Rectangle(0, 0, Core.Screen.Width, Core.Screen.Height), Color.White);
+      Core.Sb.End();
+    }
+
+    if (bloom != null)
+    {
+      Texture2D bloomTexture = bloom.Draw(screenRenderTarget, Core.Screen.Width, Core.Screen.Height);
+
+      Core.GraphicsDevice.SetRenderTarget(screenRenderTarget);
+
+      Core.Sb.Begin(SpriteSortMode.Immediate, blendState: BlendState.Additive);
+      Core.Sb.Draw(bloomTexture, new Rectangle(0, 0, Core.Screen.Width, Core.Screen.Height), Color.White);
       Core.Sb.End();
     }
 
@@ -261,5 +312,15 @@ public class LayerManager(Color backgroundColor)
       Core.Sb.Draw(lastRenderTarget, new Rectangle(0, 0, Core.Screen.DisplayWidth, Core.Screen.DisplayHeight), Color.White);
       Core.Sb.End();
     }
+  }
+
+  public void Dispose()
+  {
+    bloom?.Dispose();
+    foreach (var layer in Layers.Values)
+    {
+      layer.Dispose();
+    }
+    GC.SuppressFinalize(this);
   }
 }

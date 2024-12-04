@@ -92,14 +92,14 @@ public class EvalCommand : ConsoleCommand
           return;
         case "watch":
           await RunScript(console, rest);
-          if (state.ReturnValue is not Component)
+          if (state?.ReturnValue is Component)
           {
-            console.PrintError("watch can only be used with Component types");
+            Core.Inspector.Watch((Component)state!.ReturnValue);
+            console.Print($"start watching {state.ReturnValue.GetType().Name} in the inspector");
           }
           else
           {
-            Core.Inspector.Watch(state.ReturnValue as Component);
-            console.Print($"start watching {state.ReturnValue.GetType().Name} in the inspector");
+            console.PrintError("watch can only be used with Component types");
           }
           break;
         case "print":
@@ -115,7 +115,7 @@ public class EvalCommand : ConsoleCommand
           var name = rest.Split(' ')[0].Trim();
           rest = rest.Substring(name.Length).Trim();
           await RunScript(console, rest);
-          Core.Inspector.AddRow(new InspectorRow(name, state.ReturnValue as Func<Component, string>));
+          Core.Inspector.AddRow(new InspectorRow(name, (Func<Component, string>)state!.ReturnValue));
           break;
         case "watch-":
           var nameToRemove = rest.Split(' ')[0].Trim();

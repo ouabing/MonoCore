@@ -89,6 +89,9 @@ public static class Core
     Palette.SetTheme(Def.Screen.Theme);
 
     gameRoot.Window.FileDrop += Console.OnFileDrop;
+    gameRoot.IsMouseVisible = true;
+    gameRoot.IsFixedTimeStep = true;
+    gameRoot.TargetElapsedTime = TimeSpan.FromSeconds(1.0 / 60.0);
   }
 
   public static void InitializeGraphics(GameWindow window)

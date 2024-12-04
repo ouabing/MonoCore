@@ -51,7 +51,7 @@ public class Blowable
     timer += gameTime.GetElapsedSeconds();
   }
 
-  private Vector2 RotateVectorAroundPoint(Vector2 point, Vector2 center, float angle)
+  private static Vector2 RotateVectorAroundPoint(Vector2 point, Vector2 center, float angle)
   {
     // translate the point so that the center of rotation is at the origin
     Vector2 translatedPoint = point - center;
