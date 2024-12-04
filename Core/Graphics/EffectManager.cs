@@ -27,6 +27,7 @@ public class EffectManager(ContentManager contentManager)
   private float pixelationDuration;
   private float pixelationTimer;
   private float sineTimer;
+  private float sineSpeed;
   private float sineDuration;
   private float sineAmplitude;
   private float sineFrequency;
@@ -213,7 +214,7 @@ public class EffectManager(ContentManager contentManager)
     Core.Layer.ApplyGlobalFX(PixelationEffect);
   }
 
-  public void Sine(float frequency = 60.0f, float amplitude = 0.05f, float duration = 1f)
+  public void Sine(float frequency = 60.0f, float amplitude = 0.05f, float duration = 1f, float speed = 10f)
   {
     if (IsSineEffectActive)
     {
@@ -224,6 +225,7 @@ public class EffectManager(ContentManager contentManager)
     sineFrequency = frequency;
     sineTimer = 0;
     sineDuration = duration;
+    sineSpeed = speed;
     Core.Layer.ApplyGlobalFX(SineEffect);
   }
 
@@ -265,7 +267,8 @@ public class EffectManager(ContentManager contentManager)
       return;
     }
     SineEffect.Parameters["frequency"].SetValue(sineFrequency);
-    SineEffect.Parameters["time"].SetValue(sineTimer * 10);
+    SineEffect.Parameters["time"].SetValue(sineTimer);
+    SineEffect.Parameters["speed"].SetValue(sineSpeed);
     SineEffect.Parameters["amplitude"].SetValue((sineDuration - sineTimer) / sineDuration * sineAmplitude);
     sineTimer += gameTime.GetElapsedSeconds();
   }
