@@ -8,7 +8,7 @@ public class FxCommand : ConsoleCommand
 {
   public FxCommand() : base(
     "fx",
-    "Run onetime effect",
+    "Enable/Run effect",
     "fx [effect name] [-q | --quit]\n\n" +
     "available effects:\n" +
     "  [pixelation](grad=yellow3,red3;bgcolor=blue1) run pixelation shader animation\n" +
