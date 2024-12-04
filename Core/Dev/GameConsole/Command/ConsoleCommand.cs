@@ -12,12 +12,12 @@ public abstract class ConsoleCommand(string name, string description, string usa
 
   public void PrintHelp(GameConsole console)
   {
-    console.Print($"usage: {Usage}");
     if (Description.Length > 0)
     {
-      console.Print("");
       console.Print(Description);
+      console.Print("");
     }
+    console.Print($"usage: {Usage}");
   }
 
   public void PrintArgumentError(GameConsole console, string argument)

@@ -61,7 +61,7 @@ public class LayerManager(Color backgroundColor) : IDisposable
     );
   }
 
-  public void EnableBloom(BloomFilter.BloomPresets preset, float threshold, float clampTo = 1.0f)
+  public BloomFilter EnableBloom(BloomFilter.BloomPresets preset, float threshold, float clampTo = 1.0f)
   {
     if (bloom == null)
     {
@@ -71,6 +71,7 @@ public class LayerManager(Color backgroundColor) : IDisposable
     bloom.BloomPreset = preset;
     bloom.BloomThreshold = threshold;
     bloom.BloomClampTo = clampTo;
+    return bloom;
   }
 
   public void DisableBloom()

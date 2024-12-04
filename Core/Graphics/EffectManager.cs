@@ -54,11 +54,16 @@ public class EffectManager(ContentManager contentManager)
   }
 
 #pragma warning disable CA1822 // Mark members as static
-  public void EnableBloom(Def.Layer layer, BloomFilter.BloomPresets preset, float threshold, float clampTo = 1.0f)
+  public BloomFilter EnableBloom(
+    Def.Layer layer,
+    BloomFilter.BloomPresets preset,
+    float threshold,
+    float clampTo = 1.0f
+  )
 #pragma warning restore CA1822 // Mark members as static
   {
     var l = Core.Layer.Get(layer);
-    l.EnableBloom(preset, threshold, clampTo);
+    return l.EnableBloom(preset, threshold, clampTo);
   }
 
 #pragma warning disable CA1822 // Mark members as static
@@ -70,10 +75,14 @@ public class EffectManager(ContentManager contentManager)
   }
 
 #pragma warning disable CA1822 // Mark members as static
-  public void EnableBloom(BloomFilter.BloomPresets preset, float threshold, float clampTo = 1.0f)
+  public BloomFilter EnableBloom(
+    BloomFilter.BloomPresets preset,
+    float threshold,
+    float clampTo = 1.0f
+  )
 #pragma warning restore CA1822 // Mark members as static
   {
-    Core.Layer.EnableBloom(preset, threshold, clampTo);
+    return Core.Layer.EnableBloom(preset, threshold, clampTo);
   }
 
 #pragma warning disable CA1822 // Mark members as static

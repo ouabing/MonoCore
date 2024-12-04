@@ -39,7 +39,9 @@ public class TextEffects
   public Action<GameTime, Text, EffectChar, EffectCharGradientArg> GradientUpdater { get; set; } =
     (GameTime gameTime, Text text, EffectChar c, EffectCharGradientArg arg) =>
     {
-      c.Color = Color.Lerp(arg.Start, arg.End, (float)(c.Index - arg.StartIndex) / (arg.EndIndex - arg.StartIndex));
+      var start = text.Chars.FindIndex(e => e.Effects.Exists(e => arg == e));
+      var amount = (float)(c.Index - start) / arg.TextLength;
+      c.Color = Color.Lerp(arg.Start, arg.End, amount);
     };
 
   public Action<GameTime, Text, EffectChar, EffectCharBlinkArg> BlinkUpdater { get; set; } =

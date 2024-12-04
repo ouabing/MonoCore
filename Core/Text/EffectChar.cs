@@ -43,12 +43,11 @@ public class EffectCharOscillateArg(float min, float max, float speed, float del
   public float Delay { get; } = delay;
 }
 
-public class EffectCharGradientArg(Color start, Color end, int startIndex, int endIndex) : CharEffectArg(CharEffectType.Gradient)
+public class EffectCharGradientArg(Color start, Color end, int textLength) : CharEffectArg(CharEffectType.Gradient)
 {
   public Color Start { get; } = start;
   public Color End { get; } = end;
-  public int StartIndex { get; } = startIndex;
-  public int EndIndex { get; } = endIndex;
+  public int TextLength { get; } = textLength;
 }
 
 public class EffectCharBlinkArg(float interval, float duration) : CharEffectArg(CharEffectType.Blink)

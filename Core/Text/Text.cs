@@ -37,13 +37,14 @@ public class Text
   private readonly string RawText;
   private readonly SpriteFontBase Font;
   private readonly TextAlignment Alignment;
-  private readonly List<EffectChar> Chars = [];
+  public List<EffectChar> Chars { get; } = [];
   private readonly float HeightMultiplier;
   private readonly int ShadowWidth;
   private readonly Color? ShadowColor;
   private readonly Color? DefaultColor;
   private readonly bool WrapWords;
   private readonly ITheme Theme;
+  private const string LineSeparator = "\n";
   public Text(
     string rawText,
     SpriteFontBase font,
@@ -85,7 +86,21 @@ public class Text
 
   public string ToPlainText()
   {
-    return string.Join("", Chars.Select(c => c.C));
+    var result = "";
+    var lastLine = 0;
+    foreach (var c in Chars)
+    {
+      if (c.Line != lastLine)
+      {
+        for (int i = 0; i < c.Line - lastLine; i++)
+        {
+          result += "\n";
+        }
+      }
+      lastLine = c.Line;
+      result += c.C;
+    }
+    return result;
   }
 
   private struct MatchedEffectText
@@ -130,7 +145,7 @@ public class Text
           }
           var effectName = effectMatch.Groups[1].Value;
           var effectArgs = effectMatch.Groups[2].Value;
-          effects.Add(GenerateEffect(effectName, effectArgs.Split(","), effectBlockStart, effectBlockEnd, textBlockStart, textBlockEnd));
+          effects.Add(GenerateEffect(effectName, effectArgs.Split(","), textBlockStart, textBlockEnd));
         }
       }
       parsed.Add(new MatchedEffectText()
@@ -148,7 +163,7 @@ public class Text
       char currentChar = RawText[i];
       string c = "";
 
-      var foundIndex = parsed.FindIndex(x => i >= x.TextBlockStart && x.EffectBlockEnd >= i);
+      var foundIndex = parsed.FindIndex(x => i >= x.TextBlockStart && x.EffectBlockEnd > i);
       MatchedEffectText? found = foundIndex == -1 ? null : parsed[foundIndex];
       if (found != null)
       {
@@ -177,7 +192,7 @@ public class Text
     }
   }
 
-  private CharEffectArg GenerateEffect(string name, string[] args, int effectBlockStart, int effectBlockEnd, int textBlockStart, int textBlockEnd)
+  private CharEffectArg GenerateEffect(string name, string[] args, int textBlockStart, int textBlockEnd)
   {
     switch (name)
     {
@@ -201,7 +216,7 @@ public class Text
       case "grad":
         var startColor = Palette.GetColor(Theme, args[0]);
         var endColor = Palette.GetColor(Theme, args[1]);
-        return new EffectCharGradientArg(startColor, endColor, textBlockStart, textBlockEnd);
+        return new EffectCharGradientArg(startColor, endColor, textBlockEnd - textBlockStart - 2);
       case "blink":
         var blinkInterval = args.Length > 0 ? float.Parse(args[0]) : 0.1f;
         var blinkDuration = args.Length > 1 ? float.Parse(args[1]) : 2f;
@@ -221,7 +236,7 @@ public class Text
     for (int i = 0; i < Chars.Count; i++)
     {
       var c = Chars[i];
-      if (c.C == "|")
+      if (c.C == LineSeparator)
       {
         cx = 0;
         cy += lineHeight;
@@ -274,8 +289,8 @@ public class Text
         }
         else
         {
-          // set | to remove it in the next step, as it was already wrapped and doesn't need to be visually represented
-          c.C = "|";
+          // set line separator to remove it in the next step, as it was already wrapped and doesn't need to be visually represented
+          c.C = LineSeparator;
         }
       }
       else
@@ -295,7 +310,7 @@ public class Text
     }
 
     // Remove line separators
-    Chars.RemoveAll(c => c.C == "|");
+    Chars.RemoveAll(c => c.C == LineSeparator);
 
     for (int i = 0; i < Chars.Count; i++)
     {
@@ -354,7 +369,7 @@ public class Text
         }
         else if (Alignment == TextAlignment.Justify)
         {
-          var spaces = Chars.Where(c => c.Line == i && c.C == " ").ToList();
+          var spaces = Chars.Where(c => c.Line == i && (c.C == " ")).ToList();
           var addedWidthToEachSpace = leftoverWidth / spaces.Count;
           var totalAddedWidth = 0f;
           foreach (var c in Chars)

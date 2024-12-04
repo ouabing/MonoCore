@@ -149,7 +149,7 @@ public class BloomFilter : IDisposable
   }
   private Vector2 _bloomInverseResolutionField;
 
-  private float BloomRadius
+  public float BloomRadius
   {
     get
     {
@@ -168,7 +168,7 @@ public class BloomFilter : IDisposable
   }
   private float _bloomRadius;
 
-  private float BloomStrength
+  public float BloomStrength
   {
     get { return _bloomStrength; }
     set

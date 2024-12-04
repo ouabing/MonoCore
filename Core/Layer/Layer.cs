@@ -50,7 +50,7 @@ public class Layer : IDisposable
     }
   }
 
-  public void EnableBloom(BloomFilter.BloomPresets preset, float threshold, float clampTo = 1.0f)
+  public BloomFilter EnableBloom(BloomFilter.BloomPresets preset, float threshold, float clampTo = 1.0f)
   {
     if (Bloom == null)
     {
@@ -60,6 +60,7 @@ public class Layer : IDisposable
     Bloom.BloomPreset = preset;
     Bloom.BloomThreshold = threshold;
     Bloom.BloomClampTo = clampTo;
+    return Bloom;
   }
 
   public void DisableBloom()

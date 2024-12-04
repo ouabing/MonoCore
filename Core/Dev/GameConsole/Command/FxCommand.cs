@@ -1,15 +1,20 @@
+using System;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
+
 namespace G;
 
 public class FxCommand : ConsoleCommand
 {
   public FxCommand() : base(
     "fx",
-    "Run onetime effect\n\n" +
+    "Run onetime effect",
+    "fx [effect name] [-q | --quit]\n\n" +
     "available effects:\n" +
-    "  pixelation: run pixelation shader animation\n" +
-    "  sine: run sine shader animation\n" +
-    "  vhs: toggle VHS shader\n\n",
-    "fx pixelation [-q | --quit]",
+    "  [pixelation](grad=yellow3,red3;bgcolor=blue1) run pixelation shader animation\n" +
+    "  [sine](grad=yellow3,red3;bgcolor=blue1)       run sine shader animation\n" +
+    "  [bloom](grad=yellow3,red3;bgcolor=blue1)      enable bloom filter\n" +
+    "  [vhs](grad=yellow3,red3;bgcolor=blue1)        toggle VHS shader",
     []
   )
   {
@@ -34,6 +39,7 @@ public class FxCommand : ConsoleCommand
       return;
     }
 
+    List<string> fxParams = [];
     if (args.Length == 2)
     {
       if (args[1] == "-q" || args[1] == "--quit")
@@ -42,7 +48,7 @@ public class FxCommand : ConsoleCommand
       }
       else
       {
-        PrintArgumentError(console, args[1]);
+        fxParams = parseFxParams(args[1]);
       }
     }
 
@@ -55,18 +61,49 @@ public class FxCommand : ConsoleCommand
         }
         else
         {
-          Core.Effect.EnableVHS();
+          var blurAmount = fxParams.Count > 0 ? float.Parse(fxParams[0]) : 1.0f;
+          var scanlineIntensity = fxParams.Count > 1 ? float.Parse(fxParams[1]) : 0.5f;
+          var chromaticAberrationAmount = fxParams.Count > 2 ? float.Parse(fxParams[2]) : 0.0005f;
+          var noiseIntensity = fxParams.Count > 3 ? float.Parse(fxParams[3]) : 0.001f;
+          Core.Effect.EnableVHS(blurAmount, scanlineIntensity, chromaticAberrationAmount, noiseIntensity);
         }
         return;
       case "sine":
-        Core.Effect.Sine();
+        var frequency = fxParams.Count > 0 ? float.Parse(fxParams[0]) : 60f;
+        var amplitude = fxParams.Count > 1 ? float.Parse(fxParams[1]) : 0.05f;
+        var duration = fxParams.Count > 2 ? float.Parse(fxParams[2]) : 1f;
+        Core.Effect.Sine(frequency, amplitude, duration);
         return;
       case "pixelation":
-        Core.Effect.Pixelate();
+        var texelSize = fxParams.Count > 0 ? float.Parse(fxParams[0]) : 32;
+        var pixelationDuration = fxParams.Count > 1 ? float.Parse(fxParams[1]) : 0.5f;
+        Core.Effect.Pixelate(texelSize, pixelationDuration);
+        return;
+      case "bloom":
+        var presetName = fxParams.Count > 0 ? fxParams[0] : "One";
+        var threshold = fxParams.Count > 1 ? float.Parse(fxParams[1]) : 0f;
+        var clampTo = fxParams.Count > 2 ? float.Parse(fxParams[2]) : 1f;
+        var preset = (BloomFilter.BloomPresets)Enum.Parse(typeof(BloomFilter.BloomPresets), presetName);
+        Core.Effect.EnableBloom(preset, threshold, clampTo);
         return;
       default:
         PrintArgumentError(console, args[0]);
         return;
     }
+  }
+
+  private static List<string> parseFxParams(string arg)
+  {
+    var args = arg.Split(',');
+    var result = new List<string>();
+    foreach (var a in args)
+    {
+      if (a.Length == 0)
+      {
+        continue;
+      }
+      result.Add(a);
+    }
+    return result;
   }
 }
